@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-04-05
+
+### Added
+- Microinteraction improvements: subtle entrance animations, hover/active feedback, and transition polish across cards, buttons, FABs, and nav items
+
+### Fixed
+- Fix touch scroll on dashboard and all pages - use `height` instead of `min-height` on app-shell to prevent overflow blocking touch scroll on iOS/Android
+- Add `inputmode` and `autocomplete` attributes to form inputs for better mobile keyboard and autofill UX
+- Resolve design system audit violations: align spacing, color, border-radius, and shadow usage to tokens throughout all pages and components
+- Fix touch scrolling regression in calendar, budget, and contacts introduced by layout refactor
+
 ## [0.10.0] - 2026-04-04
 
 ### Added
