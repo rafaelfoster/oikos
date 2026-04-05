@@ -397,9 +397,13 @@ const TOAST_ICONS = {
   warning: '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
 };
 
-function showToast(message, type = 'default', duration = 3000) {
+function showToast(message, type = 'default', duration = 3000, onUndo = null) {
   const container = document.getElementById('toast-container');
   if (!container) return;
+
+  // Max. 3 gleichzeitige Toasts: ältesten entfernen falls Limit erreicht
+  const existing = container.querySelectorAll('.toast');
+  if (existing.length >= 3) existing[0].remove();
 
   const toast = document.createElement('div');
   toast.className = `toast ${type !== 'default' ? `toast--${type}` : ''}`;
@@ -412,8 +416,20 @@ function showToast(message, type = 'default', duration = 3000) {
   toast.innerHTML = icon; // eslint-disable-line no-unsanitized/property -- static SVG only
   toast.appendChild(span);
 
+  if (typeof onUndo === 'function') {
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'toast__undo';
+    undoBtn.textContent = t('common.undo');
+    undoBtn.addEventListener('click', () => {
+      clearTimeout(dismissTimer);
+      toast.remove();
+      onUndo();
+    });
+    toast.appendChild(undoBtn);
+  }
+
   container.appendChild(toast);
-  setTimeout(() => {
+  const dismissTimer = setTimeout(() => {
     toast.classList.add('toast--out');
     toast.addEventListener('animationend', () => toast.remove(), { once: true });
   }, duration);

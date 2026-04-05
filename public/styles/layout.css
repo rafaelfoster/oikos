@@ -1366,6 +1366,25 @@
   height: 16px;
 }
 
+.toast__undo {
+  margin-left: auto;
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-2);
+  background: transparent;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.toast__undo:hover {
+  opacity: 1;
+}
+
 .toast--success { background-color: var(--color-success); color: var(--color-text-on-accent); }
 .toast--danger  { background-color: var(--color-danger);  color: var(--color-text-on-accent); }
 .toast--warning { background-color: var(--color-warning); color: var(--color-text-on-accent); }
@@ -1489,6 +1508,13 @@
 
 .btn--shaking {
   animation: btn-shake 0.3s ease;
+}
+
+/* prefers-reduced-motion: kein Schütteln, nur Farb-Feedback */
+.btn--error-static {
+  background-color: var(--color-danger) !important;
+  color: var(--color-text-on-accent) !important;
+  pointer-events: none;
 }
 
 .btn--success {

@@ -8,7 +8,7 @@ import { api } from '/api.js';
 import { stagger, vibrate } from '/utils/ux.js';
 import { t } from '/i18n.js';
 import { esc } from '/utils/html.js';
-import { promptModal } from '/components/modal.js';
+import { promptModal, confirmModal } from '/components/modal.js';
 
 // --------------------------------------------------------
 // Konstanten
@@ -677,35 +677,97 @@ function wireListContentEvents(container) {
       }
     }
 
-    // ---- Artikel löschen ----
+    // ---- Artikel löschen (mit Undo, 4s Fenster) ----
     if (action === 'delete-item') {
-      const id   = Number(target.dataset.id);
-      const item = state.items.find((i) => i.id === id);
-      try {
-        await api.delete(`/shopping/items/${id}`);
-        state.items = state.items.filter((i) => i.id !== id);
-        updateItemsList(container);
-        updateListCounter(state.activeListId, -1, item?.is_checked ? -1 : 0);
-        renderTabs(container);
-      } catch (err) {
-        window.oikos.showToast(err.message, 'danger');
-      }
+      const id        = Number(target.dataset.id);
+      const item      = state.items.find((i) => i.id === id);
+      const snapshot  = item ? { ...item } : null;
+
+      // Optimistisch entfernen
+      state.items = state.items.filter((i) => i.id !== id);
+      updateItemsList(container);
+      updateListCounter(state.activeListId, -1, snapshot?.is_checked ? -1 : 0);
+      renderTabs(container);
+
+      let undone = false;
+      window.oikos.showToast(
+        t('shopping.itemDeletedToast', { name: snapshot?.name ?? '' }),
+        'default',
+        4000,
+        () => {
+          // Undo: Artikel wiederherstellen
+          undone = true;
+          if (snapshot) {
+            state.items.push(snapshot);
+            state.items.sort((a, b) => a.id - b.id);
+            updateItemsList(container);
+            updateListCounter(state.activeListId, 1, snapshot.is_checked ? 1 : 0);
+            renderTabs(container);
+          }
+        },
+      );
+
+      // Verzögert löschen — nur wenn kein Undo
+      setTimeout(async () => {
+        if (undone) return;
+        try {
+          await api.delete(`/shopping/items/${id}`);
+        } catch (err) {
+          // Rollback: Artikel war bereits aus UI entfernt, Fehler anzeigen
+          if (snapshot) {
+            state.items.push(snapshot);
+            state.items.sort((a, b) => a.id - b.id);
+            updateItemsList(container);
+            updateListCounter(state.activeListId, 1, snapshot.is_checked ? 1 : 0);
+            renderTabs(container);
+          }
+          window.oikos.showToast(err.message, 'danger');
+        }
+      }, 4100);
     }
 
-    // ---- Abgehakte löschen ----
+    // ---- Abgehakte löschen (mit Undo, 4s Fenster) ----
     if (action === 'clear-checked') {
-      const count = state.items.filter((i) => i.is_checked).length;
+      const checked = state.items.filter((i) => i.is_checked);
+      const count   = checked.length;
       if (!count) return;
-      try {
-        await api.delete(`/shopping/${state.activeListId}/items/checked`);
-        state.items = state.items.filter((i) => !i.is_checked);
-        updateItemsList(container);
-        updateListCounter(state.activeListId, -count, -count);
-        renderTabs(container);
-        window.oikos.showToast(t('shopping.itemsRemovedToast', { count }));
-      } catch (err) {
-        window.oikos.showToast(err.message, 'danger');
-      }
+
+      const snapshot = checked.map((i) => ({ ...i }));
+
+      // Optimistisch entfernen
+      state.items = state.items.filter((i) => !i.is_checked);
+      updateItemsList(container);
+      updateListCounter(state.activeListId, -count, -count);
+      renderTabs(container);
+
+      let undone = false;
+      window.oikos.showToast(
+        t('shopping.itemsRemovedToast', { count }),
+        'default',
+        4000,
+        () => {
+          undone = true;
+          snapshot.forEach((item) => state.items.push(item));
+          state.items.sort((a, b) => a.id - b.id);
+          updateItemsList(container);
+          updateListCounter(state.activeListId, count, count);
+          renderTabs(container);
+        },
+      );
+
+      setTimeout(async () => {
+        if (undone) return;
+        try {
+          await api.delete(`/shopping/${state.activeListId}/items/checked`);
+        } catch (err) {
+          snapshot.forEach((item) => state.items.push(item));
+          state.items.sort((a, b) => a.id - b.id);
+          updateItemsList(container);
+          updateListCounter(state.activeListId, count, count);
+          renderTabs(container);
+          window.oikos.showToast(err.message, 'danger');
+        }
+      }, 4100);
     }
 
     // ---- Liste umbenennen ----
@@ -727,7 +789,7 @@ function wireListContentEvents(container) {
 
     // ---- Liste löschen ----
     if (action === 'delete-list') {
-      if (!confirm(t('shopping.deleteListConfirm', { name: state.activeList?.name }))) return;
+      if (!await confirmModal(t('shopping.deleteListConfirm', { name: state.activeList?.name }), { danger: true, confirmLabel: t('common.delete') })) return;
       try {
         await api.delete(`/shopping/${state.activeListId}`);
         state.lists = state.lists.filter((l) => l.id !== state.activeListId);

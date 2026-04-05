@@ -26,7 +26,9 @@
     "nameRequired": "Name ist erforderlich",
     "contentRequired": "Inhalt ist erforderlich",
     "all": "Alle",
-    "unknownError": "Unbekannter Fehler"
+    "unknownError": "Unbekannter Fehler",
+    "confirm": "Bestätigen",
+    "undo": "Rückgängig"
   },
 
   "nav": {
@@ -155,6 +157,7 @@
     "renameListPrompt": "Neuer Listen-Name:",
     "deleteListConfirm": "Liste \"{{name}}\" und alle Artikel löschen?",
     "deletedListToast": "Liste gelöscht.",
+    "itemDeletedToast": "\"{{name}}\" entfernt.",
     "itemsRemovedToast": "{{count}} Artikel entfernt.",
     "clearChecked": "Abgehakt löschen ({{count}})",
     "itemNamePlaceholder": "Artikel hinzufügen…",

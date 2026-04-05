@@ -5,7 +5,7 @@
  */
 
 import { api } from '/api.js';
-import { openModal as openSharedModal, closeModal } from '/components/modal.js';
+import { openModal as openSharedModal, closeModal, confirmModal } from '/components/modal.js';
 import { stagger, vibrate } from '/utils/ux.js';
 import { t } from '/i18n.js';
 import { esc } from '/utils/html.js';
@@ -304,7 +304,6 @@ function openContactModal({ mode, contact = null }) {
       panel.querySelector('#cm-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#cm-delete')?.addEventListener('click', async () => {
-        if (!confirm(t('contacts.deletePersonConfirm', { name: contact.name }))) return;
         closeModal();
         await deleteContact(contact.id);
       });
@@ -351,7 +350,7 @@ function openContactModal({ mode, contact = null }) {
 }
 
 async function deleteContact(id) {
-  if (!confirm(t('contacts.deleteConfirm'))) return;
+  if (!await confirmModal(t('contacts.deleteConfirm'), { danger: true, confirmLabel: t('common.delete') })) return;
   try {
     await api.delete(`/contacts/${id}`);
     state.contacts = state.contacts.filter((c) => c.id !== id);

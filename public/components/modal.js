@@ -423,6 +423,64 @@ export function selectModal(label, options) {
 }
 
 // --------------------------------------------------------
+// confirmModal - Ersatz für native confirm()
+// --------------------------------------------------------
+
+/**
+ * Zeigt ein Bestätigungs-Modal als Ersatz für native confirm().
+ * Gibt ein Promise zurück: true bei OK, false bei Cancel/Escape/Overlay-Klick.
+ *
+ * @param {string} message   - Frage / Meldung im Titel
+ * @param {Object} [opts]
+ * @param {string}  [opts.confirmLabel]   - Text des Bestätigungs-Buttons (default: t('common.confirm'))
+ * @param {boolean} [opts.danger=false]   - Roten Danger-Button statt Primary verwenden
+ * @returns {Promise<boolean>}
+ */
+export function confirmModal(message, { confirmLabel, danger = false } = {}) {
+  return new Promise((resolve) => {
+    let resolved = false;
+
+    function finish(value) {
+      if (resolved) return;
+      resolved = true;
+      closeModal();
+      resolve(value);
+    }
+
+    openModal({
+      title: message,
+      size: 'sm',
+      content: `
+        <div class="modal-actions">
+          <button type="button" class="btn btn--ghost" id="confirm-modal-cancel">${t('common.cancel')}</button>
+          <button type="button" class="btn ${danger ? 'btn--danger' : 'btn--primary'}" id="confirm-modal-ok">
+            ${confirmLabel ?? t('common.confirm')}
+          </button>
+        </div>`,
+      onSave(panel) {
+        panel.querySelector('#confirm-modal-ok')?.addEventListener('click', () => finish(true));
+        panel.querySelector('#confirm-modal-cancel')?.addEventListener('click', () => finish(false));
+
+        const escHandler = (e) => {
+          if (e.key === 'Escape') {
+            document.removeEventListener('keydown', escHandler);
+            finish(false);
+          }
+        };
+        document.addEventListener('keydown', escHandler);
+
+        const overlay = panel.closest('.modal-overlay');
+        if (overlay) {
+          overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) finish(false);
+          });
+        }
+      },
+    });
+  });
+}
+
+// --------------------------------------------------------
 // Inline Blur-Validierung
 // --------------------------------------------------------
 
@@ -447,18 +505,28 @@ export function wireBlurValidation(formContainer) {
 
 /**
  * Zeigt Erfolgs-Feedback auf einem Button (Checkmark für 700ms).
+ * Respektiert prefers-reduced-motion: zeigt nur Farb-Feedback ohne Icon-Wechsel.
  * @param {HTMLButtonElement} btn
  * @param {string} [originalLabel]
  */
 export function btnSuccess(btn, originalLabel) {
   const label = originalLabel ?? btn.textContent;
   btn.classList.add('btn--success');
-  btn.innerHTML = `
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-         stroke-width="2.5" aria-hidden="true">
-      <polyline points="20 6 9 17 4 12"/>
-    </svg>
-  `;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reducedMotion) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '16');
+    svg.setAttribute('height', '16');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2.5');
+    svg.setAttribute('aria-hidden', 'true');
+    const poly = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
+    poly.setAttribute('points', '20 6 9 17 4 12');
+    svg.appendChild(poly);
+    btn.replaceChildren(svg);
+  }
   setTimeout(() => {
     btn.classList.remove('btn--success');
     btn.textContent = label;
@@ -483,9 +551,15 @@ export function btnLoading(btn) {
 
 /**
  * Zeigt Fehler-Feedback auf einem Button (Shake-Animation).
+ * Respektiert prefers-reduced-motion: kein visuelles Schütteln, nur Farb-Feedback.
  * @param {HTMLButtonElement} btn
  */
 export function btnError(btn) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    btn.classList.add('btn--error-static');
+    setTimeout(() => btn.classList.remove('btn--error-static'), 700);
+    return;
+  }
   btn.classList.remove('btn--shaking');
   void btn.offsetWidth; // Reflow für Animation-Restart
   btn.classList.add('btn--shaking');

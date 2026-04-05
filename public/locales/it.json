@@ -26,7 +26,9 @@
     "nameRequired": "Il nome è obbligatorio",
     "contentRequired": "Il contenuto è obbligatorio",
     "all": "Tutto",
-    "unknownError": "Errore sconosciuto"
+    "unknownError": "Errore sconosciuto",
+    "confirm": "Conferma",
+    "undo": "Annulla"
   },
 
   "nav": {
@@ -155,6 +157,7 @@
     "renameListPrompt": "Nuovo nome lista:",
     "deleteListConfirm": "Eliminare la lista \"{{name}}\" e tutti gli articoli?",
     "deletedListToast": "Lista eliminata.",
+    "itemDeletedToast": "\"{{name}}\" rimosso.",
     "itemsRemovedToast": "{{count}} articoli rimossi.",
     "clearChecked": "Rimuovi selezionati ({{count}})",
     "itemNamePlaceholder": "Aggiungi articolo…",

@@ -5,7 +5,7 @@
  */
 
 import { api } from '/api.js';
-import { openModal as openSharedModal, closeModal as closeSharedModal, selectModal } from '/components/modal.js';
+import { openModal as openSharedModal, closeModal as closeSharedModal, selectModal, confirmModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
 import { t, formatDate } from '/i18n.js';
 import { esc } from '/utils/html.js';
@@ -681,7 +681,7 @@ async function saveModal(overlay) {
 // --------------------------------------------------------
 
 async function deleteMeal(mealId) {
-  if (!confirm(t('meals.deleteMeal') + '?')) return;
+  if (!await confirmModal(t('meals.deleteMeal') + '?', { danger: true, confirmLabel: t('common.delete') })) return;
   try {
     await api.delete(`/meals/${mealId}`);
     state.meals = state.meals.filter((m) => m.id !== mealId);

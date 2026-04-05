@@ -6,7 +6,7 @@
 
 import { api } from '/api.js';
 import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js';
-import { openModal as openSharedModal, closeModal } from '/components/modal.js';
+import { openModal as openSharedModal, closeModal, confirmModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
 import { t, formatTime } from '/i18n.js';
 import { esc } from '/utils/html.js';
@@ -701,7 +701,7 @@ function showEventPopup(ev, anchor) {
   });
 
   popup.querySelector('#popup-delete').addEventListener('click', async () => {
-    if (!confirm(t('calendar.deleteConfirm', { title: ev.title }))) return;
+    if (!await confirmModal(t('calendar.deleteConfirm', { title: ev.title }), { danger: true, confirmLabel: t('common.delete') })) return;
     popup.remove();
     await deleteEvent(ev.id);
   });
@@ -759,7 +759,7 @@ function openEventModal({ mode, event = null, date = null }) {
       panel.querySelector('#modal-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#modal-delete')?.addEventListener('click', async () => {
-        if (!confirm(t('calendar.deleteConfirm', { title: event.title }))) return;
+        if (!await confirmModal(t('calendar.deleteConfirm', { title: event.title }), { danger: true, confirmLabel: t('common.delete') })) return;
         closeModal();
         await deleteEvent(event.id);
       });
