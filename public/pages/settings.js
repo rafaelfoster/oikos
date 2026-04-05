@@ -9,6 +9,21 @@ import { t, formatDate, formatTime } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import '/components/oikos-locale-picker.js';
 
+const SUPPORTED_CURRENCIES = ['AUD', 'CAD', 'CHF', 'CZK', 'DKK', 'EUR', 'GBP', 'HUF', 'JPY', 'NOK', 'PLN', 'SEK', 'USD'];
+
+function buildCurrencyOptions(selected) {
+  const display = typeof Intl.DisplayNames !== 'undefined'
+    ? new Intl.DisplayNames([document.documentElement.lang || 'en'], { type: 'currency' })
+    : null;
+  return SUPPORTED_CURRENCIES
+    .map((code) => {
+      const label = display ? `${code} - ${display.of(code)}` : code;
+      const sel = code === selected ? ' selected' : '';
+      return `<option value="${code}"${sel}>${label}</option>`;
+    })
+    .join('');
+}
+
 /**
  * @param {HTMLElement} container
  * @param {{ user: object }} context
@@ -23,7 +38,7 @@ export async function render(container, { user }) {
   let users        = [];
   let googleStatus = { configured: false, connected: false, lastSync: null };
   let appleStatus  = { configured: false, lastSync: null };
-  let prefs        = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'] };
+  let prefs        = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR' };
 
   try {
     const [usersRes, gStatus, aStatus, prefsRes] = await Promise.allSettled([
@@ -111,6 +126,18 @@ export async function render(container, { user }) {
               <span>${t('meals.typeSnack')}</span>
             </label>
           </div>
+        </div>
+      </section>
+
+      <!-- Budget -->
+      <section class="settings-section">
+        <h2 class="settings-section__title">${t('settings.sectionBudget')}</h2>
+        <div class="settings-card">
+          <h3 class="settings-card__title">${t('settings.currencyLabel')}</h3>
+          <p class="form-hint" style="margin-bottom:var(--space-3)">${t('settings.currencyHint')}</p>
+          <select class="form-input" id="currency-select">
+            ${buildCurrencyOptions(prefs.currency)}
+          </select>
         </div>
       </section>
 
@@ -324,6 +351,19 @@ function bindEvents(container, user) {
       try {
         await api.put('/preferences', { visible_meal_types: checked });
         window.oikos?.showToast(t('settings.mealTypesSaved'), 'success');
+      } catch (err) {
+        window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+      }
+    });
+  }
+
+  // Währungs-Auswahl
+  const currencySelect = container.querySelector('#currency-select');
+  if (currencySelect) {
+    currencySelect.addEventListener('change', async () => {
+      try {
+        await api.put('/preferences', { currency: currencySelect.value });
+        window.oikos?.showToast(t('settings.currencySaved'), 'success');
       } catch (err) {
         window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
       }

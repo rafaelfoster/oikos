@@ -418,7 +418,7 @@
     "typeIncome": "Einnahme",
     "titleLabel": "Titel *",
     "titlePlaceholder": "z.B. REWE Einkauf",
-    "amountLabel": "Betrag (€) *",
+    "amountLabel": "Betrag *",
     "amountPlaceholder": "0,00",
     "categoryLabel": "Kategorie",
     "dateLabel": "Datum *",
@@ -518,7 +518,11 @@
     "mealTypesLabel": "Sichtbare Mahlzeiten",
     "mealTypesHint": "Nur ausgewaehlte Mahlzeit-Typen werden im Essensplan angezeigt.",
     "mealTypesSaved": "Essensplan-Einstellungen gespeichert.",
-    "mealTypesMinOne": "Mindestens ein Mahlzeit-Typ muss aktiv sein."
+    "mealTypesMinOne": "Mindestens ein Mahlzeit-Typ muss aktiv sein.",
+    "sectionBudget": "Budget",
+    "currencyLabel": "Währung",
+    "currencyHint": "Legt die Währung für den gesamten Budget-Bereich fest.",
+    "currencySaved": "Währung gespeichert."
   },
 
   "login": {

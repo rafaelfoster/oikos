@@ -418,7 +418,7 @@
     "typeIncome": "Income",
     "titleLabel": "Title *",
     "titlePlaceholder": "e.g. Supermarket",
-    "amountLabel": "Amount (€) *",
+    "amountLabel": "Amount *",
     "amountPlaceholder": "0.00",
     "categoryLabel": "Category",
     "dateLabel": "Date *",
@@ -518,7 +518,11 @@
     "mealTypesLabel": "Visible meals",
     "mealTypesHint": "Only selected meal types are shown in the meal planner.",
     "mealTypesSaved": "Meal plan settings saved.",
-    "mealTypesMinOne": "At least one meal type must be active."
+    "mealTypesMinOne": "At least one meal type must be active.",
+    "sectionBudget": "Budget",
+    "currencyLabel": "Currency",
+    "currencyHint": "Sets the currency used throughout the budget section.",
+    "currencySaved": "Currency saved."
   },
 
   "login": {

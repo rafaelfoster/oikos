@@ -15,6 +15,9 @@ const router = express.Router();
 const VALID_MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snack'];
 const DEFAULT_MEAL_TYPES = VALID_MEAL_TYPES.join(',');
 
+const VALID_CURRENCIES = ['EUR', 'USD', 'GBP', 'SEK', 'NOK', 'DKK', 'CHF', 'PLN', 'CZK', 'HUF', 'JPY', 'AUD', 'CAD'];
+const DEFAULT_CURRENCY = 'EUR';
+
 // --------------------------------------------------------
 // Hilfsfunktionen
 // --------------------------------------------------------
@@ -43,10 +46,12 @@ router.get('/', (req, res) => {
   try {
     const raw = cfgGet('visible_meal_types') ?? DEFAULT_MEAL_TYPES;
     const visibleMealTypes = raw.split(',').filter((t) => VALID_MEAL_TYPES.includes(t));
+    const currency = cfgGet('currency') ?? DEFAULT_CURRENCY;
 
     res.json({
       data: {
         visible_meal_types: visibleMealTypes,
+        currency,
       },
     });
   } catch (err) {
@@ -64,22 +69,34 @@ router.get('/', (req, res) => {
 
 router.put('/', (req, res) => {
   try {
-    const { visible_meal_types } = req.body;
+    const { visible_meal_types, currency } = req.body;
 
-    if (!Array.isArray(visible_meal_types)) {
-      return res.status(400).json({ error: 'visible_meal_types muss ein Array sein', code: 400 });
+    if (visible_meal_types !== undefined) {
+      if (!Array.isArray(visible_meal_types)) {
+        return res.status(400).json({ error: 'visible_meal_types muss ein Array sein', code: 400 });
+      }
+      const filtered = visible_meal_types.filter((t) => VALID_MEAL_TYPES.includes(t));
+      if (filtered.length === 0) {
+        return res.status(400).json({ error: 'Mindestens ein Mahlzeit-Typ muss aktiv sein', code: 400 });
+      }
+      cfgSet('visible_meal_types', filtered.join(','));
     }
 
-    const filtered = visible_meal_types.filter((t) => VALID_MEAL_TYPES.includes(t));
-    if (filtered.length === 0) {
-      return res.status(400).json({ error: 'Mindestens ein Mahlzeit-Typ muss aktiv sein', code: 400 });
+    if (currency !== undefined) {
+      if (!VALID_CURRENCIES.includes(currency)) {
+        return res.status(400).json({ error: `Ungültige Währung. Erlaubt: ${VALID_CURRENCIES.join(', ')}`, code: 400 });
+      }
+      cfgSet('currency', currency);
     }
 
-    cfgSet('visible_meal_types', filtered.join(','));
+    const rawMealTypes = cfgGet('visible_meal_types') ?? DEFAULT_MEAL_TYPES;
+    const savedMealTypes = rawMealTypes.split(',').filter((t) => VALID_MEAL_TYPES.includes(t));
+    const savedCurrency = cfgGet('currency') ?? DEFAULT_CURRENCY;
 
     res.json({
       data: {
-        visible_meal_types: filtered,
+        visible_meal_types: savedMealTypes,
+        currency: savedCurrency,
       },
     });
   } catch (err) {

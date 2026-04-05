@@ -418,7 +418,7 @@
     "typeIncome": "Entrata",
     "titleLabel": "Titolo *",
     "titlePlaceholder": "es. Supermercato",
-    "amountLabel": "Importo (€) *",
+    "amountLabel": "Importo *",
     "amountPlaceholder": "0,00",
     "categoryLabel": "Categoria",
     "dateLabel": "Data *",
@@ -518,7 +518,11 @@
     "mealTypesLabel": "Pasti visibili",
     "mealTypesHint": "Solo i tipi di pasto selezionati vengono mostrati nel piano pasti.",
     "mealTypesSaved": "Impostazioni del piano pasti salvate.",
-    "mealTypesMinOne": "Almeno un tipo di pasto deve essere attivo."
+    "mealTypesMinOne": "Almeno un tipo di pasto deve essere attivo.",
+    "sectionBudget": "Bilancio",
+    "currencyLabel": "Valuta",
+    "currencyHint": "Imposta la valuta utilizzata in tutta la sezione budget.",
+    "currencySaved": "Valuta salvata."
   },
 
   "login": {

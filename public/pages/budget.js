@@ -47,6 +47,7 @@ let state = {
   entries:     [],
   summary:     null,
   prevSummary: null, // Vormonat für Monatsvergleich
+  currency:    'EUR',
 };
 let _container = null;
 
@@ -55,7 +56,7 @@ let _container = null;
 // --------------------------------------------------------
 
 function formatAmount(n) {
-  return new Intl.NumberFormat('de-DE', { style: 'currency', currency: 'EUR' }).format(n);
+  return new Intl.NumberFormat(getLocale(), { style: 'currency', currency: state.currency }).format(n);
 }
 
 function formatMonthLabel(ym) {
@@ -103,6 +104,11 @@ export async function render(container, { user }) {
   _container = container;
   const today = new Date();
   state.month = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+
+  try {
+    const prefsRes = await api.get('/preferences');
+    state.currency = prefsRes.data?.currency ?? 'EUR';
+  } catch (_) { /* Fallback auf EUR */ }
 
   container.innerHTML = `
     <div class="budget-page">
