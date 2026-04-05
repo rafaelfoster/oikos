@@ -234,7 +234,7 @@ User management and app configuration. Logged-in users only.
 - **User management (admin):** create new users, edit/delete existing users, assign roles (admin/member)
 - **Calendar integration:** connect/disconnect Google Calendar OAuth, store Apple Calendar (CalDAV) credentials, configure sync interval
 - **Weather:** configure OpenWeatherMap location
-- **Language:** System (follows `navigator.language`), German, English - via `oikos-locale-picker` web component; switch without page reload
+- **Language:** System (follows `navigator.language`), German, English, Italian, Swedish - via `oikos-locale-picker` web component; switch without page reload
 - **App info:** version, license
 
 ### Budget (`/budget`)
@@ -327,7 +327,7 @@ All UI strings are managed via `public/i18n.js`. No hardcoded text in JS files o
 ### Architecture
 
 - **Module:** `public/i18n.js` - exports: `initI18n()`, `setLocale()`, `t(key, params?)`, `getLocale()`, `getSupportedLocales()`, `formatDate(date)`, `formatTime(date)`
-- **Locale files:** `public/locales/de.json` (reference), `public/locales/en.json` - structure: `{ "module.camelCaseKey": "Value" }`
+- **Locale files:** `public/locales/de.json` (reference), `public/locales/en.json`, `public/locales/it.json`, `public/locales/sv.json` - structure: `{ "module.camelCaseKey": "Value" }`
 - **Variables:** `{{variable}}` syntax in translation strings, e.g. `t('tasks.assignedTo', { name: 'Anna' })`
 - **Fallback chain:** active locale → German (`de`) → key itself
 - **Date format:** `Intl.DateTimeFormat` with current locale - use `formatDate()` and `formatTime()` from `i18n.js`
@@ -345,6 +345,7 @@ All UI strings are managed via `public/i18n.js`. No hardcoded text in JS files o
 | `de` | German | Reference locale (all keys defined here) |
 | `en` | English | Full translation |
 | `it` | Italian | Full translation (added v0.5.8) |
+| `sv` | Swedish | Full translation (added v0.11.3) |
 
 ### Adding a New Language
 
