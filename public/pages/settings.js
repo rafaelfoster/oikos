@@ -40,18 +40,21 @@ export async function render(container, { user }) {
   let googleStatus = { configured: false, connected: false, lastSync: null };
   let appleStatus  = { configured: false, lastSync: null };
   let prefs        = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR' };
+  let categories   = [];
 
   try {
-    const [usersRes, gStatus, aStatus, prefsRes] = await Promise.allSettled([
+    const [usersRes, gStatus, aStatus, prefsRes, catsRes] = await Promise.allSettled([
       user.role === 'admin' ? auth.getUsers() : Promise.resolve({ data: [] }),
       api.get('/calendar/google/status'),
       api.get('/calendar/apple/status'),
       api.get('/preferences'),
+      api.get('/shopping/categories'),
     ]);
     if (usersRes.status === 'fulfilled')  users        = usersRes.value.data  ?? [];
     if (gStatus.status  === 'fulfilled')  googleStatus = gStatus.value;
     if (aStatus.status  === 'fulfilled')  appleStatus  = aStatus.value;
     if (prefsRes.status === 'fulfilled')  prefs        = prefsRes.value.data  ?? prefs;
+    if (catsRes.status  === 'fulfilled')  categories   = catsRes.value.data   ?? [];
   } catch (_) { /* non-critical */ }
 
   const googleStatusText = googleStatus.connected
@@ -139,6 +142,24 @@ export async function render(container, { user }) {
           <select class="form-input" id="currency-select">
             ${buildCurrencyOptions(prefs.currency)}
           </select>
+        </div>
+      </section>
+
+      <!-- Einkauf: Kategorien -->
+      <section class="settings-section">
+        <h2 class="settings-section__title">${t('settings.sectionShopping')}</h2>
+        <div class="settings-card">
+          <h3 class="settings-card__title">${t('settings.shoppingCategoriesLabel')}</h3>
+          <p class="form-hint" style="margin-bottom:var(--space-3)">${t('settings.shoppingCategoriesHint')}</p>
+          <ul class="cat-list" id="cat-list">
+            ${categories.map((c, i) => categoryRowHtml(c, i === 0, i === categories.length - 1)).join('')}
+          </ul>
+          <form class="cat-add-form" id="cat-add-form" novalidate autocomplete="off">
+            <input class="form-input" type="text" id="cat-add-input"
+                   placeholder="${t('settings.shoppingCategoryPlaceholder')}"
+                   maxlength="60" />
+            <button type="submit" class="btn btn--primary">${t('common.add')}</button>
+          </form>
         </div>
       </section>
 
@@ -317,14 +338,15 @@ export async function render(container, { user }) {
     });
   }
 
-  bindEvents(container, user);
+  bindEvents(container, user, categories);
 }
 
 // --------------------------------------------------------
 // Event-Binding
 // --------------------------------------------------------
 
-function bindEvents(container, user) {
+function bindEvents(container, user, categories) {
+  bindCategoryEvents(container);
   // Theme-Toggle
   const themeToggle = container.querySelector('#theme-toggle');
   if (themeToggle) {
@@ -584,6 +606,146 @@ function bindDeleteButtons(container, user) {
   });
 }
 
+
+// --------------------------------------------------------
+// Kategorie-Verwaltung
+// --------------------------------------------------------
+
+function categoryRowHtml(cat, isFirst, isLast) {
+  return `
+    <li class="cat-row" data-cat-id="${cat.id}">
+      <i data-lucide="${esc(cat.icon)}" class="cat-row__icon" aria-hidden="true"></i>
+      <span class="cat-row__name" data-action="rename-cat" title="${t('settings.shoppingCategoryRenameHint')}">${esc(cat.name)}</span>
+      <div class="cat-row__actions">
+        <button class="btn btn--icon btn--ghost" data-action="move-cat-up" data-id="${cat.id}"
+                aria-label="${t('settings.shoppingCategoryMoveUp')}"
+                ${isFirst ? 'disabled' : ''}>
+          <i data-lucide="chevron-up" style="width:16px;height:16px" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn--icon btn--ghost" data-action="move-cat-down" data-id="${cat.id}"
+                aria-label="${t('settings.shoppingCategoryMoveDown')}"
+                ${isLast ? 'disabled' : ''}>
+          <i data-lucide="chevron-down" style="width:16px;height:16px" aria-hidden="true"></i>
+        </button>
+        <button class="btn btn--icon btn--danger-outline" data-action="delete-cat" data-id="${cat.id}"
+                aria-label="${t('settings.shoppingCategoryDelete')}">
+          <i data-lucide="trash-2" style="width:14px;height:14px" aria-hidden="true"></i>
+        </button>
+      </div>
+    </li>`;
+}
+
+function renderCatList(container, cats) {
+  const list = container.querySelector('#cat-list');
+  if (!list) return;
+  // DOM-API statt innerHTML (Security-Constraint des Projekts)
+  list.replaceChildren();
+  cats.forEach((c, i) => {
+    const tmp = document.createElement('template');
+    tmp.innerHTML = categoryRowHtml(c, i === 0, i === cats.length - 1);
+    list.appendChild(tmp.content.firstElementChild);
+  });
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function bindCategoryEvents(container) {
+  let cats = [];
+
+  api.get('/shopping/categories').then((res) => {
+    cats = res.data ?? [];
+    renderCatList(container, cats);
+  }).catch(() => {});
+
+  const addForm = container.querySelector('#cat-add-form');
+  if (addForm) {
+    addForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = container.querySelector('#cat-add-input');
+      const name  = input.value.trim();
+      if (!name) return;
+      try {
+        const res = await api.post('/shopping/categories', { name });
+        cats.push(res.data);
+        renderCatList(container, cats);
+        input.value = '';
+        input.focus();
+        window.oikos?.showToast(t('settings.shoppingCategoryAdded'), 'success');
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    });
+  }
+
+  const catList = container.querySelector('#cat-list');
+  if (!catList) return;
+
+  catList.addEventListener('click', async (e) => {
+    const target = e.target.closest('[data-action]');
+    if (!target) return;
+    const action = target.dataset.action;
+    const rowEl  = target.closest('[data-cat-id]');
+    const id     = rowEl ? Number(rowEl.dataset.catId) : Number(target.dataset.id);
+
+    if (action === 'rename-cat') {
+      const cat = cats.find((c) => c.id === id);
+      if (!cat) return;
+      const { promptModal } = await import('/components/modal.js');
+      const newName = await promptModal(t('settings.shoppingCategoryRenamePrompt'), cat.name);
+      if (!newName || newName === cat.name) return;
+      try {
+        const res = await api.put(`/shopping/categories/${id}`, { name: newName });
+        const idx = cats.findIndex((c) => c.id === id);
+        if (idx >= 0) cats[idx] = res.data;
+        renderCatList(container, cats);
+        window.oikos?.showToast(t('settings.shoppingCategoryRenamed'), 'success');
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    }
+
+    if (action === 'move-cat-up') {
+      const idx = cats.findIndex((c) => c.id === id);
+      if (idx <= 0) return;
+      [cats[idx - 1], cats[idx]] = [cats[idx], cats[idx - 1]];
+      renderCatList(container, cats);
+      try {
+        await api.patch('/shopping/categories/reorder', { order: cats.map((c) => c.id) });
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    }
+
+    if (action === 'move-cat-down') {
+      const idx = cats.findIndex((c) => c.id === id);
+      if (idx < 0 || idx >= cats.length - 1) return;
+      [cats[idx], cats[idx + 1]] = [cats[idx + 1], cats[idx]];
+      renderCatList(container, cats);
+      try {
+        await api.patch('/shopping/categories/reorder', { order: cats.map((c) => c.id) });
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    }
+
+    if (action === 'delete-cat') {
+      const cat = cats.find((c) => c.id === id);
+      if (!cat) return;
+      const { confirmModal: confirmDel } = await import('/components/modal.js');
+      if (!await confirmDel(
+        t('settings.shoppingCategoryDeleteConfirm', { name: cat.name }),
+        { danger: true, confirmLabel: t('common.delete') }
+      )) return;
+      try {
+        await api.delete(`/shopping/categories/${id}`);
+        cats = cats.filter((c) => c.id !== id);
+        renderCatList(container, cats);
+        window.oikos?.showToast(t('settings.shoppingCategoryDeleted'), 'default');
+      } catch (err) {
+        window.oikos?.showToast(err.message, 'danger');
+      }
+    }
+  });
+}
 
 function memberHtml(u) {
   return `

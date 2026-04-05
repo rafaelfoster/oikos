@@ -19,34 +19,34 @@ const SWIPE_THRESHOLD = 80;   // px - Mindestweg für Aktion
 const SWIPE_MAX_VERT  = 12;   // px - vertikaler Toleranzbereich
 const SWIPE_LOCK_VERT = 30;   // px - ab diesem Weg gilt es als Scroll
 
-const ITEM_CATEGORIES = [
-  'Obst & Gemüse', 'Backwaren', 'Milchprodukte', 'Fleisch & Fisch',
-  'Tiefkühl', 'Getränke', 'Haushalt', 'Drogerie', 'Sonstiges',
-];
-
-const CATEGORY_LABELS = () => ({
-  'Obst & Gemüse':   t('shopping.catFruitVeg'),
-  'Backwaren':       t('shopping.catBakery'),
-  'Milchprodukte':   t('shopping.catDairy'),
-  'Fleisch & Fisch': t('shopping.catMeatFish'),
-  'Tiefkühl':        t('shopping.catFrozen'),
-  'Getränke':        t('shopping.catDrinks'),
-  'Haushalt':        t('shopping.catHousehold'),
-  'Drogerie':        t('shopping.catDrugstore'),
-  'Sonstiges':       t('shopping.catMisc'),
-});
-
-const CATEGORY_ICONS = {
-  'Obst & Gemüse':  'apple',
-  'Backwaren':      'wheat',
-  'Milchprodukte':  'milk',
-  'Fleisch & Fisch':'beef',
-  'Tiefkühl':       'snowflake',
-  'Getränke':       'cup-soda',
-  'Haushalt':       'spray-can',
-  'Drogerie':       'pill',
-  'Sonstiges':      'shopping-basket',
+// Übersetzungs-Map für die Standard-Kategorien (DB-Name → i18n-Key)
+const DEFAULT_CATEGORY_I18N = {
+  'Obst & Gemüse':   'shopping.catFruitVeg',
+  'Backwaren':       'shopping.catBakery',
+  'Milchprodukte':   'shopping.catDairy',
+  'Fleisch & Fisch': 'shopping.catMeatFish',
+  'Tiefkühl':        'shopping.catFrozen',
+  'Getränke':        'shopping.catDrinks',
+  'Haushalt':        'shopping.catHousehold',
+  'Drogerie':        'shopping.catDrugstore',
+  'Sonstiges':       'shopping.catMisc',
 };
+
+/** Übersetzten Label für eine Kategorie zurückgeben. */
+function catLabel(name) {
+  const key = DEFAULT_CATEGORY_I18N[name];
+  return key ? t(key) : name;
+}
+
+/** Icon für eine Kategorie (aus state.categories, Fallback 'tag'). */
+function catIcon(name) {
+  return state.categories.find((c) => c.name === name)?.icon ?? 'tag';
+}
+
+/** Kategorienamen in DB-Reihenfolge. */
+function categoryNames() {
+  return state.categories.map((c) => c.name);
+}
 
 // --------------------------------------------------------
 // State
@@ -57,6 +57,7 @@ const state = {
   activeListId:  null,
   items:         [],
   activeList:    null,
+  categories:    [],   // { id, name, icon, sort_order }[]
 };
 
 // --------------------------------------------------------
@@ -66,13 +67,14 @@ const state = {
 function groupItemsByCategory(items) {
   const grouped = {};
   for (const item of items) {
-    const cat = item.category || 'Sonstiges';
+    const cat = item.category || (state.categories[0]?.name ?? 'Sonstiges');
     (grouped[cat] = grouped[cat] || []).push(item);
   }
-  // In Supermarkt-Gang-Reihenfolge zurückgeben
-  return ITEM_CATEGORIES
-    .filter((c) => grouped[c])
-    .map((c) => [c, grouped[c]]);
+  // In DB-Reihenfolge zurückgeben; unbekannte Kategorien ans Ende
+  const names   = categoryNames();
+  const known   = names.filter((c) => grouped[c]).map((c) => [c, grouped[c]]);
+  const unknown = Object.keys(grouped).filter((c) => !names.includes(c)).map((c) => [c, grouped[c]]);
+  return [...known, ...unknown];
 }
 
 // --------------------------------------------------------
@@ -155,7 +157,7 @@ function renderListContent(container) {
           <div class="autocomplete-dropdown" id="autocomplete-dropdown" hidden></div>
         </div>
         <select class="quick-add__cat" id="item-cat-select" aria-label="${t('shopping.categoryLabel')}">
-          ${(() => { const labels = CATEGORY_LABELS(); return ITEM_CATEGORIES.map((c) => `<option value="${c}">${labels[c] || c}</option>`).join(''); })()}
+          ${state.categories.map((c) => `<option value="${esc(c.name)}">${esc(catLabel(c.name))}</option>`).join('')}
         </select>
         <button class="quick-add__btn" type="submit" aria-label="${t('shopping.addItemLabel')}">
           <i data-lucide="plus" style="width:20px;height:20px" aria-hidden="true"></i>
@@ -189,13 +191,12 @@ function renderItems() {
       </div>`;
   }
 
-  const catLabels = CATEGORY_LABELS();
   const groups = groupItemsByCategory(state.items);
   return groups.map(([cat, items]) => `
     <div class="item-category">
       <div class="item-category__header">
-        <i data-lucide="${CATEGORY_ICONS[cat] ?? 'tag'}" class="item-category__icon" aria-hidden="true"></i>
-        ${catLabels[cat] || cat}
+        <i data-lucide="${catIcon(cat)}" class="item-category__icon" aria-hidden="true"></i>
+        ${esc(catLabel(cat))}
       </div>
       ${items.map(renderItem).join('')}
     </div>`).join('');
@@ -592,10 +593,21 @@ async function loadLists() {
   }
 }
 
+async function loadCategories() {
+  try {
+    const data       = await api.get('/shopping/categories');
+    state.categories = data.data ?? [];
+  } catch {
+    state.categories = [];
+  }
+}
+
 async function loadItems(listId) {
   const data       = await api.get(`/shopping/${listId}/items`);
   state.items      = data.data ?? [];
   state.activeList = data.list ?? null;
+  // Kategorien aus API-Antwort übernehmen wenn vorhanden (immer aktuell)
+  if (data.categories?.length) state.categories = data.categories;
 }
 
 async function switchList(listId, container) {
@@ -835,7 +847,7 @@ export async function render(container, { user }) {
   `;
 
   try {
-    await loadLists();
+    await Promise.all([loadCategories(), loadLists()]);
     if (state.lists.length) {
       state.activeListId = state.lists[0].id;
       await loadItems(state.activeListId);

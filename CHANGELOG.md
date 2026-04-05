@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-04-05
+
+### Added
+- Shopping: custom categories - add, rename, delete and reorder shopping list categories in Settings → Shopping (#26)
+- Shopping: categories are now stored in the database (`shopping_categories` table, migration v5) and fully customizable per household
+- Shopping: category order in the shopping list reflects the custom sort order from Settings
+- Shopping: items belonging to a deleted category are automatically moved to the next available category
+
 ## [0.11.9] - 2026-04-05
 
 ### Changed

@@ -362,3 +362,70 @@
 .settings-logout-btn {
   width: 100%;
 }
+
+/* --------------------------------------------------------
+   Einkaufskategorien
+   -------------------------------------------------------- */
+
+.cat-list {
+  list-style: none;
+  margin: 0 0 var(--space-3);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cat-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: background var(--duration-fast);
+}
+
+.cat-row:hover {
+  background: var(--color-surface-raised);
+}
+
+.cat-row__icon {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+}
+
+.cat-row__name {
+  flex: 1;
+  min-width: 0;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cat-row__name:hover {
+  color: var(--color-accent);
+  text-decoration: underline;
+}
+
+.cat-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex-shrink: 0;
+}
+
+.cat-add-form {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.cat-add-form .form-input {
+  flex: 1;
+}
