@@ -286,14 +286,14 @@ function renderModalContent({ task = null, users = [] } = {}) {
                   style="resize:vertical">${esc(task?.description)}</textarea>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
-        <div class="form-group" style="margin-bottom:0">
+      <div class="modal-grid modal-grid--2">
+        <div class="form-group">
           <label class="label" for="task-priority">${t('tasks.priorityLabel')}</label>
           <select class="input" id="task-priority" name="priority" style="min-height:44px">
             ${priorityOptions}
           </select>
         </div>
-        <div class="form-group" style="margin-bottom:0">
+        <div class="form-group">
           <label class="label" for="task-category">${t('tasks.categoryLabel')}</label>
           <select class="input" id="task-category" name="category" style="min-height:44px">
             ${categoryOptions}
@@ -301,13 +301,13 @@ function renderModalContent({ task = null, users = [] } = {}) {
         </div>
       </div>
 
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3);margin-top:var(--space-4)">
-        <div class="form-group" style="margin-bottom:0">
+      <div class="modal-grid modal-grid--2" style="margin-top:var(--space-4)">
+        <div class="form-group">
           <label class="label" for="task-due-date">${t('tasks.dueDateLabel')}</label>
           <input class="input" type="date" id="task-due-date" name="due_date"
                  value="${task?.due_date ?? ''}">
         </div>
-        <div class="form-group" style="margin-bottom:0">
+        <div class="form-group">
           <label class="label" for="task-due-time">${t('tasks.dueTimeLabel')}</label>
           <input class="input" type="time" id="task-due-time" name="due_time"
                  value="${task?.due_time ?? ''}">

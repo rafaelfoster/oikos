@@ -803,7 +803,7 @@ function buildEventModalContent({ mode, event, date }) {
     </div>
 
     <div id="time-fields">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+      <div class="modal-grid modal-grid--2">
         <div class="form-group">
           <label class="form-label" for="modal-start-date">${t('calendar.startDateLabel')}</label>
           <input type="date" class="form-input" id="modal-start-date" value="${startDate}">
@@ -813,7 +813,7 @@ function buildEventModalContent({ mode, event, date }) {
           <input type="time" class="form-input" id="modal-start-time" value="${startTime}">
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+      <div class="modal-grid modal-grid--2">
         <div class="form-group">
           <label class="form-label" for="modal-end-date">${t('calendar.endDateLabel')}</label>
           <input type="date" class="form-input" id="modal-end-date" value="${endDate}">
@@ -826,7 +826,7 @@ function buildEventModalContent({ mode, event, date }) {
     </div>
 
     <div id="allday-fields" style="display:none;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
+      <div class="modal-grid modal-grid--2">
         <div class="form-group">
           <label class="form-label" for="modal-allday-start">${t('calendar.fromLabel')}</label>
           <input type="date" class="form-input" id="modal-allday-start" value="${startDate}">

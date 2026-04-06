@@ -642,6 +642,8 @@
   width: 100%;
   max-height: 90dvh;
   overflow-y: auto;
+  border: 1px solid var(--color-border-subtle);
+  box-shadow: var(--shadow-lg);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   animation: modal-slide-up 0.25s var(--ease-out) forwards;
   /* Cursor vom Overlay zurücksetzen */
@@ -673,6 +675,7 @@
 .modal-panel__title {
   font-size: var(--text-md);
   font-weight: var(--font-weight-semibold);
+  letter-spacing: -0.01em;
 }
 
 .modal-panel__close {
@@ -697,6 +700,43 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+}
+
+/* Modal-Content-Grids (z. B. 2 Spalten in Formularen) */
+.modal-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+  align-items: stretch;
+}
+
+.modal-grid--2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modal-grid > * {
+  min-width: 0;
+}
+
+.modal-grid > .form-group {
+  margin-bottom: 0;
+}
+
+/* Gleich hohe Karten/Boxen in Modal-Grids */
+.modal-panel__body .grid {
+  align-items: stretch;
+}
+
+.modal-panel__body .grid > .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 639px) {
+  .modal-grid--2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 .form-stack {

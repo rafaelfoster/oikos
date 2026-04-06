@@ -560,12 +560,12 @@ function buildModalContent({ mode, date, mealType, meal }) {
   const hasIngOpen = isEdit && meal.ingredients?.some((i) => !i.on_shopping_list);
 
   return `
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--space-3)">
-      <div class="form-group" style="margin-bottom:0">
+    <div class="modal-grid modal-grid--2">
+      <div class="form-group">
         <label class="form-label" for="modal-date">${t('meals.dateLabel')}</label>
         <input type="date" class="form-input" id="modal-date" value="${date}">
       </div>
-      <div class="form-group" style="margin-bottom:0">
+      <div class="form-group">
         <label class="form-label" for="modal-type">${t('meals.mealTypeLabel')}</label>
         <select class="form-input" id="modal-type">${typeOpts}</select>
       </div>
