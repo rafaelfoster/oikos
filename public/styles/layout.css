@@ -675,7 +675,6 @@
 .modal-panel__title {
   font-size: var(--text-md);
   font-weight: var(--font-weight-semibold);
-  letter-spacing: -0.01em;
 }
 
 .modal-panel__close {
