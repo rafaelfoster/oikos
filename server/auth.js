@@ -104,7 +104,10 @@ const sessionMiddleware = session({
     httpOnly: true,
     // secure=true by default; set SESSION_SECURE=false in .env to allow HTTP (local dev without reverse proxy)
     secure: process.env.SESSION_SECURE !== 'false',
-    sameSite: 'strict',
+    // lax (not strict): Safari ITP blocks strict cookies on certain navigations
+    // (e.g. reverse proxy, direct URL entry), causing 401 on login. Lax is safe
+    // because CSRF is protected by the double-submit token and HTTPS secure flag.
+    sameSite: 'lax',
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 Tage in ms
   },
 });
@@ -193,7 +196,7 @@ router.post('/login', loginLimiter, async (req, res) => {
       // CSRF-Token als Cookie setzen (nicht httpOnly → lesbar für JS)
       res.cookie('csrf-token', req.session.csrfToken, {
         httpOnly: false,
-        sameSite: 'strict',
+        sameSite: 'lax',
         secure: process.env.SESSION_SECURE !== 'false',
         maxAge: 1000 * 60 * 60 * 24 * 7,
       });

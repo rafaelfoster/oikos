@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.2] - 2026-04-13
+
+### Fixed
+- Auth: session cookie and CSRF cookie changed from `SameSite=Strict` to `SameSite=Lax` - Safari's ITP (Intelligent Tracking Prevention) was blocking `Strict` cookies on certain navigations (direct URL entry, reverse proxy), causing a 401 on login while other browsers worked fine (#46)
+
 ## [0.17.1] - 2026-04-13
 
 ### Fixed

@@ -33,10 +33,10 @@ function csrfMiddleware(req, res, next) {
     req.session.csrfToken = generateToken();
   }
 
-  // Cookie bei jedem Request erneuern (SameSite=Strict, nicht httpOnly → JS-lesbar)
+  // Cookie bei jedem Request erneuern (SameSite=Lax, nicht httpOnly → JS-lesbar)
   res.cookie('csrf-token', req.session.csrfToken, {
     httpOnly: false,
-    sameSite: 'strict',
+    sameSite: 'lax',
     secure: process.env.SESSION_SECURE !== 'false',
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 Tage (gleich wie Session)
   });
