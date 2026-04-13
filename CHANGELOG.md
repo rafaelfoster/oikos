@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.17.1] - 2026-04-13
+
+### Fixed
+- Service worker: `glass.css` was missing from the shell cache list - on already-installed PWA instances the file was never loaded and no glass effects were visible; cache bumped to `shell-v29`
+- CSS load order: `.widget` glass shadow and border were overridden by `dashboard.css` (module CSS loads after `glass.css`); glass styles moved directly into `dashboard.css`
+- CSS load order: `.filter-chip--active` glass state was overridden by `tasks.css`; `@supports backdrop-filter` block moved into `tasks.css`
+- CSS load order: `.priority-badge` border-radius was reset to `var(--radius-xs)` by `tasks.css`, losing the capsule shape; corrected to `var(--radius-glass-chip)` in `tasks.css`
+- `glass.css`: removed dead `.sticky-header` rule (class is not used anywhere in the HTML)
+
 ## [0.17.0] - 2026-04-13
 
 ### Added
