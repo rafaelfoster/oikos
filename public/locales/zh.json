@@ -563,7 +563,8 @@
     "dismissLabel": "关闭"
   },
   "modal": {
-    "closeLabel": "关闭"
+    "closeLabel": "关闭",
+    "overlayLabel": "模态对话框背景"
   },
   "rrule": {
     "freqNone": "不重复",

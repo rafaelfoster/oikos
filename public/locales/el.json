@@ -563,7 +563,8 @@
     "dismissLabel": "Κλείσιμο"
   },
   "modal": {
-    "closeLabel": "Κλείσιμο"
+    "closeLabel": "Κλείσιμο",
+    "overlayLabel": "Φόντο αναδυόμενου παραθύρου"
   },
   "rrule": {
     "freqNone": "Χωρίς επανάληψη",

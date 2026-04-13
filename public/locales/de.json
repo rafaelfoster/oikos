@@ -563,7 +563,8 @@
     "dismissLabel": "Schließen"
   },
   "modal": {
-    "closeLabel": "Schließen"
+    "closeLabel": "Schließen",
+    "overlayLabel": "Modaler Dialog-Hintergrund"
   },
   "rrule": {
     "freqNone": "Keine Wiederholung",

@@ -563,7 +563,8 @@
     "dismissLabel": "Stäng"
   },
   "modal": {
-    "closeLabel": "Stäng"
+    "closeLabel": "Stäng",
+    "overlayLabel": "Bakgrund för modal dialog"
   },
   "rrule": {
     "freqNone": "Ingen upprepning",

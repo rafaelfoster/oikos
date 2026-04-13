@@ -563,7 +563,8 @@
     "dismissLabel": "Cerrar"
   },
   "modal": {
-    "closeLabel": "Cerrar"
+    "closeLabel": "Cerrar",
+    "overlayLabel": "Fondo del cuadro de diálogo modal"
   },
   "rrule": {
     "freqNone": "Sin repetición",

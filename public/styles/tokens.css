@@ -52,7 +52,7 @@
   --color-border-subtle:  var(--neutral-150);
   --color-text-primary:   var(--neutral-900);
   --color-text-secondary: var(--neutral-600);  /* WCAG AA: ~5.0:1 auf weiß */
-  --color-text-tertiary:  #737370;
+  --color-text-tertiary:  #6B6B68;  /* WCAG AA: ~4.52:1 auf --color-bg */
   --color-text-disabled:  var(--neutral-300);
   --color-text-on-accent: #ffffff;  /* Weißer Text auf farbigen Hintergründen (Buttons, Badges, FAB) */
 
@@ -63,6 +63,7 @@
   --color-accent:           #2563EB;
   --color-accent-hover:     #1D4ED8;
   --color-accent-active:    #1E40AF;
+  --color-accent-deep:      #1E5CB3;       /* Tiefer Akzent für Gradienten, Wetter-Widget */
   --color-accent-light:     #EFF6FF;
   --color-accent-subtle:    #DBEAFE;
   --color-btn-primary:      #2554C7;       /* WCAG AA: 6.62:1 auf weiß (weißer Text) */
@@ -80,8 +81,8 @@
   --color-danger:        #DC2626;
   --color-danger-hover:  #B91C1C;
   --color-danger-light:  #FFE2E0;
-  --color-info:          #54AEFF;
-  --color-info-hover:    #3A94E5;
+  --color-info:          #0969DA;  /* WCAG AA: ~4.6:1 auf weiß */
+  --color-info-hover:    #0550AE;
   --color-info-light:    #DDF4FF;
 
   /* --------------------------------------------------------
@@ -254,6 +255,59 @@
   --z-nav:     100;
   --z-modal:   200;
   --z-toast:   300;
+
+  /* --------------------------------------------------------
+   * 16. Glass-Design-System (Liquid Glass Layer)
+   *     Additive Tokens – bestehende Tokens werden nicht verändert.
+   *     Aktivierung per @supports (backdrop-filter) in Komponenten.
+   *
+   *     Aufbau:
+   *       a) Glass-Hintergründe
+   *       b) Blur-Stufen
+   *       c) Opazitäten
+   *       d) Highlights / Specular
+   *       e) Glass-Schatten
+   *       f) Glass-Radien
+   *       g) Glass-Übergänge
+   * -------------------------------------------------------- */
+
+  /* a) Glass-Hintergründe */
+  --glass-bg:          rgba(255, 255, 255, 0.72);
+  --glass-bg-hover:    rgba(255, 255, 255, 0.82);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.88);
+  --glass-border:      rgba(255, 255, 255, 0.60);
+  --glass-border-subtle: rgba(255, 255, 255, 0.35);
+
+  /* b) Blur-Stufen */
+  --blur-xs:  blur(4px);
+  --blur-sm:  blur(8px);
+  --blur-md:  blur(16px);
+  --blur-lg:  blur(28px);
+  --blur-xl:  blur(48px);
+
+  /* c) Opazitäten */
+  --opacity-glass-subtle:   0.65;
+  --opacity-glass-base:     0.80;
+  --opacity-glass-elevated: 0.92;
+
+  /* d) Highlights / Specular */
+  --glass-highlight:        rgba(255, 255, 255, 0.70);
+  --glass-highlight-subtle: rgba(255, 255, 255, 0.35);
+
+  /* e) Glass-Schatten */
+  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.55);
+  --glass-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.10), 0 0 0 1px rgba(255, 255, 255, 0.50);
+  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.14), 0 0 0 1px rgba(255, 255, 255, 0.45);
+
+  /* f) Glass-Radien */
+  --radius-glass-card:   20px;
+  --radius-glass-inner:  14px;
+  --radius-glass-chip:   var(--radius-full);
+  --radius-glass-button: var(--radius-full);
+
+  /* g) Glass-Übergänge */
+  --ease-glass:       cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-glass: 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* ================================================================
@@ -346,6 +400,18 @@
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
     --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+    /* Glass - Dark Mode */
+    --glass-bg:          rgba(40, 40, 38, 0.75);
+    --glass-bg-hover:    rgba(50, 50, 48, 0.82);
+    --glass-bg-elevated: rgba(58, 58, 55, 0.90);
+    --glass-border:      rgba(255, 255, 255, 0.12);
+    --glass-border-subtle: rgba(255, 255, 255, 0.07);
+    --glass-highlight:        rgba(255, 255, 255, 0.10);
+    --glass-highlight-subtle: rgba(255, 255, 255, 0.06);
+    --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 0 1px rgba(255, 255, 255, 0.08);
+    --glass-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.40), 0 0 0 1px rgba(255, 255, 255, 0.07);
+    --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
   }
 }
 
@@ -425,4 +491,61 @@
   --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
   --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+
+  /* Glass - Dark Mode */
+  --glass-bg:          rgba(40, 40, 38, 0.75);
+  --glass-bg-hover:    rgba(50, 50, 48, 0.82);
+  --glass-bg-elevated: rgba(58, 58, 55, 0.90);
+  --glass-border:      rgba(255, 255, 255, 0.12);
+  --glass-border-subtle: rgba(255, 255, 255, 0.07);
+  --glass-highlight:        rgba(255, 255, 255, 0.10);
+  --glass-highlight-subtle: rgba(255, 255, 255, 0.06);
+  --glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.30), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --glass-shadow-md: 0 4px 20px rgba(0, 0, 0, 0.40), 0 0 0 1px rgba(255, 255, 255, 0.07);
+  --glass-shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* ================================================================
+ * Accessibility: prefers-reduced-transparency
+ * Glass-Effekte abschalten - opake Fallbacks.
+ * ================================================================ */
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-bg:          var(--color-surface);
+    --glass-bg-hover:    var(--color-surface-2);
+    --glass-bg-elevated: var(--color-surface);
+    --glass-border:      var(--color-border);
+    --glass-border-subtle: var(--color-border-subtle);
+    --glass-highlight:        transparent;
+    --glass-highlight-subtle: transparent;
+    --blur-xs:  blur(0px);
+    --blur-sm:  blur(0px);
+    --blur-md:  blur(0px);
+    --blur-lg:  blur(0px);
+    --blur-xl:  blur(0px);
+    --opacity-glass-subtle:   1;
+    --opacity-glass-base:     1;
+    --opacity-glass-elevated: 1;
+  }
+}
+
+/* ================================================================
+ * Accessibility: prefers-contrast: more
+ * Kontrast erhöhen, Blur reduzieren.
+ * ================================================================ */
+@media (prefers-contrast: more) {
+  :root {
+    --glass-bg:          rgba(255, 255, 255, 0.97);
+    --glass-bg-hover:    #ffffff;
+    --glass-bg-elevated: #ffffff;
+    --glass-border:      var(--color-text-primary);
+    --glass-border-subtle: var(--color-text-secondary);
+    --glass-highlight:        transparent;
+    --glass-highlight-subtle: transparent;
+    --blur-xs:  blur(0px);
+    --blur-sm:  blur(0px);
+    --blur-md:  blur(0px);
+    --blur-lg:  blur(0px);
+    --blur-xl:  blur(0px);
+  }
 }

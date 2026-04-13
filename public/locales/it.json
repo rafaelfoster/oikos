@@ -563,7 +563,8 @@
     "dismissLabel": "Chiudi"
   },
   "modal": {
-    "closeLabel": "Chiudi"
+    "closeLabel": "Chiudi",
+    "overlayLabel": "Sfondo del dialogo modale"
   },
   "rrule": {
     "freqNone": "Nessuna ripetizione",

@@ -56,7 +56,7 @@
   margin-bottom: var(--space-6);
   position: sticky;
   top: 0;
-  background: var(--color-background);
+  background: var(--color-bg);
   z-index: 10;
   padding-top: var(--space-1);
 }
@@ -430,11 +430,11 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-1);
   border-radius: var(--radius-sm);
-  transition: background var(--duration-fast);
+  transition: background var(--transition-fast);
 }
 
 .cat-row:hover {
-  background: var(--color-surface-raised);
+  background: var(--color-surface-2);
 }
 
 .cat-row__icon {

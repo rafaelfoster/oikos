@@ -563,7 +563,8 @@
     "dismissLabel": "Закрыть"
   },
   "modal": {
-    "closeLabel": "Закрыть"
+    "closeLabel": "Закрыть",
+    "overlayLabel": "Фон модального диалога"
   },
   "rrule": {
     "freqNone": "Без повтора",

@@ -195,7 +195,7 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
   const sizeClass = size !== 'md' ? ` modal-panel--${size}` : '';
 
   const html = `
-    <div class="modal-overlay" id="shared-modal-overlay">
+    <div class="modal-overlay" id="shared-modal-overlay" aria-label="${t('modal.overlayLabel')}" role="presentation">
       <div class="modal-panel${sizeClass}" role="dialog" aria-modal="true"
            aria-labelledby="shared-modal-title">
         <div class="modal-panel__header">

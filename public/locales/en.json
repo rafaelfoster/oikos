@@ -563,7 +563,8 @@
     "dismissLabel": "Close"
   },
   "modal": {
-    "closeLabel": "Close"
+    "closeLabel": "Close",
+    "overlayLabel": "Modal dialog background"
   },
   "rrule": {
     "freqNone": "No recurrence",

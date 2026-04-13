@@ -563,7 +563,8 @@
     "dismissLabel": "Kapat"
   },
   "modal": {
-    "closeLabel": "Kapat"
+    "closeLabel": "Kapat",
+    "overlayLabel": "Modal iletişim kutusu arka planı"
   },
   "rrule": {
     "freqNone": "Tekrar yok",
