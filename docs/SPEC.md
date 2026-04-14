@@ -290,6 +290,13 @@ Source of truth: `public/styles/tokens.css`. Key values:
   --blur-md: 16px;
   --radius-glass-button: 9999px;       /* capsule */
   --ease-glass: cubic-bezier(0.34, 1.56, 0.64, 1); /* spring */
+
+  /* Glass Vibrancy tokens (Phase 4): */
+  --glass-bg-card: rgba(255,255,255,0.52);     /* transparent for vibrancy */
+  --glass-bg-card-hover: rgba(255,255,255,0.65);
+  --glass-bg-input: rgba(255,255,255,0.48);
+  --glass-bg-toolbar: rgba(255,255,255,0.58);
+  --glass-tint-strength: 6%;                   /* module accent tint */
 }
 
 @media (prefers-color-scheme: dark) {
@@ -301,6 +308,8 @@ Source of truth: `public/styles/tokens.css`. Key values:
     --color-text-secondary: #8E8E8C;
     --glass-bg: rgba(28,28,26,0.75);
     --glass-border: rgba(255,255,255,0.12);
+    --glass-bg-card: rgba(38,38,36,0.50);
+    --glass-tint-strength: 8%;
   }
 }
 ```
@@ -312,18 +321,26 @@ Source of truth: `public/styles/tokens.css`. Key values:
 
 ### Glass Layer (`public/styles/glass.css`)
 
-Additive CSS file loaded globally after `layout.css`. Implements a Liquid Glass design language:
+Additive CSS file loaded globally after `layout.css`. Implements a Liquid Glass design language inspired by Apple's iOS 26 Liquid Glass, adapted for CSS/web:
 
+**Phase 1-3 (Shell + Components + Polish):**
 - **Translucent surfaces:** `backdrop-filter: blur()` on bottom nav, sidebar, modal overlay, cards on hover. All blur effects are inside `@supports (backdrop-filter: blur(1px))` for progressive enhancement.
 - **Glass tokens:** Section 16 of `tokens.css` defines `--glass-bg*`, `--glass-border*`, `--blur-xs` through `--blur-xl`, `--opacity-glass-*`, `--glass-highlight*`, `--glass-shadow-sm/md/lg`, `--radius-glass-card/inner/chip/button`, `--ease-glass`, `--transition-glass`. Full dark mode overrides.
 - **Capsule shapes:** Buttons, FAB, and search inputs use `--radius-glass-button` (pill shape).
 - **Spring animations:** Modal entrance (`glass-modal-scale-in` / `glass-sheet-in`), page transitions, and list stagger all use `cubic-bezier(0.34, 1.56, 0.64, 1)` spring easing.
 - **FAB attention pulse:** `fab-ring-pulse` keyframe expands a ring around the FAB to signal readiness.
 - **Nav auto-hide:** Bottom bar hides on scroll-down, reappears on scroll-up (mobile only, < 1024px, 4 px hysteresis). CSS: `.nav-bottom--hidden { transform: translateY(calc(100% + var(--safe-area-inset-bottom))); }`. JS: `initNavHideOnScroll()` in `router.js`.
-- **Accessibility:** `prefers-reduced-transparency`, `prefers-reduced-motion`, and `prefers-contrast: more` blocks deactivate blur/animation and restore solid fallbacks.
+
+**Phase 4 (Vibrancy + Tint):**
+- **Deeper glass penetration:** Dashboard widgets, task cards, note items, meal slots, form inputs, toolbars, group toggles, and FAB speed-dial actions all use semi-transparent glass backgrounds (`--glass-bg-card`, 52% opacity) with `backdrop-filter: blur() saturate()` so underlying content shines through.
+- **Module tint:** Each glass surface receives a subtle accent color gradient overlay via `::after` pseudo-element using `color-mix(in srgb, var(--module-accent) var(--glass-tint-strength), transparent)`. Strength is 6% in light mode, 8% in dark mode.
+- **App vibrancy background:** `app-content` uses a radial gradient with the active module accent at 3% opacity to provide an ambient color base that glass elements refract.
+- **Load-order safety:** All Phase 4 glass selectors use parent-scoped specificity (`.dashboard .widget`, `.tasks-page .task-card`, `.meals-page .meal-slot`) to prevent override by on-demand page CSS that loads after `glass.css`.
+
+**Accessibility:** `prefers-reduced-transparency`, `prefers-reduced-motion`, and `prefers-contrast: more` blocks deactivate blur/animation and restore solid fallbacks across all phases.
 
 ### Components
-- **Cards:** `var(--color-surface)`, `var(--radius-md)`, `var(--shadow-sm)`. Consistent padding `var(--space-4)` (16px) across all modules.
+- **Cards:** `var(--color-surface)` base, glass vibrancy via `var(--glass-bg-card)` + `backdrop-filter: blur(8px) saturate(180%)` when supported. `var(--radius-md)`, `var(--shadow-sm)`. Module tint overlay via `::after`. Consistent padding `var(--space-4)` (16px) across all modules.
 - **Buttons:** Primary = accent + white. Secondary = outline. Min-height 44px. Capsule shape via `--radius-glass-button`. Submit buttons show success (checkmark, 700ms green via `.btn--success`) and error (shake via `.btn--shaking`).
 - **Inputs:** `var(--radius-sm)`, 1.5px border, padding 12px 16px. Search inputs use `--radius-glass-button` and `--glass-border-subtle`. `[required]` fields receive validation status on blur (`.form-field--error` / `.form-field--valid`). Enter moves focus to the next field; Enter on the last field triggers submit.
 - **FAB (Floating Action Button):** Color follows the module accent token (`--module-accent`) - each module defines its own accent color. Specular inner highlight + attention ring pulse. Hidden when the virtual keyboard is open (`visualViewport.resize`, threshold 75% of window height).

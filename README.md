@@ -59,6 +59,8 @@
 
 **Privacy First:** SQLCipher AES-256 encrypted database, fully self-hosted, zero telemetry
 
+**Liquid Glass UI:** Translucent surfaces with backdrop blur, module-tinted glass overlays, spring animations - inspired by Apple's Liquid Glass, built in pure CSS
+
 **PWA Native Feel:** Installable on any device, works offline, dark mode, responsive from phone to desktop
 
 **Multilingual:** German, English, Spanish, French, Italian, Swedish, Greek, Russian, Turkish, and Chinese UI with automatic locale detection

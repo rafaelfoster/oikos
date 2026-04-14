@@ -488,3 +488,290 @@ textarea.form-input {
     animation: none;
   }
 }
+
+/* ================================================================
+ * PHASE 4 — Liquid Glass Vibrancy + Tint
+ * ================================================================ */
+
+/* ================================================================
+ * 25. Widget Cards — Glass Vibrancy
+ *
+ * Widgets bekommen transparente Hintergruende mit Blur,
+ * sodass darunterliegender Content durchscheint.
+ * Tint: subtile Tonung durch Modul-Akzentfarbe.
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  /* .dashboard Eltern-Selektor fuer Spezifitaet (Load-Order: glass.css < dashboard.css) */
+  .dashboard .widget {
+    background-color: var(--glass-bg-card);
+    backdrop-filter: var(--blur-sm) saturate(180%);
+    -webkit-backdrop-filter: var(--blur-sm) saturate(180%);
+  }
+
+  .dashboard .widget:hover {
+    background-color: var(--glass-bg-card-hover);
+  }
+
+  /* Modul-Tint: subtiler Farbverlauf durch Akzentfarbe */
+  .dashboard .widget::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--module-accent, var(--color-accent)) var(--glass-tint-strength), transparent),
+      transparent 70%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/* ================================================================
+ * 26. Greeting-Widget — Glass + Vibrancy auf Gradient
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .widget-greeting {
+    backdrop-filter: var(--blur-xs) saturate(200%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(200%);
+  }
+
+  /* Greeting braucht keinen separaten Tint - hat eigenen Gradient */
+  .widget-greeting::after {
+    display: none;
+  }
+}
+
+/* ================================================================
+ * 27. Wetter-Widget — Vibrancy auf Gradient
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .weather-widget {
+    backdrop-filter: var(--blur-xs) saturate(200%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(200%);
+  }
+
+  .weather-widget::after {
+    display: none;
+  }
+}
+
+/* ================================================================
+ * 28. Page-Toolbars — Glass Bar mit Tint
+ *
+ * Modul-Header/Toolbars als Glass-Elemente mit
+ * Modul-Akzentfarbe als dezenter Tint.
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  /* Eltern-Selektoren fuer Spezifitaet */
+  .tasks-page .tasks-toolbar,
+  .notes-page .notes-toolbar,
+  .contacts-page .contacts-toolbar,
+  .calendar-page .cal-toolbar {
+    background-color: var(--glass-bg-toolbar);
+    backdrop-filter: var(--blur-sm) saturate(160%);
+    -webkit-backdrop-filter: var(--blur-sm) saturate(160%);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--glass-border-subtle);
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+  }
+
+  /* Tint-Akzent oben: 3px-Linie wird zu subtiler Tonung */
+  .tasks-page .tasks-toolbar {
+    border-top-color: color-mix(in srgb, var(--module-accent) 40%, var(--glass-border));
+  }
+}
+
+/* ================================================================
+ * 29. Note-Items — Glass Cards
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .notes-page .note-item,
+  .dashboard .note-item {
+    background-color: var(--glass-bg-card);
+    backdrop-filter: var(--blur-xs) saturate(150%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(150%);
+    border: 1px solid var(--glass-border-subtle);
+    box-shadow: var(--glass-shadow-sm);
+  }
+
+  .notes-page .note-item:hover,
+  .dashboard .note-item:hover {
+    background-color: var(--glass-bg-card-hover);
+    box-shadow: var(--glass-shadow-md);
+  }
+}
+
+/* ================================================================
+ * 30. Meal-Slots — Glass Grid-Zellen
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .dashboard .meal-slot,
+  .meals-page .meal-slot {
+    background-color: var(--glass-bg-card);
+    backdrop-filter: var(--blur-xs) saturate(140%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(140%);
+  }
+
+  .dashboard .meal-slot:hover,
+  .meals-page .meal-slot:hover {
+    background-color: var(--glass-bg-card-hover);
+  }
+
+  .dashboard .meal-slot--filled,
+  .meals-page .meal-slot--filled {
+    background-color: color-mix(in srgb, var(--module-accent, var(--module-meals)) 4%, var(--glass-bg-card));
+  }
+}
+
+/* ================================================================
+ * 31. Form-Inputs — Glass Vibrancy
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .input,
+  .form-input,
+  select.form-input,
+  textarea.form-input {
+    background-color: var(--glass-bg-input);
+    backdrop-filter: var(--blur-xs) saturate(120%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(120%);
+  }
+}
+
+/* ================================================================
+ * 32. List-Items — Subtile Glass-Trennung
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  /* Eltern-Selektoren fuer Spezifitaet (glass.css < page CSS) */
+  .tasks-page .task-card {
+    background-color: var(--glass-bg-card);
+    backdrop-filter: var(--blur-xs) saturate(150%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(150%);
+  }
+
+  .tasks-page .task-card:hover {
+    background-color: color-mix(in srgb, var(--module-accent, var(--color-accent)) 4%, var(--glass-bg-card-hover));
+  }
+
+  .shopping-page .shopping-item:hover,
+  .contacts-page .contact-item:hover {
+    background-color: color-mix(in srgb, var(--module-accent, var(--color-accent)) 4%, var(--glass-bg-card-hover));
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* ================================================================
+ * 33. Group-Toggle / Filter-Chips — Glass Segmented Control
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .group-toggle {
+    background-color: var(--glass-bg-input);
+    backdrop-filter: var(--blur-xs) saturate(140%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(140%);
+    border: 1px solid var(--glass-border-subtle);
+  }
+
+  .group-toggle__btn--active {
+    background-color: var(--glass-bg-elevated);
+    box-shadow: var(--glass-shadow-sm);
+  }
+}
+
+/* ================================================================
+ * 34. FAB Speed-Dial Actions — Glass Labels + Buttons
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .fab-action__label {
+    background-color: var(--glass-bg-elevated);
+    backdrop-filter: var(--blur-sm) saturate(160%);
+    -webkit-backdrop-filter: var(--blur-sm) saturate(160%);
+    border: 1px solid var(--glass-border-subtle);
+    box-shadow: var(--glass-shadow-md);
+  }
+
+  .fab-action__btn {
+    background-color: var(--glass-bg-elevated);
+    backdrop-filter: var(--blur-sm) saturate(160%);
+    -webkit-backdrop-filter: var(--blur-sm) saturate(160%);
+    border: 1px solid var(--glass-border-subtle);
+  }
+}
+
+/* ================================================================
+ * 35. App-Content-Hintergrund — Vibrancy-Basis
+ *
+ * Subtiler Gradient im Seitenhintergrund damit Glass-
+ * Elemente darauf lebendiger wirken.
+ * ================================================================ */
+.app-content {
+  background:
+    radial-gradient(
+      ellipse at 20% 0%,
+      color-mix(in srgb, var(--module-accent, var(--color-accent)) 3%, transparent),
+      transparent 60%
+    ),
+    var(--color-bg);
+}
+
+/* ================================================================
+ * 36. Skeleton — Glass Shimmer Update
+ * ================================================================ */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .widget-skeleton {
+    background-color: var(--glass-bg-card);
+    backdrop-filter: var(--blur-xs) saturate(140%);
+    -webkit-backdrop-filter: var(--blur-xs) saturate(140%);
+    border: 1px solid var(--glass-border-subtle);
+  }
+}
+
+/* ================================================================
+ * 37. Accessibility — Phase 4
+ * ================================================================ */
+@media (prefers-reduced-transparency: reduce) {
+  .dashboard .widget,
+  .tasks-page .task-card,
+  .notes-page .note-item,
+  .dashboard .note-item,
+  .dashboard .meal-slot,
+  .meals-page .meal-slot,
+  .widget-skeleton {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .dashboard .widget::after {
+    display: none;
+  }
+
+  .app-content {
+    background: var(--color-bg);
+  }
+
+  .group-toggle,
+  .fab-action__label,
+  .fab-action__btn {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .input,
+  .form-input,
+  select.form-input,
+  textarea.form-input {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .tasks-page .tasks-toolbar,
+  .notes-page .notes-toolbar,
+  .contacts-page .contacts-toolbar,
+  .calendar-page .cal-toolbar {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}

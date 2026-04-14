@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-04-14
+
+### Added
+- Glass Phase 4: Liquid Glass Vibrancy + Tint - deeper glass penetration across all UI surfaces
+- New glass tokens in `tokens.css`: `--glass-bg-card` (52% opacity), `--glass-bg-card-hover`, `--glass-bg-input`, `--glass-bg-toolbar`, `--glass-tint-strength` (6% light / 8% dark) with full dark mode and accessibility overrides
+- Dashboard widgets now use semi-transparent glass backgrounds with `backdrop-filter: blur(8px) saturate(180%)` - content beneath widgets shines through
+- Module tint: each widget gets a subtle accent color gradient overlay via `::after` pseudo-element using `color-mix(module-accent, 6%, transparent)` - dashboard cards carry a hint of their module's color
+- Task cards, note items, and meal slots use glass backgrounds with blur for consistent vibrancy
+- Page toolbars (Tasks, Notes, Contacts, Calendar) rendered as glass bars with module accent tint
+- Form inputs, group toggles, and FAB speed-dial actions use glass vibrancy backgrounds
+- App content background uses a radial gradient with the active module accent for ambient vibrancy
+- Skeleton loading states use glass backgrounds for visual consistency
+- All new glass effects gated behind `@supports (backdrop-filter)` for progressive enhancement
+- Accessibility: all new effects respect `prefers-reduced-transparency` (solid fallbacks) and `prefers-reduced-motion`
+- Load-order safety: all glass selectors use parent-scoped specificity (`.dashboard .widget`, `.tasks-page .task-card`) to prevent override by on-demand page CSS
+
 ## [0.17.4] - 2026-04-13
 
 ### Fixed
