@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.19.1] - 2026-04-14
+
+### Fixed
+- iOS PWA: "Forbidden" errors after app resume - CSRF cookie was not renewed on `/auth/me` (the first API call after iOS kills and restarts the standalone webapp). iOS aggressively purges cookies of background webapps, causing CSRF token mismatch on all subsequent POST/PUT/DELETE requests
+- CSRF middleware: added try-catch and hex validation to prevent server crash from corrupted token cookies (iOS can mangle cookie values)
+- API client: automatic CSRF token refresh and retry on 403 - state-changing requests that fail due to stale CSRF tokens are now transparently retried after renewing the token via `/auth/me`
+- Service Worker: added 200ms delay before `controllerchange` reload to prevent blank page on iOS standalone mode (the new SW needs time to complete `clients.claim()` before the page reloads)
+
 ## [0.19.0] - 2026-04-14
 
 ### Added
