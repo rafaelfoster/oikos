@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.1] - 2026-04-15
+
 ### Fixed
 - iOS PWA: recurring "forbidden" (403) errors caused by CSRF token desync after app resume. The server now sends the correct CSRF token as `X-CSRF-Token` response header on every API response (not just `/auth/me` and `/auth/login`). The client reads the header from every response - including 403 errors - enabling instant self-healing without an extra `/auth/me` round-trip. SW cache bumped to v33 to ensure iOS PWA users pick up the fix.
 
