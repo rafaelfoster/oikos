@@ -196,10 +196,16 @@
   position: relative;
 }
 
-.nav-item .nav-badge {
+.nav-item__icon-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.nav-item__icon-wrap .nav-badge {
   position: absolute;
-  top: var(--space-1);
-  right: var(--space-1);
+  top: -4px;
+  right: -4px;
   margin-left: 0;
 }
 

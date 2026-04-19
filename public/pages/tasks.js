@@ -827,11 +827,23 @@ function updateOverdueBadge() {
 
   document.querySelectorAll('[data-route="/tasks"] .nav-badge').forEach((el) => el.remove());
   if (overdue > 0) {
-    document.querySelectorAll('[data-route="/tasks"]').forEach((el) => {
+    document.querySelectorAll('[data-route="/tasks"]').forEach((navItem) => {
+      let anchor = navItem.querySelector('.nav-item__icon-wrap');
+      if (!anchor) {
+        const icon = navItem.querySelector('.nav-item__icon');
+        anchor = document.createElement('span');
+        anchor.className = 'nav-item__icon-wrap';
+        if (icon) {
+          icon.replaceWith(anchor);
+          anchor.appendChild(icon);
+        } else {
+          navItem.prepend(anchor);
+        }
+      }
       const badge = document.createElement('span');
       badge.className = 'nav-badge';
       badge.textContent = String(overdue);
-      el.appendChild(badge);
+      anchor.appendChild(badge);
     });
   }
 }
