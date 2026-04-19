@@ -15,12 +15,20 @@ import { esc } from '/utils/html.js';
 // Konstanten
 // --------------------------------------------------------
 
-const CATEGORIES = [
+const EXPENSE_CATEGORIES = [
   'Lebensmittel', 'Miete', 'Versicherung', 'Mobilität',
   'Freizeit', 'Kleidung', 'Gesundheit', 'Bildung', 'Sonstiges',
 ];
 
+const INCOME_CATEGORIES = [
+  'Erwerbseinkommen', 'Kapitalerträge', 'Geschenke & Transfers',
+  'Sozialleistungen', 'Sonstiges Einkommen',
+];
+
+const CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
+
 const CATEGORY_LABELS = () => ({
+  // Expense categories
   'Lebensmittel': t('budget.catFood'),
   'Miete':        t('budget.catRent'),
   'Versicherung': t('budget.catInsurance'),
@@ -30,6 +38,12 @@ const CATEGORY_LABELS = () => ({
   'Gesundheit':   t('budget.catHealth'),
   'Bildung':      t('budget.catEducation'),
   'Sonstiges':    t('budget.catMisc'),
+  // Income categories
+  'Erwerbseinkommen':      t('budget.catEarnedIncome'),
+  'Kapitalerträge':        t('budget.catInvestmentIncome'),
+  'Geschenke & Transfers': t('budget.catTransferGiftIncome'),
+  'Sozialleistungen':      t('budget.catGovernmentBenefits'),
+  'Sonstiges Einkommen':   t('budget.catOtherIncome'),
 });
 
 function getMonthName(monthIndex) {
@@ -345,8 +359,9 @@ function openBudgetModal({ mode, entry = null }) {
   const isExpense  = isEdit ? entry.amount < 0 : true;
   const absAmount  = isEdit ? Math.abs(entry.amount).toFixed(2) : '';
 
-  const catLabels = CATEGORY_LABELS();
-  const catOpts = CATEGORIES.map((c) =>
+  const catLabels   = CATEGORY_LABELS();
+  const initialCats = isExpense ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
+  const catOpts     = initialCats.map((c) =>
     `<option value="${c}" ${isEdit && entry.category === c ? 'selected' : ''}>${catLabels[c] || c}</option>`
   ).join('');
 
@@ -407,15 +422,33 @@ function openBudgetModal({ mode, entry = null }) {
     onSave(panel) {
       let currentType = isExpense ? 'expense' : 'income';
 
+      const updateCategoryOptions = () => {
+        const catLabels = CATEGORY_LABELS();
+        const cats = currentType === 'income' ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+        const catSelect = panel.querySelector('#bm-category');
+        const currentValue = catSelect.value;
+
+        const options = cats.map((c) => {
+          const opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = catLabels[c] || c;
+          opt.selected = currentValue === c;
+          return opt;
+        });
+        catSelect.replaceChildren(...options);
+      };
+
       panel.querySelector('#type-expense').addEventListener('click', () => {
         currentType = 'expense';
         panel.querySelector('#type-expense').classList.add('amount-type-btn--active');
         panel.querySelector('#type-income').classList.remove('amount-type-btn--active');
+        updateCategoryOptions();
       });
       panel.querySelector('#type-income').addEventListener('click', () => {
         currentType = 'income';
         panel.querySelector('#type-income').classList.add('amount-type-btn--active');
         panel.querySelector('#type-expense').classList.remove('amount-type-btn--active');
+        updateCategoryOptions();
       });
 
       panel.querySelector('#bm-cancel').addEventListener('click', closeModal);

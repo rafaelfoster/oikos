@@ -451,6 +451,11 @@
     "catHealth": "Hälsa",
     "catEducation": "Utbildning",
     "catMisc": "Diverse",
+    "catEarnedIncome": "Arbetsinkomst",
+    "catInvestmentIncome": "Investeringsinkomst",
+    "catTransferGiftIncome": "Överföringar och gåvor",
+    "catGovernmentBenefits": "Socialförmåner",
+    "catOtherIncome": "Övrig inkomst",
     "loadingIndicator": "Laddar…"
   },
   "settings": {

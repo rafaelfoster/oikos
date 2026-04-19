@@ -451,6 +451,11 @@
         "catHealth": "Здоров'я",
         "catEducation": "Освіта",
         "catMisc": "Різне",
+        "catEarnedIncome": "Трудовий дохід",
+        "catInvestmentIncome": "Інвестиційний дохід",
+        "catTransferGiftIncome": "Переводи та подарунки",
+        "catGovernmentBenefits": "Соціальні виплати",
+        "catOtherIncome": "Інші доходи",
         "loadingIndicator": "Завантаження…"
     },
     "settings": {
@@ -620,4 +625,3 @@
         "pendingBadgeTitlePlural": "{{count}} нагадувань"
     }
 }
-

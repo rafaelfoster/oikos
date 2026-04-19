@@ -451,6 +451,11 @@
     "catHealth": "Здоровье",
     "catEducation": "Образование",
     "catMisc": "Разное",
+    "catEarnedIncome": "Трудовой доход",
+    "catInvestmentIncome": "Инвестиционный доход",
+    "catTransferGiftIncome": "Переводы и подарки",
+    "catGovernmentBenefits": "Социальные пособия",
+    "catOtherIncome": "Прочие доходы",
     "loadingIndicator": "Загрузка…"
   },
   "settings": {

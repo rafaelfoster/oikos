@@ -451,6 +451,11 @@
     "catHealth": "الصحة",
     "catEducation": "التعليم",
     "catMisc": "متنوع",
+    "catEarnedIncome": "دخل العمل",
+    "catInvestmentIncome": "دخل الاستثمار",
+    "catTransferGiftIncome": "التحويلات والهدايا",
+    "catGovernmentBenefits": "المزايا الاجتماعية",
+    "catOtherIncome": "دخل آخر",
     "loadingIndicator": "جارٍ التحميل…"
   },
   "settings": {

@@ -451,6 +451,11 @@
     "catHealth": "健康",
     "catEducation": "教育",
     "catMisc": "其他",
+    "catEarnedIncome": "劳动收入",
+    "catInvestmentIncome": "投资收入",
+    "catTransferGiftIncome": "转账和礼物",
+    "catGovernmentBenefits": "社会福利",
+    "catOtherIncome": "其他收入",
     "loadingIndicator": "加载中…"
   },
   "settings": {

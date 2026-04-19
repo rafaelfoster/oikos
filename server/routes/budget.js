@@ -63,10 +63,17 @@ function generateRecurringInstances(database, month) {
   }
 }
 
-const VALID_CATEGORIES = [
+const EXPENSE_CATEGORIES = [
   'Lebensmittel', 'Miete', 'Versicherung', 'Mobilität',
   'Freizeit', 'Kleidung', 'Gesundheit', 'Bildung', 'Sonstiges',
 ];
+
+const INCOME_CATEGORIES = [
+  'Erwerbseinkommen', 'Kapitalerträge', 'Geschenke & Transfers',
+  'Sozialleistungen', 'Sonstiges Einkommen',
+];
+
+const VALID_CATEGORIES = [...EXPENSE_CATEGORIES, ...INCOME_CATEGORIES];
 
 // --------------------------------------------------------
 // Statische Routen vor /:id

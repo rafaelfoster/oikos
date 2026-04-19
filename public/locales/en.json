@@ -451,6 +451,11 @@
     "catHealth": "Health",
     "catEducation": "Education",
     "catMisc": "Miscellaneous",
+    "catEarnedIncome": "Earned Income",
+    "catInvestmentIncome": "Investment Income",
+    "catTransferGiftIncome": "Transfer & Gift Income",
+    "catGovernmentBenefits": "Government & Social Benefits",
+    "catOtherIncome": "Other Income",
     "loadingIndicator": "Loading…"
   },
   "settings": {

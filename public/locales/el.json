@@ -451,6 +451,11 @@
     "catHealth": "Υγεία",
     "catEducation": "Εκπαίδευση",
     "catMisc": "Διάφορα",
+    "catEarnedIncome": "Εισόδημα από εργασία",
+    "catInvestmentIncome": "Επενδυτικό εισόδημα",
+    "catTransferGiftIncome": "Μεταφορές και δώρα",
+    "catGovernmentBenefits": "Κοινωνικές παροχές",
+    "catOtherIncome": "Άλλο εισόδημα",
     "loadingIndicator": "Φόρτωση…"
   },
   "settings": {

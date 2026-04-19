@@ -451,6 +451,11 @@
     "catHealth": "स्वास्थ्य",
     "catEducation": "शिक्षा",
     "catMisc": "विविध",
+    "catEarnedIncome": "कमाई आय",
+    "catInvestmentIncome": "निवेश आय",
+    "catTransferGiftIncome": "स्थानांतरण और उपहार",
+    "catGovernmentBenefits": "सामाजिक लाभ",
+    "catOtherIncome": "अन्य आय",
     "loadingIndicator": "लोड हो रहा है…"
   },
   "settings": {

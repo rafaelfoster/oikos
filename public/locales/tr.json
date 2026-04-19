@@ -451,6 +451,11 @@
     "catHealth": "Sağlık",
     "catEducation": "Eğitim",
     "catMisc": "Diğer",
+    "catEarnedIncome": "Kazanç Geliri",
+    "catInvestmentIncome": "Yatırım Geliri",
+    "catTransferGiftIncome": "Transferler ve Hediyeler",
+    "catGovernmentBenefits": "Sosyal Yardımlar",
+    "catOtherIncome": "Diğer Gelir",
     "loadingIndicator": "Yükleniyor…"
   },
   "settings": {

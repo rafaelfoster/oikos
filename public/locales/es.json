@@ -451,6 +451,11 @@
     "catHealth": "Salud",
     "catEducation": "Educación",
     "catMisc": "Otros",
+    "catEarnedIncome": "Ingresos del Trabajo",
+    "catInvestmentIncome": "Ingresos de Inversión",
+    "catTransferGiftIncome": "Transferencias y Regalos",
+    "catGovernmentBenefits": "Prestaciones Sociales",
+    "catOtherIncome": "Otros Ingresos",
     "loadingIndicator": "Cargando…"
   },
   "settings": {

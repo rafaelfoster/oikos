@@ -451,6 +451,11 @@
     "catHealth": "医療",
     "catEducation": "教育",
     "catMisc": "その他",
+    "catEarnedIncome": "給与・報酬",
+    "catInvestmentIncome": "投資収入",
+    "catTransferGiftIncome": "譲渡・贈与",
+    "catGovernmentBenefits": "社会保障給付",
+    "catOtherIncome": "その他の収入",
     "loadingIndicator": "読み込み中…"
   },
   "settings": {
