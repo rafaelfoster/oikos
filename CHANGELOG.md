@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.14] - 2026-04-19
+
+### Fixed
+- Tasks: overdue badge now consistently overlays the top-right corner of the nav icon in all three layouts (mobile bottom nav, collapsed sidebar, expanded sidebar). Root cause: the badge was positioned absolutely relative to the full-width `.nav-item` flex container, causing misalignment. Fixed by wrapping the icon SVG in a `.nav-item__icon-wrap` span at runtime and appending the badge there instead (closes #56)
+
 ## [0.20.13] - 2026-04-19
 
 ### Added
