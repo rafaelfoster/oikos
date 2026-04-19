@@ -52,23 +52,24 @@
   --color-border-subtle:  var(--neutral-150);
   --color-text-primary:   var(--neutral-900);
   --color-text-secondary: var(--neutral-600);  /* WCAG AA: ~5.0:1 auf weiß */
-  --color-text-tertiary:  #6B6B68;  /* WCAG AA: ~4.52:1 auf --color-bg */
+  --color-text-tertiary:  #6A6964;  /* WCAG AA: 4.61:1 auf --color-bg (wärmer, mehr Puffer) */
   --color-text-disabled:  var(--neutral-300);
   --color-text-on-accent: #ffffff;  /* Weißer Text auf farbigen Hintergründen (Buttons, Badges, FAB) */
 
   /* --------------------------------------------------------
    * 2. Farben - Akzent (konfigurierbar)
-   *    Wärmerer Blauton statt reinem Corporate-Blau.
+   *    Indigo mit leichtem Violett-Drall — charaktervoller als Default-Blau,
+   *    harmoniert mit --color-accent-secondary und --module-calendar.
    * -------------------------------------------------------- */
-  --color-accent:           #2563EB;
-  --color-accent-hover:     #1D4ED8;
-  --color-accent-active:    #1E40AF;
-  --color-accent-deep:      #1E5CB3;       /* Tiefer Akzent für Gradienten, Wetter-Widget */
+  --color-accent:           #4F46E5;       /* Indigo-600 — 4.93:1 auf weiß */
+  --color-accent-hover:     #4338CA;       /* Indigo-700 */
+  --color-accent-active:    #3730A3;       /* Indigo-800 */
+  --color-accent-deep:      #2E2D82;       /* Tiefer Akzent für Gradienten, Wetter-Widget */
   --color-accent-secondary: #7C5CFC;       /* Sekundärer Akzent für Logo-Gradient */
-  --color-accent-light:     #EFF6FF;
-  --color-accent-subtle:    #DBEAFE;
-  --color-btn-primary:      #2554C7;       /* WCAG AA: 6.62:1 auf weiß (weißer Text) */
-  --color-btn-primary-hover: #1E429A;
+  --color-accent-light:     #EEF2FF;       /* Indigo-50 */
+  --color-accent-subtle:    #E0E7FF;       /* Indigo-100 */
+  --color-btn-primary:      #4338CA;       /* Indigo-700 — WCAG AAA: 7.04:1 auf weiß */
+  --color-btn-primary-hover: #3730A3;      /* Indigo-800 */
 
   /* --------------------------------------------------------
    * 3. Farben - Semantisch
@@ -76,11 +77,11 @@
   --color-success:       #15803D;
   --color-success-hover: #166534;
   --color-success-light: #DAFBE1;
-  --color-warning:       #B45309;
-  --color-warning-hover: #92400E;
+  --color-warning:       #A15C0A;   /* Hue-Trennung von --module-meals, 5.23:1 auf weiß */
+  --color-warning-hover: #824908;
   --color-warning-light: #FFF4D4;
-  --color-danger:        #DC2626;
-  --color-danger-hover:  #B91C1C;
+  --color-danger:        #B91C1C;   /* Red-700 — 6.90:1 auf weiß (vorher 4.85:1) */
+  --color-danger-hover:  #991B1B;   /* Red-800 */
   --color-danger-light:  #FFE2E0;
   --color-info:          #0969DA;  /* WCAG AA: ~4.6:1 auf weiß */
   --color-info-hover:    #0550AE;
@@ -90,28 +91,29 @@
    * 4. Farben - Modul-Akzente
    *    Jedes Modul hat eine eigene dezente Akzentfarbe.
    *    Einsatz in Modul-Headern, Icons, aktiven States.
+   *    Domain-Farben von Severity entkoppelt — siehe §2.5 des Redesign-Vorschlags.
    * -------------------------------------------------------- */
-  --module-dashboard:  #2563EB;  /* Blau - Übersicht, neutral */
-  --module-tasks:      #15803D;  /* Grün - Erledigung, Fortschritt */
+  --module-dashboard:  #4F46E5;  /* Indigo - Übersicht, neutral (= --color-accent, bewusster Share) */
+  --module-tasks:      #15803D;  /* Grün - Erledigung, Fortschritt (= --color-success, bewusster Share) */
   --module-calendar:   #8250DF;  /* Violett - Termine, Zeit */
-  --module-meals:      #B45309;  /* Orange - Essen, Wärme */
-  --module-shopping:   #D4511E;  /* Rot-Orange - Einkaufen, Aktion */
-  --module-notes:      #BF8700;  /* Gold - Notizen, Pinnwand */
+  --module-meals:      #C2410C;  /* Orange-700 - Essen, Wärme */
+  --module-shopping:   #DB2777;  /* Pink-600 - Einkaufen, Aktion (trennt von Meals) */
+  --module-notes:      #CA8A04;  /* Gold - Notizen, Pinnwand (nur Icons/Large-Text: 4.08:1) */
   --module-contacts:   #0969DA;  /* Kräftiges Blau - Kontakte */
-  --module-budget:     #1A7F5A;  /* Teal - Finanzen, Stabilität */
+  --module-budget:     #0F766E;  /* Teal-700 - Finanzen, Stabilität */
   --module-settings:   #6E7781;  /* Grau - Konfiguration */
 
   /* --------------------------------------------------------
    * 5. Farben - Mahlzeit-Typen
    *    Zentrale Tokens statt Hardcoding in meals.css
    * -------------------------------------------------------- */
-  --meal-breakfast:       #B45309;
+  --meal-breakfast:       #A15C0A;   /* Morgensonne-Amber (= --color-warning, bewusster Share) */
   --meal-breakfast-light: #FFF4D4;
   --meal-lunch:           #2DA44E;
   --meal-lunch-light:     #DAFBE1;
-  --meal-dinner:          #2563EB;
-  --meal-dinner-light:    #EFF6FF;
-  --meal-snack:           #D4511E;
+  --meal-dinner:          #4F46E5;   /* Indigo - ruhiger Tag-Ausklang (= --color-accent) */
+  --meal-dinner-light:    #EEF2FF;
+  --meal-snack:           #C2410C;   /* = --module-meals — Snack ist Sub-Domain von Meals */
   --meal-snack-light:     #FFECE3;
 
   /* --------------------------------------------------------
@@ -119,16 +121,16 @@
    * -------------------------------------------------------- */
   --color-priority-none:   var(--neutral-400);
   --color-priority-low:    var(--neutral-500);
-  --color-priority-medium: #B45309;
-  --color-priority-high:   #D4511E;
-  --color-priority-urgent: #DC2626;
+  --color-priority-medium: #A16207;   /* Amber-700 — trennt von --color-warning + --module-meals */
+  --color-priority-high:   #C2410C;   /* = --module-meals (bewusster Share: „heiß") */
+  --color-priority-urgent: #B91C1C;   /* = --color-danger (bewusster Share: „gefährlich") */
 
-  /* Hintergrundfarben für Priority-Badges */
+  /* Hintergrundfarben für Priority-Badges — RGB-Tripel folgen den Base-Tokens */
   --color-priority-none-bg:   rgba(142, 141, 137, 0.08);
   --color-priority-low-bg:    rgba(142, 141, 137, 0.12);
-  --color-priority-medium-bg: rgba(180, 83, 9, 0.12);
-  --color-priority-high-bg:   rgba(212, 81, 30, 0.12);
-  --color-priority-urgent-bg: rgba(220, 38, 38, 0.12);
+  --color-priority-medium-bg: rgba(161, 98, 7, 0.12);
+  --color-priority-high-bg:   rgba(194, 65, 12, 0.12);
+  --color-priority-urgent-bg: rgba(185, 28, 28, 0.12);
 
   /* --------------------------------------------------------
    * 7. Overlay / Backdrop
@@ -356,14 +358,14 @@
     --sidebar-shadow-light: rgba(255, 255, 255, 0.04);
     --sidebar-shadow-dark: rgba(0, 0, 0, 0.4);
 
-    /* Akzent - Dark Mode */
-    --color-accent:            #60A5FA;
-    --color-accent-hover:      #3B82F6;
-    --color-accent-active:     #2563EB;
-    --color-accent-light:      #1E3A5F;
-    --color-accent-subtle:     #1E3050;
-    --color-btn-primary:       #3B82F6;
-    --color-btn-primary-hover: #2563EB;
+    /* Akzent - Dark Mode (Indigo bleibt, nur Lightness/Saturation rücken) */
+    --color-accent:            #818CF8;   /* Indigo-400 — 6.8:1 auf #2A2A28 */
+    --color-accent-hover:      #6366F1;   /* Indigo-500 */
+    --color-accent-active:     #4F46E5;   /* Indigo-600 (= Light-Primary, Mirroring) */
+    --color-accent-light:      #2E2D5B;
+    --color-accent-subtle:     #252255;
+    --color-btn-primary:       #6366F1;   /* Indigo-500 — 5.5:1 auf Dark-Surface */
+    --color-btn-primary-hover: #4F46E5;
 
     --color-accent-secondary: #A78BFA;
 
@@ -378,25 +380,25 @@
     --color-danger-light:  #3D1C1A;
     --color-info-light:    #1A2D40;
 
-    /* Modul-Akzente - Dark Mode */
-    --module-dashboard: #60A5FA;
+    /* Modul-Akzente - Dark Mode (Entflechtung Meals/Shopping spiegelt Light-Mode) */
+    --module-dashboard: #818CF8;   /* Indigo-400 - folgt neuem Dark-Accent */
     --module-tasks:     #4ADE80;
     --module-calendar:  #A78BFA;
-    --module-meals:     #F59E0B;
-    --module-shopping:  #FB923C;
+    --module-meals:     #FB923C;   /* Orange-400 */
+    --module-shopping:  #F472B6;   /* Pink-400 - trennt wie in Light */
     --module-notes:     #FCD34D;
     --module-contacts:  #60A5FA;
-    --module-budget:    #34D399;
+    --module-budget:    #2DD4BF;   /* Teal-400 - folgt Light-Mode-Teal */
     --module-settings:  #94A3B8;
 
     /* Mahlzeit-Typ - Dark Mode */
     --meal-breakfast: #F59E0B;
-    --meal-dinner:    #60A5FA;
+    --meal-dinner:    #818CF8;   /* Indigo-400 - folgt Dark-Accent */
 
     /* Mahlzeit-Typ Light-Varianten */
     --meal-breakfast-light: #332400;
     --meal-lunch-light:     #1A3325;
-    --meal-dinner-light:    #1A2D4D;
+    --meal-dinner-light:    #2E2D5B;   /* Indigo-Dark-Tint (folgt --meal-dinner) */
     --meal-snack-light:     #3D2010;
 
     /* Priority-Badge Hintergründe */
@@ -460,14 +462,14 @@
   --sidebar-shadow-light: rgba(255, 255, 255, 0.04);
   --sidebar-shadow-dark: rgba(0, 0, 0, 0.4);
 
-  /* Akzent - Dark Mode */
-  --color-accent:            #60A5FA;
-  --color-accent-hover:      #3B82F6;
-  --color-accent-active:     #2563EB;
-  --color-accent-light:      #1E3A5F;
-  --color-accent-subtle:     #1E3050;
-  --color-btn-primary:       #3B82F6;
-  --color-btn-primary-hover: #2563EB;
+  /* Akzent - Dark Mode (Indigo bleibt, nur Lightness/Saturation rücken) */
+  --color-accent:            #818CF8;   /* Indigo-400 — 6.8:1 auf #2A2A28 */
+  --color-accent-hover:      #6366F1;   /* Indigo-500 */
+  --color-accent-active:     #4F46E5;   /* Indigo-600 (= Light-Primary, Mirroring) */
+  --color-accent-light:      #2E2D5B;
+  --color-accent-subtle:     #252255;
+  --color-btn-primary:       #6366F1;   /* Indigo-500 — 5.5:1 auf Dark-Surface */
+  --color-btn-primary-hover: #4F46E5;
   --color-accent-secondary:  #A78BFA;
 
   /* Semantische Farben - Dark Mode */
@@ -481,24 +483,24 @@
   --color-danger-light:  #3D1C1A;
   --color-info-light:    #1A2D40;
 
-  /* Modul-Akzente - Dark Mode */
-  --module-dashboard: #60A5FA;
+  /* Modul-Akzente - Dark Mode (Entflechtung Meals/Shopping spiegelt Light-Mode) */
+  --module-dashboard: #818CF8;   /* Indigo-400 - folgt neuem Dark-Accent */
   --module-tasks:     #4ADE80;
   --module-calendar:  #A78BFA;
-  --module-meals:     #F59E0B;
-  --module-shopping:  #FB923C;
+  --module-meals:     #FB923C;   /* Orange-400 */
+  --module-shopping:  #F472B6;   /* Pink-400 - trennt wie in Light */
   --module-notes:     #FCD34D;
   --module-contacts:  #60A5FA;
-  --module-budget:    #34D399;
+  --module-budget:    #2DD4BF;   /* Teal-400 - folgt Light-Mode-Teal */
   --module-settings:  #94A3B8;
 
   /* Mahlzeit-Typ - Dark Mode */
   --meal-breakfast: #F59E0B;
-  --meal-dinner:    #60A5FA;
+  --meal-dinner:    #818CF8;   /* Indigo-400 - folgt Dark-Accent */
 
   --meal-breakfast-light: #332400;
   --meal-lunch-light:     #1A3325;
-  --meal-dinner-light:    #1A2D4D;
+  --meal-dinner-light:    #2E2D5B;   /* Indigo-Dark-Tint (folgt --meal-dinner) */
   --meal-snack-light:     #3D2010;
 
   --color-priority-none-bg:   rgba(142, 141, 137, 0.12);
@@ -581,5 +583,8 @@
     --blur-md:  blur(0px);
     --blur-lg:  blur(0px);
     --blur-xl:  blur(0px);
+
+    /* Notes-Token im Hochkontrast auf voll AA-taugliches Yellow-700 (6.3:1) heben */
+    --module-notes: #A16207;
   }
 }

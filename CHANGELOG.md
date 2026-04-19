@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.15] - 2026-04-19
+
+### Changed
+- Design: primary accent migrated from `#2563EB` (Tailwind Blue-600) to `#4F46E5` (Indigo-600) for a warmer, more distinctive tone that harmonises with the existing warm-neutral surface palette and `--color-accent-secondary`; all Indigo-family tokens updated accordingly across light and dark mode
+- Design: module accent colours decoupled from severity colours — Meals moved to Orange-700 (`#C2410C`), Shopping to Pink-600 (`#DB2777`), Budget to Teal-700 (`#0F766E`); previous Orange sharing between Meals, Shopping, Warning and Priority-Medium made badges semantically ambiguous
+- Design: Warning (`#A15C0A`) and Danger (`#B91C1C`) raised to higher contrast ratios (5.2:1 and 6.9:1 respectively) for improved readability on white
+- Design: Priority-Medium separated into Amber-700 (`#A16207`, 6.3:1) so it is visually distinct from Warning and Meals in the same row
+- Design: dark-mode accent shifted to Indigo-400/500 (`#818CF8`/`#6366F1`) to preserve hue identity from light mode instead of the previous hue-shifted Sky-Blue
+
+### Fixed
+- Tasks: overdue badge base styles (background colour, size, border-radius) moved from the dynamically-unloaded `tasks.css` to `layout.css`, so the badge remains visible in the navigation bar on every page, not just while the Tasks page is active (closes #56)
+- Tasks: subtask checkbox icon refactored from inline `style="color:#fff"` to `.subtask-item__checkbox-icon` CSS class using `var(--color-text-on-accent)`
+- Reminders: three stale CSS fallback values removed (`var(--color-priority-urgent, #EF4444)`, `var(--color-accent, #2563EB)`, `var(--color-border, rgba(0,0,0,0.1))`); `color: #fff` replaced with `var(--color-text-on-accent)`
+- Dashboard: widget customise button glass highlight replaced with existing `--color-glass*` tokens instead of hardcoded `rgba(255,255,255,…)` literals
+
+### Accessibility
+- `prefers-contrast: more` block now overrides `--module-notes` to `#A16207` (6.3:1) to meet AA normal-text threshold in high-contrast mode
+
 ## [0.20.14] - 2026-04-19
 
 ### Fixed

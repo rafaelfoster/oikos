@@ -16,8 +16,8 @@
   height: 16px;
   padding: 0 4px;
   border-radius: var(--radius-full, 9999px);
-  background: var(--color-priority-urgent, #EF4444);
-  color: #fff;
+  background: var(--color-priority-urgent);
+  color: var(--color-text-on-accent);
   font-size: 10px;
   font-weight: 700;
   line-height: 16px;
@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  color: var(--color-accent, #2563EB);
+  color: var(--color-accent);
 }
 
 .toast__reminder-text {
@@ -65,7 +65,7 @@
 
 /* Reminder-Abschnitt in Modals */
 .reminder-section {
-  border-top: 1px solid var(--color-border, rgba(0,0,0,0.1));
+  border-top: 1px solid var(--color-border);
   padding-top: var(--space-4, 16px);
   margin-top: var(--space-4, 16px);
 }
