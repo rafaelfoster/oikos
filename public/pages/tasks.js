@@ -828,7 +828,10 @@ function updateOverdueBadge() {
   document.querySelectorAll('[data-route="/tasks"] .nav-badge').forEach((el) => el.remove());
   if (overdue > 0) {
     document.querySelectorAll('[data-route="/tasks"]').forEach((el) => {
-      el.insertAdjacentHTML('beforeend', `<span class="nav-badge">${overdue}</span>`);
+      const badge = document.createElement('span');
+      badge.className = 'nav-badge';
+      badge.textContent = String(overdue);
+      el.appendChild(badge);
     });
   }
 }

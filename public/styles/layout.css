@@ -193,6 +193,14 @@
   min-height: var(--target-lg);
   min-width: var(--target-lg);
   text-decoration: none;
+  position: relative;
+}
+
+.nav-item .nav-badge {
+  position: absolute;
+  top: var(--space-1);
+  right: var(--space-1);
+  margin-left: 0;
 }
 
 .nav-item:active {
