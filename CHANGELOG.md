@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.11] - 2026-04-19
+
+### Fixed
+- PWA: modal header (task / calendar event) no longer scrolls out of view when the form content exceeds the modal height. Root cause: `position: sticky` on `.modal-panel__header` fails on iOS WebKit when the scroll container (`.modal-panel`) has `padding-top` applied (a known WebKit quirk). Fixed by restructuring the modal layout: `.modal-panel` is now a `flex-column` container with `overflow: hidden`, and scrolling is handled by `.modal-panel__body` (`overflow-y: auto; flex: 1`). The header is always visible as a non-scrolled flex sibling. Swipe-to-close updated to read scroll position from `.modal-panel__body` instead of `.modal-panel` (closes #50)
+
 ## [0.20.10] - 2026-04-18
 
 ### Changed

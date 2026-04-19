@@ -114,12 +114,15 @@ function _wireSheetSwipe(panel) {
   let startY = 0;
   let dragging = false;
 
+  // Scroll position is now on the body, not the panel itself
+  const scrollBody = panel.querySelector('.modal-panel__body');
+
   panel.addEventListener('touchstart', (e) => {
     // Nur von der Handle-Zone (obere 48px) oder wenn Panel ganz oben → Swipe erlauben
     const touchY = e.touches[0].clientY;
     const rect = panel.getBoundingClientRect();
     const isHandleZone = touchY - rect.top < 48;
-    const isScrolledToTop = panel.scrollTop <= 0;
+    const isScrolledToTop = (scrollBody ? scrollBody.scrollTop : panel.scrollTop) <= 0;
     if (!isHandleZone && !isScrolledToTop) return;
     startY = touchY;
     dragging = true;
