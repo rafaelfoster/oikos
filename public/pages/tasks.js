@@ -157,7 +157,7 @@ function renderTaskCard(task, opts = {}) {
           <button class="subtask-item__checkbox ${s.status === 'done' ? 'subtask-item__checkbox--done' : ''}"
                   data-action="toggle-subtask" data-id="${s.id}"
                   data-status="${s.status}" aria-label="${t('tasks.subtaskMarkDone', { title: esc(s.title) })}">
-            ${s.status === 'done' ? '<i data-lucide="check" style="width:10px;height:10px;color:#fff" aria-hidden="true"></i>' : ''}
+            ${s.status === 'done' ? '<i data-lucide="check" class="subtask-item__checkbox-icon" aria-hidden="true"></i>' : ''}
           </button>
           <span class="subtask-item__title">${esc(s.title)}</span>
         </div>`).join('')
