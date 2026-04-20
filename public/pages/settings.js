@@ -854,7 +854,8 @@ function applyTheme(value) {
   if (value === 'light' || value === 'dark') {
     document.documentElement.setAttribute('data-theme', value);
   } else {
-    document.documentElement.removeAttribute('data-theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
   }
 }
 

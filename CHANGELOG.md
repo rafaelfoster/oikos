@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.27] - 2026-04-20
+
+### Fixed
+- Selecting "System" theme in settings now immediately applies the OS dark/light preference instead of reverting to light mode until the next page reload
+
 ## [0.20.26] - 2026-04-20
 
 ### Added
