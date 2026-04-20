@@ -47,9 +47,14 @@
     (function() {
       var stored = localStorage.getItem('oikos-theme');
       var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      document.documentElement.setAttribute('data-theme', stored || (prefersDark ? 'dark' : 'light'));
+      if (stored === 'dark' || stored === 'light') {
+        document.documentElement.setAttribute('data-theme', stored);
+      } else {
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+      }
       window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
-        if (!localStorage.getItem('oikos-theme')) {
+        var current = localStorage.getItem('oikos-theme');
+        if (!current || current === 'system') {
           document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
         }
       });

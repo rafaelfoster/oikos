@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.25] - 2026-04-20
+
+### Fixed
+- Theme selection no longer reverts to light mode on page reload when "System" is chosen; the init script now correctly resolves the `system` preference to the OS dark/light state instead of treating it as a literal `data-theme` value
+
 ## [0.20.24] - 2026-04-20
 
 ### Added
