@@ -242,46 +242,6 @@ export async function render(container, { user }) {
             ` : ''}
           </div>
 
-          <!-- ICS-Abonnements -->
-          <div class="settings-card" id="ics-card">
-            <div class="settings-sync-header">
-              <div class="settings-sync-info">
-                <div class="settings-sync-info__name">${t('settings.ics.title')}</div>
-              </div>
-            </div>
-            <div id="ics-list-container"></div>
-            <div id="ics-add-form-wrapper" hidden>
-              <form id="ics-add-form" class="settings-form settings-form--compact" novalidate autocomplete="off">
-                <div class="form-group">
-                  <label class="form-label" for="ics-url">${t('settings.ics.form.url')}</label>
-                  <input class="form-input" type="url" id="ics-url" required placeholder="https://..." />
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="ics-name">${t('settings.ics.form.name')}</label>
-                  <input class="form-input" type="text" id="ics-name" required maxlength="100" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="ics-color">${t('settings.ics.form.color')}</label>
-                  <input class="form-input form-input--color" type="color" id="ics-color" value="#6366f1" />
-                </div>
-                <div class="form-group">
-                  <label class="toggle-row">
-                    <input type="checkbox" id="ics-shared" />
-                    <span>${t('settings.ics.form.shared')}</span>
-                  </label>
-                </div>
-                <div id="ics-add-error" class="form-error" hidden></div>
-                <div class="settings-form-actions">
-                  <button type="submit" class="btn btn--primary" id="ics-submit-btn">${t('settings.ics.actions.submit')}</button>
-                  <button type="button" class="btn btn--secondary" id="ics-cancel-btn">${t('settings.ics.actions.cancel')}</button>
-                </div>
-              </form>
-            </div>
-            <div class="settings-sync-actions">
-              <button class="btn btn--secondary" id="ics-add-btn">${t('settings.ics.add')}</button>
-            </div>
-          </div>
-
           <!-- Apple Calendar -->
           <div class="settings-card">
             <div class="settings-sync-header">
@@ -321,6 +281,46 @@ export async function render(container, { user }) {
                 <button type="submit" class="btn btn--primary" id="apple-connect-btn">${t('settings.appleConnectBtn')}</button>
               </form>
             ` : `<span class="form-hint">${t('settings.appleOnlyAdmin')}</span>`}
+          </div>
+
+          <!-- ICS-Abonnements -->
+          <div class="settings-card" id="ics-card">
+            <div class="settings-sync-header">
+              <div class="settings-sync-info">
+                <div class="settings-sync-info__name">${t('settings.ics.title')}</div>
+              </div>
+            </div>
+            <div id="ics-list-container"></div>
+            <div id="ics-add-form-wrapper" hidden>
+              <form id="ics-add-form" class="settings-form settings-form--compact" novalidate autocomplete="off">
+                <div class="form-group">
+                  <label class="form-label" for="ics-url">${t('settings.ics.form.url')}</label>
+                  <input class="form-input" type="url" id="ics-url" required placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="ics-name">${t('settings.ics.form.name')}</label>
+                  <input class="form-input" type="text" id="ics-name" required maxlength="100" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="ics-color">${t('settings.ics.form.color')}</label>
+                  <input class="form-input form-input--color" type="color" id="ics-color" value="#6366f1" />
+                </div>
+                <div class="form-group">
+                  <label class="toggle-row">
+                    <input type="checkbox" id="ics-shared" />
+                    <span>${t('settings.ics.form.shared')}</span>
+                  </label>
+                </div>
+                <div id="ics-add-error" class="form-error" hidden></div>
+                <div class="settings-form-actions">
+                  <button type="submit" class="btn btn--primary" id="ics-submit-btn">${t('settings.ics.actions.submit')}</button>
+                  <button type="button" class="btn btn--secondary" id="ics-cancel-btn">${t('settings.ics.actions.cancel')}</button>
+                </div>
+              </form>
+            </div>
+            <div class="settings-sync-actions">
+              <button class="btn btn--secondary" id="ics-add-btn">${t('settings.ics.add')}</button>
+            </div>
           </div>
         </section>
       </div>
@@ -1024,7 +1024,7 @@ function bindIcsEvents(container, user, initialSubs) {
         if (res.syncError) {
           window.oikos?.showToast(`${t('settings.ics.status.syncError')}: ${res.syncError}`, 'danger');
         } else {
-          window.oikos?.showToast(t('settings.ics.add'), 'success');
+          window.oikos?.showToast(t('settings.ics.addedToast'), 'success');
         }
       } catch (err) {
         errorEl.textContent = err.message ?? t('common.errorGeneric');
@@ -1044,7 +1044,9 @@ function bindIcsEvents(container, user, initialSubs) {
 
       if (action === 'ics-sync') {
         const origIcon = target.querySelector('[data-lucide]');
+        const origTitle = target.title;
         target.disabled = true;
+        target.title = t('settings.ics.status.syncing');
         if (origIcon) origIcon.setAttribute('data-lucide', 'loader');
         if (window.lucide) window.lucide.createIcons();
         try {
@@ -1052,10 +1054,11 @@ function bindIcsEvents(container, user, initialSubs) {
           const idx = subs.findIndex((s) => s.id === id);
           if (idx >= 0) subs[idx] = res.data;
           renderIcsList(container, subs, user);
-          window.oikos?.showToast(t('settings.ics.actions.sync'), 'success');
+          window.oikos?.showToast(t('settings.ics.syncedToast'), 'success');
         } catch (err) {
           window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
           target.disabled = false;
+          target.title = origTitle;
           if (origIcon) origIcon.setAttribute('data-lucide', 'refresh-cw');
           if (window.lucide) window.lucide.createIcons();
         }
@@ -1068,7 +1071,7 @@ function bindIcsEvents(container, user, initialSubs) {
           await api.delete(`/calendar/subscriptions/${id}`);
           subs = subs.filter((s) => s.id !== id);
           renderIcsList(container, subs, user);
-          window.oikos?.showToast(t('settings.ics.actions.delete'), 'default');
+          window.oikos?.showToast(t('settings.ics.deletedToast'), 'default');
         } catch (err) {
           window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
         }

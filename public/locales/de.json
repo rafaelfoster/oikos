@@ -602,7 +602,10 @@
         "private": "Privat",
         "shared": "Geteilt"
       },
-      "empty": "Noch keine Abonnements."
+      "empty": "Noch keine Abonnements.",
+      "addedToast": "Abonnement hinzugefügt.",
+      "syncedToast": "Abonnement synchronisiert.",
+      "deletedToast": "Abonnement gelöscht."
     }
   },
   "login": {
