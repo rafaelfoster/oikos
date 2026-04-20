@@ -53,25 +53,28 @@ export async function render(container, { user }) {
   const syncErr  = params.get('sync_error');
 
   // State für Familienmitglieder + Sync-Status
-  let users        = [];
-  let googleStatus = { configured: false, connected: false, lastSync: null };
-  let appleStatus  = { configured: false, lastSync: null };
-  let prefs        = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR' };
-  let categories   = [];
+  let users           = [];
+  let googleStatus    = { configured: false, connected: false, lastSync: null };
+  let appleStatus     = { configured: false, lastSync: null };
+  let prefs           = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR' };
+  let categories      = [];
+  let icsSubscriptions = [];
 
   try {
-    const [usersRes, gStatus, aStatus, prefsRes, catsRes] = await Promise.allSettled([
+    const [usersRes, gStatus, aStatus, prefsRes, catsRes, icsRes] = await Promise.allSettled([
       user.role === 'admin' ? auth.getUsers() : Promise.resolve({ data: [] }),
       api.get('/calendar/google/status'),
       api.get('/calendar/apple/status'),
       api.get('/preferences'),
       api.get('/shopping/categories'),
+      api.get('/calendar/subscriptions'),
     ]);
-    if (usersRes.status === 'fulfilled')  users        = usersRes.value.data  ?? [];
-    if (gStatus.status  === 'fulfilled')  googleStatus = gStatus.value;
-    if (aStatus.status  === 'fulfilled')  appleStatus  = aStatus.value;
-    if (prefsRes.status === 'fulfilled')  prefs        = prefsRes.value.data  ?? prefs;
-    if (catsRes.status  === 'fulfilled')  categories   = catsRes.value.data   ?? [];
+    if (usersRes.status === 'fulfilled')  users            = usersRes.value.data  ?? [];
+    if (gStatus.status  === 'fulfilled')  googleStatus     = gStatus.value;
+    if (aStatus.status  === 'fulfilled')  appleStatus      = aStatus.value;
+    if (prefsRes.status === 'fulfilled')  prefs            = prefsRes.value.data  ?? prefs;
+    if (catsRes.status  === 'fulfilled')  categories       = catsRes.value.data   ?? [];
+    if (icsRes.status   === 'fulfilled')  icsSubscriptions = icsRes.value.data    ?? [];
   } catch (_) { /* non-critical */ }
 
   const googleStatusText = googleStatus.connected
@@ -239,6 +242,46 @@ export async function render(container, { user }) {
             ` : ''}
           </div>
 
+          <!-- ICS-Abonnements -->
+          <div class="settings-card" id="ics-card">
+            <div class="settings-sync-header">
+              <div class="settings-sync-info">
+                <div class="settings-sync-info__name">${t('settings.ics.title')}</div>
+              </div>
+            </div>
+            <div id="ics-list-container"></div>
+            <div id="ics-add-form-wrapper" hidden>
+              <form id="ics-add-form" class="settings-form settings-form--compact" novalidate autocomplete="off">
+                <div class="form-group">
+                  <label class="form-label" for="ics-url">${t('settings.ics.form.url')}</label>
+                  <input class="form-input" type="url" id="ics-url" required placeholder="https://..." />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="ics-name">${t('settings.ics.form.name')}</label>
+                  <input class="form-input" type="text" id="ics-name" required maxlength="100" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="ics-color">${t('settings.ics.form.color')}</label>
+                  <input class="form-input form-input--color" type="color" id="ics-color" value="#6366f1" />
+                </div>
+                <div class="form-group">
+                  <label class="toggle-row">
+                    <input type="checkbox" id="ics-shared" />
+                    <span>${t('settings.ics.form.shared')}</span>
+                  </label>
+                </div>
+                <div id="ics-add-error" class="form-error" hidden></div>
+                <div class="settings-form-actions">
+                  <button type="submit" class="btn btn--primary" id="ics-submit-btn">${t('settings.ics.actions.submit')}</button>
+                  <button type="button" class="btn btn--secondary" id="ics-cancel-btn">${t('settings.ics.actions.cancel')}</button>
+                </div>
+              </form>
+            </div>
+            <div class="settings-sync-actions">
+              <button class="btn btn--secondary" id="ics-add-btn">${t('settings.ics.add')}</button>
+            </div>
+          </div>
+
           <!-- Apple Calendar -->
           <div class="settings-card">
             <div class="settings-sync-header">
@@ -381,16 +424,17 @@ export async function render(container, { user }) {
     });
   }
 
-  bindEvents(container, user, categories);
+  bindEvents(container, user, categories, icsSubscriptions);
 }
 
 // --------------------------------------------------------
 // Event-Binding
 // --------------------------------------------------------
 
-function bindEvents(container, user, categories) {
+function bindEvents(container, user, categories, icsSubscriptions) {
   bindTabEvents(container);
   bindCategoryEvents(container);
+  bindIcsEvents(container, user, icsSubscriptions);
   // Theme-Toggle
   const themeToggle = container.querySelector('#theme-toggle');
   if (themeToggle) {
@@ -832,6 +876,205 @@ function memberHtml(u) {
       </button>
     </li>
   `;
+}
+
+// --------------------------------------------------------
+// ICS-Abonnements
+// --------------------------------------------------------
+
+function renderIcsList(container, subs, user) {
+  const listEl = container.querySelector('#ics-list-container');
+  if (!listEl) return;
+  listEl.replaceChildren();
+
+  if (subs.length === 0) {
+    const empty = document.createElement('p');
+    empty.className = 'form-hint';
+    empty.style.padding = 'var(--space-3) 0';
+    empty.textContent = t('settings.ics.empty');
+    listEl.appendChild(empty);
+    return;
+  }
+
+  const ul = document.createElement('ul');
+  ul.className = 'settings-members';
+  subs.forEach((sub) => {
+    const li = document.createElement('li');
+    li.className = 'settings-member';
+    li.dataset.subId = sub.id;
+
+    const dot = document.createElement('span');
+    dot.className = 'settings-avatar settings-avatar--sm';
+    dot.style.background = sub.color;
+    dot.style.flexShrink = '0';
+    li.appendChild(dot);
+
+    const info = document.createElement('div');
+    info.className = 'settings-member__info';
+
+    const nameLine = document.createElement('span');
+    nameLine.className = 'settings-member__name';
+    nameLine.textContent = sub.name;
+
+    const badge = document.createElement('span');
+    badge.className = `badge ${sub.shared ? 'badge--success' : 'badge--neutral'}`;
+    badge.style.marginLeft = 'var(--space-2)';
+    badge.textContent = sub.shared ? t('settings.ics.badges.shared') : t('settings.ics.badges.private');
+    nameLine.appendChild(badge);
+    info.appendChild(nameLine);
+
+    const meta = document.createElement('span');
+    meta.className = 'settings-member__meta';
+    if (sub.last_sync) {
+      const d = new Date(sub.last_sync);
+      meta.textContent = `${t('settings.ics.status.lastSync')} ${formatDate(d)} ${formatTime(d)}`;
+    } else {
+      meta.textContent = t('settings.ics.status.never');
+    }
+    info.appendChild(meta);
+    li.appendChild(info);
+
+    const isOwner = sub.created_by === user.id || user.role === 'admin';
+    if (isOwner) {
+      const actions = document.createElement('div');
+      actions.className = 'cat-row__actions';
+
+      const syncBtn = document.createElement('button');
+      syncBtn.className = 'btn btn--icon btn--ghost';
+      syncBtn.title = t('settings.ics.actions.sync');
+      syncBtn.setAttribute('aria-label', t('settings.ics.actions.sync'));
+      syncBtn.dataset.action = 'ics-sync';
+      syncBtn.dataset.id = sub.id;
+      const syncIcon = document.createElement('i');
+      syncIcon.setAttribute('data-lucide', 'refresh-cw');
+      syncIcon.style.cssText = 'width:16px;height:16px';
+      syncIcon.setAttribute('aria-hidden', 'true');
+      syncBtn.appendChild(syncIcon);
+      actions.appendChild(syncBtn);
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'btn btn--icon btn--danger-outline';
+      delBtn.title = t('settings.ics.actions.delete');
+      delBtn.setAttribute('aria-label', t('settings.ics.actions.delete'));
+      delBtn.dataset.action = 'ics-delete';
+      delBtn.dataset.id = sub.id;
+      delBtn.dataset.name = sub.name;
+      const delIcon = document.createElement('i');
+      delIcon.setAttribute('data-lucide', 'trash-2');
+      delIcon.style.cssText = 'width:14px;height:14px';
+      delIcon.setAttribute('aria-hidden', 'true');
+      delBtn.appendChild(delIcon);
+      actions.appendChild(delBtn);
+
+      li.appendChild(actions);
+    }
+
+    ul.appendChild(li);
+  });
+  listEl.appendChild(ul);
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function bindIcsEvents(container, user, initialSubs) {
+  let subs = [...initialSubs];
+  renderIcsList(container, subs, user);
+
+  const addBtn     = container.querySelector('#ics-add-btn');
+  const formWrapper = container.querySelector('#ics-add-form-wrapper');
+  const addForm    = container.querySelector('#ics-add-form');
+  const cancelBtn  = container.querySelector('#ics-cancel-btn');
+  const submitBtn  = container.querySelector('#ics-submit-btn');
+  const errorEl    = container.querySelector('#ics-add-error');
+  const listEl     = container.querySelector('#ics-list-container');
+
+  if (addBtn) {
+    addBtn.addEventListener('click', () => {
+      formWrapper.hidden = false;
+      addBtn.hidden = true;
+      container.querySelector('#ics-url')?.focus();
+    });
+  }
+
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      formWrapper.hidden = true;
+      addBtn.hidden = false;
+      addForm?.reset();
+      errorEl.hidden = true;
+    });
+  }
+
+  if (addForm) {
+    addForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.hidden = true;
+      const url    = container.querySelector('#ics-url').value.trim();
+      const name   = container.querySelector('#ics-name').value.trim();
+      const color  = container.querySelector('#ics-color').value;
+      const shared = container.querySelector('#ics-shared').checked ? 1 : 0;
+
+      submitBtn.disabled = true;
+      try {
+        const res = await api.post('/calendar/subscriptions', { url, name, color, shared });
+        subs.push(res.data);
+        renderIcsList(container, subs, user);
+        addForm.reset();
+        formWrapper.hidden = true;
+        addBtn.hidden = false;
+        if (res.syncError) {
+          window.oikos?.showToast(`${t('settings.ics.status.syncError')}: ${res.syncError}`, 'danger');
+        } else {
+          window.oikos?.showToast(t('settings.ics.add'), 'success');
+        }
+      } catch (err) {
+        errorEl.textContent = err.message ?? t('common.errorGeneric');
+        errorEl.hidden = false;
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  }
+
+  if (listEl) {
+    listEl.addEventListener('click', async (e) => {
+      const target = e.target.closest('[data-action]');
+      if (!target) return;
+      const action = target.dataset.action;
+      const id     = parseInt(target.dataset.id, 10);
+
+      if (action === 'ics-sync') {
+        const origIcon = target.querySelector('[data-lucide]');
+        target.disabled = true;
+        if (origIcon) origIcon.setAttribute('data-lucide', 'loader');
+        if (window.lucide) window.lucide.createIcons();
+        try {
+          const res = await api.post(`/calendar/subscriptions/${id}/sync`, {});
+          const idx = subs.findIndex((s) => s.id === id);
+          if (idx >= 0) subs[idx] = res.data;
+          renderIcsList(container, subs, user);
+          window.oikos?.showToast(t('settings.ics.actions.sync'), 'success');
+        } catch (err) {
+          window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+          target.disabled = false;
+          if (origIcon) origIcon.setAttribute('data-lucide', 'refresh-cw');
+          if (window.lucide) window.lucide.createIcons();
+        }
+      }
+
+      if (action === 'ics-delete') {
+        const name = target.dataset.name;
+        if (!await confirmModal(t('settings.ics.confirm_delete'), { danger: true, confirmLabel: t('common.delete') })) return;
+        try {
+          await api.delete(`/calendar/subscriptions/${id}`);
+          subs = subs.filter((s) => s.id !== id);
+          renderIcsList(container, subs, user);
+          window.oikos?.showToast(t('settings.ics.actions.delete'), 'default');
+        } catch (err) {
+          window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+        }
+      }
+    });
+  }
 }
 
 function initials(name) {
