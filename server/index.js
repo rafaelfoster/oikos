@@ -14,6 +14,7 @@ import { router as authRouter, sessionMiddleware, requireAuth } from './auth.js'
 import { csrfMiddleware } from './middleware/csrf.js';
 import * as googleCalendar from './services/google-calendar.js';
 import * as appleCalendar from './services/apple-calendar.js';
+import * as icsSubscription from './services/ics-subscription.js';
 import dashboardRouter from './routes/dashboard.js';
 import tasksRouter from './routes/tasks.js';
 import shoppingRouter from './routes/shopping.js';
@@ -222,6 +223,8 @@ async function runSync() {
   if (appleConfigured) {
     appleCalendar.sync().catch((e) => logSync.error('Apple Fehler:', e.message));
   }
+
+  icsSubscription.sync().catch((e) => logSync.error('ICS Fehler:', e.message));
 }
 
 // --------------------------------------------------------

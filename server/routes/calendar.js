@@ -10,6 +10,7 @@ import express from 'express';
 import * as db from '../db.js';
 import * as googleCalendar from '../services/google-calendar.js';
 import * as appleCalendar from '../services/apple-calendar.js';
+import * as icsSubscription from '../services/ics-subscription.js';
 import { requireAdmin } from '../auth.js';
 import { str, color, datetime, rrule, collectErrors, MAX_TITLE, MAX_TEXT, DATE_RE, DATETIME_RE } from '../middleware/validate.js';
 import { nextOccurrence } from '../services/recurrence.js';
@@ -18,7 +19,8 @@ const log = createLogger('Calendar');
 
 const router         = express.Router();
 
-const VALID_SOURCES = ['local', 'google', 'apple'];
+const VALID_SOURCES  = ['local', 'google', 'apple', 'ics'];
+const ICS_COLOR_RE   = /^#[0-9a-fA-F]{6}$/;
 
 // --------------------------------------------------------
 // RRULE-Expansion: alle Vorkommen eines wiederkehrenden Events
@@ -134,8 +136,14 @@ router.get('/', (req, res) => {
         OR
         (e.recurrence_rule IS NOT NULL AND DATE(e.start_datetime) <= ?)
       )
+      AND (
+        e.external_source != 'ics'
+        OR e.subscription_id IN (
+          SELECT id FROM ics_subscriptions WHERE shared = 1 OR created_by = ?
+        )
+      )
     `;
-    const params = [to, from, to];
+    const params = [to, from, to, req.session.userId];
 
     if (req.query.assigned_to) {
       sql += ' AND e.assigned_to = ?';
@@ -370,6 +378,103 @@ router.delete('/apple/disconnect', requireAdmin, (req, res) => {
 });
 
 // --------------------------------------------------------
+// ICS Subscription-Routen
+// Müssen vor /:id registriert werden, um Konflikte zu vermeiden.
+// --------------------------------------------------------
+
+router.get('/subscriptions', (req, res) => {
+  try {
+    const subs = icsSubscription.getAll(req.session.userId);
+    res.json({ data: subs });
+  } catch (err) {
+    log.error('', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+router.post('/subscriptions', async (req, res) => {
+  try {
+    const { name, url, color: colorVal, shared } = req.body;
+    if (!name || typeof name !== 'string' || name.trim().length === 0 || name.length > 100)
+      return res.status(400).json({ error: 'name: Pflichtfeld, max. 100 Zeichen.', code: 400 });
+    if (!url || typeof url !== 'string')
+      return res.status(400).json({ error: 'url: Pflichtfeld.', code: 400 });
+    try { const u = new URL(url.replace(/^webcal:\/\//i, 'https://')); if (!['https:'].includes(u.protocol)) throw new Error(); }
+    catch { return res.status(400).json({ error: 'url: Nur https:// und webcal:// sind erlaubt.', code: 400 }); }
+    if (!colorVal || !ICS_COLOR_RE.test(colorVal))
+      return res.status(400).json({ error: 'color: Pflichtfeld, muss #RRGGBB sein.', code: 400 });
+
+    const { sub, syncError } = await icsSubscription.create(req.session.userId, {
+      name: name.trim(), url, color: colorVal, shared: shared ? 1 : 0,
+    });
+    res.status(201).json({ data: sub, syncError: syncError || null });
+  } catch (err) {
+    log.error('', err);
+    if (err.message?.includes('Nur https')) return res.status(400).json({ error: err.message, code: 400 });
+    if (err.message?.includes('private IP')) return res.status(400).json({ error: err.message, code: 400 });
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+router.patch('/subscriptions/:id', (req, res) => {
+  try {
+    const subId   = parseInt(req.params.id, 10);
+    const isAdmin = req.session.isAdmin;
+    const fields  = {};
+    if (req.body.name  !== undefined) {
+      if (typeof req.body.name !== 'string' || req.body.name.trim().length === 0 || req.body.name.length > 100)
+        return res.status(400).json({ error: 'name: max. 100 Zeichen, darf nicht leer sein.', code: 400 });
+      fields.name = req.body.name.trim();
+    }
+    if (req.body.color !== undefined) {
+      if (!ICS_COLOR_RE.test(req.body.color))
+        return res.status(400).json({ error: 'color: muss #RRGGBB sein.', code: 400 });
+      fields.color = req.body.color;
+    }
+    if (req.body.shared !== undefined) fields.shared = req.body.shared;
+
+    const updated = icsSubscription.update(req.session.userId, subId, fields, isAdmin);
+    if (!updated) return res.status(404).json({ error: 'Abonnement nicht gefunden.', code: 404 });
+    res.json({ data: updated });
+  } catch (err) {
+    if (err.message === 'Nicht autorisiert.') return res.status(403).json({ error: err.message, code: 403 });
+    log.error('', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+router.delete('/subscriptions/:id', (req, res) => {
+  try {
+    const subId   = parseInt(req.params.id, 10);
+    const isAdmin = req.session.isAdmin;
+    const ok      = icsSubscription.remove(req.session.userId, subId, isAdmin);
+    if (!ok) return res.status(404).json({ error: 'Abonnement nicht gefunden.', code: 404 });
+    res.status(204).end();
+  } catch (err) {
+    if (err.message === 'Nicht autorisiert.') return res.status(403).json({ error: err.message, code: 403 });
+    log.error('', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+router.post('/subscriptions/:id/sync', async (req, res) => {
+  try {
+    const subId   = parseInt(req.params.id, 10);
+    const isAdmin = req.session.isAdmin;
+    const sub     = db.get().prepare('SELECT * FROM ics_subscriptions WHERE id = ?').get(subId);
+    if (!sub) return res.status(404).json({ error: 'Abonnement nicht gefunden.', code: 404 });
+    if (!isAdmin && sub.created_by !== req.session.userId)
+      return res.status(403).json({ error: 'Nicht autorisiert.', code: 403 });
+    await icsSubscription.sync(subId);
+    const updated = db.get().prepare('SELECT * FROM ics_subscriptions WHERE id = ?').get(subId);
+    res.json({ data: updated });
+  } catch (err) {
+    log.error('', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+// --------------------------------------------------------
 // GET /api/v1/calendar/:id
 // Einzelnen Termin abrufen.
 // Response: { data: Event }
@@ -482,6 +587,8 @@ router.put('/:id', (req, res) => {
       all_day, location, color: colorVal, assigned_to, recurrence_rule,
     } = req.body;
 
+    const userModified = event.external_source === 'ics' ? 1 : event.user_modified;
+
     db.get().prepare(`
       UPDATE calendar_events
       SET title           = COALESCE(?, title),
@@ -492,7 +599,8 @@ router.put('/:id', (req, res) => {
           location        = ?,
           color           = COALESCE(?, color),
           assigned_to     = ?,
-          recurrence_rule = ?
+          recurrence_rule = ?,
+          user_modified   = ?
       WHERE id = ?
     `).run(
       title?.trim()  ?? null,
@@ -504,6 +612,7 @@ router.put('/:id', (req, res) => {
       colorVal ?? null,
       assigned_to !== undefined ? (assigned_to || null) : event.assigned_to,
       recurrence_rule !== undefined ? (recurrence_rule || null) : event.recurrence_rule,
+      userModified,
       id
     );
 
@@ -519,6 +628,38 @@ router.put('/:id', (req, res) => {
     `).get(id);
 
     res.json({ data: updated });
+  } catch (err) {
+    log.error('', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+// --------------------------------------------------------
+// POST /api/v1/calendar/:id/reset
+// ICS-Event auf Original zurücksetzen (user_modified = 0).
+// Nur Event-Creator, Subscription-Creator oder Admin.
+// Response: { data: { reset: true } }
+// --------------------------------------------------------
+router.post('/:id/reset', (req, res) => {
+  try {
+    const id    = parseInt(req.params.id, 10);
+    const event = db.get().prepare(`
+      SELECT e.*, s.created_by AS sub_created_by
+      FROM calendar_events e
+      LEFT JOIN ics_subscriptions s ON s.id = e.subscription_id
+      WHERE e.id = ?
+    `).get(id);
+    if (!event) return res.status(404).json({ error: 'Termin nicht gefunden', code: 404 });
+    if (event.external_source !== 'ics')
+      return res.status(400).json({ error: 'Nur ICS-Events können zurückgesetzt werden.', code: 400 });
+
+    const userId  = req.session.userId;
+    const isAdmin = req.session.isAdmin;
+    if (!isAdmin && event.created_by !== userId && event.sub_created_by !== userId)
+      return res.status(403).json({ error: 'Nicht autorisiert.', code: 403 });
+
+    db.get().prepare('UPDATE calendar_events SET user_modified = 0 WHERE id = ?').run(id);
+    res.json({ data: { reset: true } });
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
