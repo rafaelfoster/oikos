@@ -137,7 +137,7 @@ router.get('/', (req, res) => {
         (e.recurrence_rule IS NOT NULL AND DATE(e.start_datetime) <= ?)
       )
       AND (
-        e.external_source != 'ics'
+        e.external_source <> 'ics'
         OR e.subscription_id IN (
           SELECT id FROM ics_subscriptions WHERE shared = 1 OR created_by = ?
         )
@@ -191,7 +191,7 @@ router.get('/upcoming', (req, res) => {
         (e.recurrence_rule IS NOT NULL AND DATE(e.start_datetime) <= ?)
       )
       AND (
-        e.external_source != 'ics'
+        e.external_source <> 'ics'
         OR e.subscription_id IN (
           SELECT id FROM ics_subscriptions WHERE shared = 1 OR created_by = ?
         )
@@ -425,6 +425,7 @@ router.post('/subscriptions', async (req, res) => {
 router.patch('/subscriptions/:id', (req, res) => {
   try {
     const subId   = parseInt(req.params.id, 10);
+    if (!Number.isFinite(subId)) return res.status(400).json({ error: 'Ungültige ID.', code: 400 });
     const isAdmin = req.session.isAdmin;
     const fields  = {};
     if (req.body.name  !== undefined) {
@@ -452,6 +453,7 @@ router.patch('/subscriptions/:id', (req, res) => {
 router.delete('/subscriptions/:id', (req, res) => {
   try {
     const subId   = parseInt(req.params.id, 10);
+    if (!Number.isFinite(subId)) return res.status(400).json({ error: 'Ungültige ID.', code: 400 });
     const isAdmin = req.session.isAdmin;
     const ok      = icsSubscription.remove(req.session.userId, subId, isAdmin);
     if (!ok) return res.status(404).json({ error: 'Abonnement nicht gefunden.', code: 404 });
@@ -466,6 +468,7 @@ router.delete('/subscriptions/:id', (req, res) => {
 router.post('/subscriptions/:id/sync', async (req, res) => {
   try {
     const subId   = parseInt(req.params.id, 10);
+    if (!Number.isFinite(subId)) return res.status(400).json({ error: 'Ungültige ID.', code: 400 });
     const isAdmin = req.session.isAdmin;
     const sub     = db.get().prepare('SELECT * FROM ics_subscriptions WHERE id = ?').get(subId);
     if (!sub) return res.status(404).json({ error: 'Abonnement nicht gefunden.', code: 404 });
@@ -593,7 +596,7 @@ router.put('/:id', (req, res) => {
       all_day, location, color: colorVal, assigned_to, recurrence_rule,
     } = req.body;
 
-    const userModified = event.external_source === 'ics' ? 1 : event.user_modified;
+    const userModified = event.external_source !== 'local' ? 1 : event.user_modified;
 
     db.get().prepare(`
       UPDATE calendar_events
@@ -649,6 +652,7 @@ router.put('/:id', (req, res) => {
 router.post('/:id/reset', (req, res) => {
   try {
     const id    = parseInt(req.params.id, 10);
+    if (!Number.isFinite(id)) return res.status(400).json({ error: 'Ungültige ID.', code: 400 });
     const event = db.get().prepare(`
       SELECT e.*, s.created_by AS sub_created_by
       FROM calendar_events e

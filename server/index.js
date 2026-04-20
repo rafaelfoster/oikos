@@ -224,6 +224,7 @@ async function runSync() {
     appleCalendar.sync().catch((e) => logSync.error('Apple Fehler:', e.message));
   }
 
+  // ICS: kein Guard nötig — sync() fragt die DB ab und kehrt sofort zurück wenn keine Abonnements existieren
   icsSubscription.sync().catch((e) => logSync.error('ICS Fehler:', e.message));
 }
 
