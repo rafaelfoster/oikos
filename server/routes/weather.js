@@ -50,25 +50,48 @@ router.get('/', async (req, res) => {
     }
     const currentJson = await currentRes.json();
 
-    // 5-Tage-Forecast (3h-Intervalle → wir nehmen Mittags-Werte für Tagesvorschau)
+    // 5-Tage-Forecast (3h-Intervalle → aggregiert zu Tageswerten)
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${apiKey}&units=${units}&lang=${lang}&cnt=40`;
     const forecastRes = await fetch(forecastUrl, { signal: AbortSignal.timeout(8000) });
     let forecastDays = [];
+
     if (forecastRes.ok) {
       const forecastJson = await forecastRes.json();
-      // Ein Eintrag pro Tag: nächstgelegener Mittags-Wert (12:00 Uhr)
-      const seen = new Set();
-      for (const item of forecastJson.list ?? []) {
-        const dateStr = item.dt_txt.slice(0, 10); // YYYY-MM-DD
-        if (seen.has(dateStr)) continue;
-        seen.add(dateStr);
+      const list = forecastJson.list ?? [];
+
+      // Alle Einträge nach Tag gruppieren
+      const dayMap = new Map(); // "YYYY-MM-DD" → { temps: [], items: [] }
+
+      for (const item of list) {
+        const dateStr = item.dt_txt.slice(0, 10);
+        if (!dayMap.has(dateStr)) {
+          dayMap.set(dateStr, { temps: [], items: [] });
+        }
+        const day = dayMap.get(dateStr);
+        day.temps.push(item.main.temp);
+        day.items.push(item);
+      }
+
+      // Heute überspringen (Forecast),
+      const today = new Date().toISOString().slice(0, 10);
+
+      for (const [dateStr, { temps, items }] of dayMap) {
+        if (dateStr === today) continue; // optional
+
+        // Mittags-Wert (12:00) für Icon/Desc nutzen, falls nicht vorhanden Fallback auf 15:00 / mitte des Tages
+        const noonItem =
+          items.find(i => i.dt_txt.includes("12:00:00")) ??
+          items.find(i => i.dt_txt.includes("15:00:00")) ??
+          items[Math.floor(items.length / 2)];
+
         forecastDays.push({
-          date:      dateStr,
-          temp_min:  Math.round(item.main.temp_min),
-          temp_max:  Math.round(item.main.temp_max),
-          icon:      item.weather[0]?.icon,
-          desc:      item.weather[0]?.description,
+          date:     dateStr,
+          temp_min: Math.round(Math.min(...temps)),
+          temp_max: Math.round(Math.max(...temps)),
+          icon:     noonItem.weather[0]?.icon,
+          desc:     noonItem.weather[0]?.description,
         });
+
         if (forecastDays.length >= 5) break;
       }
     }
