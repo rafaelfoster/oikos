@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.20.26] - 2026-04-20
+
+### Added
+- Meals: floating action button (FAB) now appears fixed at the bottom-right corner, opening a quick-add modal for today with the first visible meal type pre-selected
+
 ## [0.20.25] - 2026-04-20
 
 ### Fixed

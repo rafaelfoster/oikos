@@ -146,6 +146,9 @@ export async function render(container, { user }) {
       <div class="week-grid" id="week-grid">
         <div style="margin:auto;padding:2rem;text-align:center;color:var(--color-text-disabled)">${t('meals.loadingIndicator')}</div>
       </div>
+      <button class="page-fab" id="fab-new-meal" aria-label="${t('meals.addMealTitle')}">
+        <i data-lucide="plus" style="width:24px;height:24px" aria-hidden="true"></i>
+      </button>
     </div>
   `;
 
@@ -157,6 +160,11 @@ export async function render(container, { user }) {
   await Promise.all([loadWeek(monday), loadLists(), loadPreferences(), loadCategories()]);
   renderWeekGrid();
   wireNav();
+
+  container.querySelector('#fab-new-meal').addEventListener('click', () => {
+    const firstType = state.visibleMealTypes[0] ?? 'lunch';
+    openMealModal({ mode: 'create', date: today, mealType: firstType });
+  });
 }
 
 // --------------------------------------------------------
