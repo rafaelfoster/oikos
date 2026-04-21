@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.0] - 2026-04-21
+
 ### Added
 - Calendar: `external_calendars` DB table (migration v14) stores display name and color per synced Google/Apple calendar; `calendar_events` gains a `calendar_ref_id` FK used for join-based name/color lookup in all calendar and dashboard queries
 - Calendar: Google and Apple sync services now fetch the calendar's display name and background color via `upsertExternalCalendar()` and persist them to the new table
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Router: page auto-reloads 8 s after the SW-update toast is shown, matching the toast's own display duration so the reload is never missed
 - Layout: modal overlay uses `overflow: hidden` and bottom-sheet scroll container uses `overflow-x: hidden` to prevent horizontal scroll bleed on narrow viewports; form inputs get `min-width: 0; box-sizing: border-box` to prevent overflow out of two-column grid containers
 - Reminders: field grid changed from `1fr 1fr` to `repeat(2, minmax(0, 1fr))` to prevent content from exceeding the grid track width
+- PWA: double `padding-bottom` on PWA bottom nav removed — the safe-area padding in `pwa.css` was applied twice, causing an extra gap on iPhone safe-area screens
 
 ## [0.22.3] - 2026-04-21
 
