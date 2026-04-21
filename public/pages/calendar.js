@@ -9,7 +9,7 @@ import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js
 import { openModal as openSharedModal, closeModal, confirmModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
 import { t, formatTime } from '/i18n.js';
-import { esc } from '/utils/html.js';
+import { esc, fmtLocation } from '/utils/html.js';
 import { refresh as refreshReminders } from '/reminders.js';
 
 // --------------------------------------------------------
@@ -47,6 +47,22 @@ const EVENT_COLORS = [
 ];
 
 const HOUR_HEIGHT = 56; // px pro Stunde in Wochen-/Tagesansicht
+
+/**
+ * Gibt eine lesbare Textfarbe für eine Hintergrundfarbe zurück.
+ * Helle Hintergründe (z.B. Hellgelb, Hellgrün) → dunkles Grau statt Weiß.
+ */
+function getContrastColor(hex) {
+  if (!hex || hex.length < 7) return null;
+  try {
+    const r = parseInt(hex.slice(1, 3), 16) / 255;
+    const g = parseInt(hex.slice(3, 5), 16) / 255;
+    const b = parseInt(hex.slice(5, 7), 16) / 255;
+    const lin = (c) => c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    const L = 0.2126 * lin(r) + 0.7152 * lin(g) + 0.0722 * lin(b);
+    return L > 0.30 ? '#3D3D3D' : null; // null → CSS-Standard (weiß) bleibt
+  } catch { return null; }
+}
 
 // --------------------------------------------------------
 // State
@@ -379,13 +395,17 @@ function renderMonthDay(date, inMonth) {
   const shown    = evs.slice(0, MAX_SHOW);
   const extra    = evs.length - MAX_SHOW;
 
-  const evHtml = shown.map((ev) => `
+  const evHtml = shown.map((ev) => {
+    const bg = ev.cal_color || ev.color;
+    const fg = getContrastColor(bg);
+    return `
     <div class="month-day__event"
          data-id="${ev.id}"
-         style="background-color:${esc(ev.color)};"
-         title="${esc(ev.title)}"
+         style="background-color:${esc(bg)};${fg ? `color:${fg};` : ''}"
+         title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}"
     >${esc(ev.title)}</div>
-  `).join('');
+  `;
+  }).join('');
 
   return `
     <div class="${classes}" data-date="${date}">
@@ -430,8 +450,9 @@ function renderWeekView(container) {
         ${days.map((d, i) => `
           <div class="allday-cell">
             ${alldayEvs[i].map((ev) => `
-              <div class="allday-event" data-id="${ev.id}" style="background-color:${esc(ev.color)};"
-                   title="${esc(ev.title)}">${esc(ev.title)}</div>
+              <div class="allday-event" data-id="${ev.id}"
+                   style="${ev.cal_color || ev.color ? `background-color:${esc(ev.cal_color || ev.color)};` : ''}${getContrastColor(ev.cal_color || ev.color) ? `color:${getContrastColor(ev.cal_color || ev.color)};` : ''}"
+                   title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${esc(ev.title)}</div>
             `).join('')}
           </div>
         `).join('')}
@@ -502,7 +523,7 @@ function renderWeekEvent(ev) {
 
   return `
     <div class="week-event" data-id="${ev.id}"
-         style="top:${top}px;height:${height}px;background-color:${esc(ev.color)};">
+         style="top:${top}px;height:${height}px;${ev.cal_color || ev.color ? `background-color:${esc(ev.cal_color || ev.color)};` : ''}${getContrastColor(ev.cal_color || ev.color) ? `color:${getContrastColor(ev.cal_color || ev.color)};` : ''}">
       <div class="week-event__title">${esc(ev.title)}</div>
       <div class="week-event__time">${formatTime(ev.start_datetime)}${ev.end_datetime ? '–' + formatTime(ev.end_datetime) : ''}</div>
     </div>
@@ -541,9 +562,9 @@ function renderDayView(container) {
         <div style="padding:2px 4px 2px 0;font-size:10px;color:var(--color-text-disabled);text-align:right;line-height:24px;">${t('calendar.allDayShort')}</div>
         <div class="allday-cell">
           ${allday.map((ev) => `
-            <div class="allday-event" data-id="${ev.id}" style="background-color:${esc(ev.color)};">
-              ${esc(ev.title)}
-            </div>`).join('')}
+            <div class="allday-event" data-id="${ev.id}"
+                 style="${ev.cal_color || ev.color ? `background-color:${esc(ev.cal_color || ev.color)};` : ''}${getContrastColor(ev.cal_color || ev.color) ? `color:${getContrastColor(ev.cal_color || ev.color)};` : ''}"
+                 title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${esc(ev.title)}</div>`).join('')}
         </div>
       </div>` : ''}
       <div class="day-view__scroll" id="day-scroll">
@@ -634,14 +655,16 @@ function renderAgendaEvent(ev) {
     ? ev.assigned_name.split(' ').map((w) => w[0]).join('').toUpperCase().slice(0, 2)
     : '';
 
+  const displayColor = ev.cal_color || ev.color;
   return `
     <div class="agenda-event" data-id="${ev.id}">
-      <div class="agenda-event__color" style="background-color:${esc(ev.color)};"></div>
+      <div class="agenda-event__color" style="background-color:${esc(displayColor)};"></div>
       <div class="agenda-event__body">
         <div class="agenda-event__title">${esc(ev.title)}${(ev.recurrence_rule || ev.is_recurring_instance) ? ' <i data-lucide="repeat" style="width:12px;height:12px;display:inline;vertical-align:middle;opacity:0.5" aria-hidden="true"></i>' : ''}</div>
         <div class="agenda-event__meta">
           <span>${timeStr}</span>
-          ${ev.location ? `<span>📍 ${esc(ev.location)}</span>` : ''}
+          ${ev.location ? `<span>📍 ${esc(fmtLocation(ev.location))}</span>` : ''}
+          ${ev.cal_name ? `<span class="event-cal-label" style="--cal-color:${esc(displayColor)}">${esc(ev.cal_name)}</span>` : ''}
           ${ev.assigned_name ? `
             <span class="agenda-event__assigned">
               <span class="agenda-event__avatar" style="background-color:${esc(ev.assigned_color || '#8E8E93')}">${initials}</span>
@@ -669,12 +692,14 @@ function showEventPopup(ev, anchor) {
     : formatDateTime(ev.start_datetime)
       + (ev.end_datetime ? ` – ${formatTime(ev.end_datetime)}${t('calendar.timeSuffix') ? ' ' + t('calendar.timeSuffix') : ''}`.trim() : '');
 
+  const displayColor = ev.cal_color || ev.color;
   popup.innerHTML = `
-    <div class="event-popup__color-bar" style="background-color:${esc(ev.color)};"></div>
+    <div class="event-popup__color-bar" style="background-color:${esc(displayColor)};"></div>
     <div class="event-popup__title">${esc(ev.title)}</div>
     <div class="event-popup__meta">
+      ${ev.cal_name ? `<div><span class="event-cal-label" style="--cal-color:${esc(displayColor)}">${esc(ev.cal_name)}</span></div>` : ''}
       <div>${timeStr}</div>
-      ${ev.location ? `<div>📍 ${esc(ev.location)}</div>` : ''}
+      ${ev.location ? `<div>📍 ${esc(fmtLocation(ev.location))}</div>` : ''}
       ${ev.description ? `<div>${esc(ev.description)}</div>` : ''}
       ${ev.assigned_name ? `<div>👤 ${esc(ev.assigned_name)}</div>` : ''}
     </div>
