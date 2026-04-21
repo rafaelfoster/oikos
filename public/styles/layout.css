@@ -6,7 +6,7 @@
  * Navigation:
  *   Mobile (<1024px):  Bottom-Nav-Bar, 5 Haupt-Module
  *   Desktop (1024–1279px): Collapsed Sidebar, nur Icons (56px)
- *   Wide Desktop (≥1280px): Expanded Sidebar mit Labels (220px)
+ *   Wide Desktop (>1280px): Expanded Sidebar mit Labels (220px)
  *
  * Referenz: Apple HIG Sidebar-Pattern
  */
@@ -50,31 +50,44 @@
 /* --------------------------------------------------------
  * Seiten-Übergangs-Animation (direktional)
  * -------------------------------------------------------- */
+/* Basis: unsichtbar vor Animation */
+.page-transition {
+  opacity: 0;
+}
+
+/* Nach der In-Animation soll es sichtbar bleiben → direkt auf der Klasse */
+.page-transition--in-right,
+.page-transition--in-left {
+  opacity: 1;
+  transform: none;
+}
+
+/* Keyframes OHNE forwards */
 @keyframes page-slide-in-right {
   from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes page-slide-in-left {
   from { opacity: 0; transform: translateX(-20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  to   { opacity: 1; transform: none; }
 }
 @keyframes page-out-left {
-  from { opacity: 1; transform: translateX(0); }
+  from { opacity: 1; transform: none; }
   to   { opacity: 0; transform: translateX(-20px); }
 }
 @keyframes page-out-right {
-  from { opacity: 1; transform: translateX(0); }
+  from { opacity: 1; transform: none; }
   to   { opacity: 0; transform: translateX(20px); }
 }
 
 .page-transition--in-right {
-  animation: page-slide-in-right 0.2s var(--ease-out) forwards;
+  animation: page-slide-in-right 0.2s var(--ease-out);
 }
 .page-transition--in-left {
-  animation: page-slide-in-left 0.2s var(--ease-out) forwards;
+  animation: page-slide-in-left 0.2s var(--ease-out);
 }
 .page-transition--out-left {
-  animation: page-out-left 0.12s ease forwards;
+  animation: page-out-left 0.12s ease forwards; /* ← out braucht forwards, wird ja eh entfernt */
   pointer-events: none;
 }
 .page-transition--out-right {
@@ -628,7 +641,7 @@
 /* ================================================================
  * Sidebar Expanded (≥ 1280px) - Labels sichtbar
  * ================================================================ */
-@media (min-width: 1280px) {
+@media (min-width: 1440px) {
   :root {
     --sidebar-width: var(--sidebar-width-expanded);
   }
