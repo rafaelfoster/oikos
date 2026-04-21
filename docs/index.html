@@ -743,11 +743,12 @@
       </div>
       <div class="setup-content reveal">
         <div class="code-block" role="region" aria-label="Setup commands">
-<span class="comment"># Option A — pre-built image (no clone required)</span>
-curl -O https://raw.githubusercontent.com/ulsklyc/oikos/main/docker-compose.yml
-curl -O https://raw.githubusercontent.com/ulsklyc/oikos/main/.env.example
-cp .env.example .env     <span class="comment"># set SESSION_SECRET and DB_ENCRYPTION_KEY</span>
-<span class="cmd">docker compose up -d</span>
+<span class="comment"># Option A — pre-built image (no clone required)</span><br>
+curl -O https://raw.githubusercontent.com/ulsklyc/oikos/main/docker-compose.yml<br>
+curl -O https://raw.githubusercontent.com/ulsklyc/oikos/main/.env.example<br>
+cp .env.example .env<br>
+<span class="comment"># set SESSION_SECRET and DB_ENCRYPTION_KEY in .env</span><br>
+<span class="cmd">docker compose up -d</span><br>
 <span class="cmd">docker compose exec oikos node setup.js</span>
         </div>
         <p class="setup-note" data-i18n="setup_note">Then open <code>http://localhost:3000</code> and log in. Need help? The <a href="https://github.com/ulsklyc/oikos/blob/main/docs/installation.md" target="_blank" rel="noopener">Installation Guide</a> covers everything from installing Docker to HTTPS, backups, and troubleshooting.</p>
