@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.22.0] - 2026-04-21
+
+### Added
+- Recipes module: create, edit, duplicate, and delete reusable recipes with title, notes, a recipe link, and a per-ingredient category. Accessible via the new `/recipes` route and nav entry.
+- "Add to meal plan" action on recipe cards navigates to Meals and pre-fills the modal with the selected recipe.
+- Meals modal: select a saved recipe to auto-fill title, notes, URL, and ingredients; scale ingredient quantities by a numeric factor; save the current meal as a new recipe in one click.
+- `GET/POST /api/v1/recipes`, `PUT/DELETE /api/v1/recipes/:id` REST endpoints with full validation and ingredient sync.
+- Migration 13: `recipes` and `recipe_ingredients` tables; `recipe_id` FK column on `meals`.
+
 ## [0.21.1] - 2026-04-21
 
 ### Fixed

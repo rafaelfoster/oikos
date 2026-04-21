@@ -110,8 +110,9 @@ router.put('/:id', (req, res) => {
     const id = parseInt(req.params.id, 10);
     if (!id) return res.status(400).json({ error: 'Ungueltige Rezept-ID', code: 400 });
 
-    const existing = db.get().prepare('SELECT id FROM recipes WHERE id = ?').get(id);
+    const existing = db.get().prepare('SELECT id, created_by FROM recipes WHERE id = ?').get(id);
     if (!existing) return res.status(404).json({ error: 'Rezept nicht gefunden', code: 404 });
+    if (existing.created_by !== req.session.userId) return res.status(403).json({ error: 'Nicht autorisiert.', code: 403 });
 
     const { ingredients = [] } = req.body;
 
@@ -154,8 +155,11 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const existing = num(id, 'Rezept-ID', { required: true });
-    if (existing.error) return res.status(400).json({ error: existing.error, code: 400 });
+    if (!id) return res.status(400).json({ error: 'Ungültige Rezept-ID.', code: 400 });
+
+    const existing = db.get().prepare('SELECT id, created_by FROM recipes WHERE id = ?').get(id);
+    if (!existing) return res.status(404).json({ error: 'Rezept nicht gefunden.', code: 404 });
+    if (existing.created_by !== req.session.userId) return res.status(403).json({ error: 'Nicht autorisiert.', code: 403 });
 
     const result = db.get().prepare('DELETE FROM recipes WHERE id = ?').run(id);
     if (result.changes === 0) return res.status(404).json({ error: 'Rezept nicht gefunden', code: 404 });

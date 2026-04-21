@@ -5,7 +5,6 @@
 
 import { api } from '/api.js';
 import { t } from '/i18n.js';
-import { esc } from '/utils/html.js';
 import { openModal as openSharedModal, closeModal as closeSharedModal, confirmModal } from '/components/modal.js';
 import { DEFAULT_CATEGORY_NAME, categoryLabel } from '/utils/shopping-categories.js';
 
@@ -211,32 +210,63 @@ function renderRecipeList() {
   }
 }
 
-function recipeIngredientRowHTML(name, qty, category = DEFAULT_CATEGORY_NAME) {
+function buildIngredientRow(name, qty, category = DEFAULT_CATEGORY_NAME) {
   const categories = mealCategories();
   const resolvedCategory = categories.some((c) => c.name === category)
     ? category
     : (categories[0]?.name ?? DEFAULT_CATEGORY_NAME);
-  const catOptions = categories.length
-    ? categories.map((c) => `<option value="${esc(c.name)}" ${c.name === resolvedCategory ? 'selected' : ''}>${esc(categoryLabel(c.name))}</option>`).join('')
-    : `<option value="${DEFAULT_CATEGORY_NAME}" selected>${t('meals.ingredientCategoryDefault')}</option>`;
 
-  return `
-    <div class="recipe-ingredient-row">
-      <input type="text" class="form-input recipe-ingredient-row__name" placeholder="${t('meals.ingredientNamePlaceholder')}" value="${esc(name)}">
-      <input type="text" class="form-input recipe-ingredient-row__qty" placeholder="${t('meals.ingredientQtyPlaceholder')}" value="${esc(qty)}">
-      <select class="form-input recipe-ingredient-row__cat" aria-label="${t('meals.ingredientCategoryLabel')}">${catOptions}</select>
-      <button class="recipe-ingredient-row__remove" data-action="remove-ingredient" type="button" aria-label="${t('meals.removeIngredient')}">
-        <i data-lucide="x" style="width:14px;height:14px;" aria-hidden="true"></i>
-      </button>
-    </div>
-  `;
+  const row = document.createElement('div');
+  row.className = 'recipe-ingredient-row';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'form-input recipe-ingredient-row__name';
+  nameInput.placeholder = t('meals.ingredientNamePlaceholder');
+  nameInput.value = name;
+
+  const qtyInput = document.createElement('input');
+  qtyInput.type = 'text';
+  qtyInput.className = 'form-input recipe-ingredient-row__qty';
+  qtyInput.placeholder = t('meals.ingredientQtyPlaceholder');
+  qtyInput.value = qty;
+
+  const catSelect = document.createElement('select');
+  catSelect.className = 'form-input recipe-ingredient-row__cat';
+  catSelect.setAttribute('aria-label', t('meals.ingredientCategoryLabel'));
+  if (categories.length) {
+    for (const c of categories) {
+      const opt = document.createElement('option');
+      opt.value = c.name;
+      opt.textContent = categoryLabel(c.name);
+      if (c.name === resolvedCategory) opt.selected = true;
+      catSelect.appendChild(opt);
+    }
+  } else {
+    const opt = document.createElement('option');
+    opt.value = DEFAULT_CATEGORY_NAME;
+    opt.textContent = t('meals.ingredientCategoryDefault');
+    opt.selected = true;
+    catSelect.appendChild(opt);
+  }
+
+  const removeBtn = document.createElement('button');
+  removeBtn.className = 'recipe-ingredient-row__remove';
+  removeBtn.dataset.action = 'remove-ingredient';
+  removeBtn.type = 'button';
+  removeBtn.setAttribute('aria-label', t('meals.removeIngredient'));
+  const icon = document.createElement('i');
+  icon.dataset.lucide = 'x';
+  icon.style.cssText = 'width:14px;height:14px;';
+  icon.setAttribute('aria-hidden', 'true');
+  removeBtn.appendChild(icon);
+
+  row.append(nameInput, qtyInput, catSelect, removeBtn);
+  return row;
 }
 
 function openRecipeModal(mode, recipe = null) {
   const isEdit = mode === 'edit';
-  const ingredientRows = isEdit && recipe.ingredients?.length
-    ? recipe.ingredients.map((i) => recipeIngredientRowHTML(i.name, i.quantity ?? '', i.category ?? DEFAULT_CATEGORY_NAME)).join('')
-    : '';
 
   openSharedModal({
     title: isEdit ? t('recipes.editRecipe') : t('recipes.addRecipe'),
@@ -244,19 +274,19 @@ function openRecipeModal(mode, recipe = null) {
     content: `
       <div class="form-group">
         <label class="form-label" for="recipe-title">${t('recipes.titleLabel')}</label>
-        <input id="recipe-title" class="form-input" type="text" value="${esc(isEdit ? recipe.title : '')}" placeholder="${t('recipes.titlePlaceholder')}">
+        <input id="recipe-title" class="form-input" type="text" placeholder="${t('recipes.titlePlaceholder')}">
       </div>
       <div class="form-group">
         <label class="form-label" for="recipe-notes">${t('recipes.notesLabel')}</label>
-        <textarea id="recipe-notes" class="form-input" rows="3" placeholder="${t('recipes.notesPlaceholder')}">${esc(isEdit && recipe.notes ? recipe.notes : '')}</textarea>
+        <textarea id="recipe-notes" class="form-input" rows="3" placeholder="${t('recipes.notesPlaceholder')}"></textarea>
       </div>
       <div class="form-group">
         <label class="form-label" for="recipe-url">${t('recipes.urlLabel')}</label>
-        <input id="recipe-url" class="form-input" type="url" value="${esc(isEdit && recipe.recipe_url ? recipe.recipe_url : '')}" placeholder="${t('recipes.urlPlaceholder')}">
+        <input id="recipe-url" class="form-input" type="url" placeholder="${t('recipes.urlPlaceholder')}">
       </div>
       <div class="form-group">
         <label class="form-label">${t('recipes.ingredientsLabel')}</label>
-        <div class="recipe-ingredient-list" id="recipe-ingredient-list">${ingredientRows}</div>
+        <div class="recipe-ingredient-list" id="recipe-ingredient-list"></div>
         <button class="btn btn--secondary recipe-add-ingredient" type="button" id="recipe-add-ingredient">${t('meals.addIngredient')}</button>
       </div>
       <div class="modal-panel__footer" style="border:none;padding:0;margin-top:var(--space-4)">
@@ -265,12 +295,19 @@ function openRecipeModal(mode, recipe = null) {
       </div>
     `,
     onSave(panel) {
+      panel.querySelector('#recipe-title').value = isEdit ? recipe.title : '';
+      panel.querySelector('#recipe-notes').value = isEdit && recipe.notes ? recipe.notes : '';
+      panel.querySelector('#recipe-url').value = isEdit && recipe.recipe_url ? recipe.recipe_url : '';
+
       const ingList = panel.querySelector('#recipe-ingredient-list');
+      if (isEdit && recipe.ingredients?.length) {
+        for (const i of recipe.ingredients) {
+          ingList.appendChild(buildIngredientRow(i.name, i.quantity ?? '', i.category ?? DEFAULT_CATEGORY_NAME));
+        }
+      }
+
       panel.querySelector('#recipe-add-ingredient')?.addEventListener('click', () => {
-        const tmp = document.createElement('div');
-        tmp.innerHTML = recipeIngredientRowHTML('', '', null);
-        const row = tmp.firstElementChild;
-        ingList.appendChild(row);
+        ingList.appendChild(buildIngredientRow('', '', null));
         if (window.lucide) window.lucide.createIcons();
       });
 
@@ -362,8 +399,8 @@ async function duplicateRecipe(recipe) {
   }));
 
   try {
-    await api.post('/recipes', { title, notes, recipe_url, ingredients });
-    await loadRecipes();
+    const res = await api.post('/recipes', { title, notes, recipe_url, ingredients });
+    state.recipes.push(res.data);
     renderRecipeList();
     window.oikos?.showToast(t('recipes.duplicated'), 'success');
   } catch (err) {

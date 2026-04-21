@@ -233,6 +233,11 @@ const MIGRATIONS_SQL = {
     CREATE INDEX IF NOT EXISTS idx_calendar_sub ON calendar_events(subscription_id);
   `,
   12: `
+    DROP INDEX IF EXISTS idx_calendar_sub_extid;
+    CREATE UNIQUE INDEX idx_calendar_sub_extid
+      ON calendar_events (subscription_id, external_calendar_id);
+  `,
+  13: `
     CREATE TABLE IF NOT EXISTS recipes (
       id         INTEGER PRIMARY KEY AUTOINCREMENT,
       title      TEXT    NOT NULL,

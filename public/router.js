@@ -582,7 +582,7 @@ function navItems() {
     { path: '/tasks',    label: t('nav.tasks'),     icon: 'check-square'     },
     { path: '/calendar', label: t('nav.calendar'),  icon: 'calendar'         },
     { path: '/meals',    label: t('nav.meals'),     icon: 'utensils'         },
-    { path: '/recipes',  label: t('nav.recipes'),   icon: 'book-open-text'   },
+    { path: '/recipes',  label: t('nav.recipes'),   icon: 'book-text'        },
     { path: '/shopping', label: t('nav.shopping'),  icon: 'shopping-cart'    },
     { path: '/notes',    label: t('nav.notes'),     icon: 'sticky-note'      },
     { path: '/contacts', label: t('nav.contacts'),  icon: 'book-user'        },

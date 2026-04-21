@@ -44,7 +44,7 @@
     "navigation": "Navigation",
     "quickActions": "Schnellaktionen",
     "more": "Mehr",
-    "recipes": "Recipes"
+    "recipes": "Rezepte"
   },
   "search": {
     "title": "Suche",
@@ -258,10 +258,10 @@
     "recipeUrlLabel": "Rezept-Link (optional)",
     "recipeUrlPlaceholder": "https://…",
     "openRecipe": "Rezept öffnen",
-    "savedRecipeLabel": "Saved recipe",
-    "savedRecipePlaceholder": "Select recipe",
-    "saveAsRecipe": "Save as recipe",
-    "recipeScaleLabel": "Scale ingredients"
+    "savedRecipeLabel": "Gespeichertes Rezept",
+    "savedRecipePlaceholder": "Rezept auswählen",
+    "saveAsRecipe": "Als Rezept speichern",
+    "recipeScaleLabel": "Zutaten skalieren"
   },
   "calendar": {
     "title": "Kalender",
@@ -683,27 +683,27 @@
     "pendingBadgeTitlePlural": "{{count}} fällige Erinnerungen"
   },
   "recipes": {
-    "title": "Recipes",
-    "addRecipe": "Add recipe",
-    "editRecipe": "Edit recipe",
-    "emptyTitle": "No recipes yet",
-    "emptyDescription": "Save your favorite recipes and reuse them in meal planning.",
-    "titleLabel": "Title *",
-    "titlePlaceholder": "e.g. Pasta Carbonara",
-    "notesLabel": "Notes",
-    "notesPlaceholder": "Optional...",
-    "urlLabel": "Recipe link",
-    "urlPlaceholder": "https://...",
-    "ingredientsLabel": "Ingredients",
-    "addToMeals": "Add to meal plan",
-    "openLink": "Open recipe link",
-    "deleteConfirm": "Delete recipe \"{{title}}\"?",
-    "created": "Recipe saved.",
-    "updated": "Recipe updated.",
-    "deleted": "Recipe deleted.",
-    "titleRequired": "Title is required",
-    "duplicate": "Duplicate",
-    "duplicated": "Recipe duplicated.",
-    "copySuffix": "copy"
+    "title": "Rezepte",
+    "addRecipe": "Rezept hinzufügen",
+    "editRecipe": "Rezept bearbeiten",
+    "emptyTitle": "Noch keine Rezepte",
+    "emptyDescription": "Speichere deine Lieblingsrezepte und nutze sie für die Essensplanung.",
+    "titleLabel": "Titel *",
+    "titlePlaceholder": "z. B. Pasta Carbonara",
+    "notesLabel": "Notizen",
+    "notesPlaceholder": "Optional…",
+    "urlLabel": "Rezept-Link",
+    "urlPlaceholder": "https://…",
+    "ingredientsLabel": "Zutaten",
+    "addToMeals": "In Essensplan übernehmen",
+    "openLink": "Rezept-Link öffnen",
+    "deleteConfirm": "Rezept „{{title}}" löschen?",
+    "created": "Rezept gespeichert.",
+    "updated": "Rezept aktualisiert.",
+    "deleted": "Rezept gelöscht.",
+    "titleRequired": "Titel ist erforderlich.",
+    "duplicate": "Duplizieren",
+    "duplicated": "Rezept dupliziert.",
+    "copySuffix": "Kopie"
   }
 }
