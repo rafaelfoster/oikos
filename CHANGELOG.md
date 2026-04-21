@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.1] - 2026-04-22
+
+### Security
+- Installer: host and port inputs are now validated against a strict hostname regex and integer range check (1–65535) before being used in any DOM sink or URL template — prevents XSS-through-DOM (CodeQL js/xss-through-dom alert #7)
+
 ## [0.23.0] - 2026-04-21
 
 ### Added
