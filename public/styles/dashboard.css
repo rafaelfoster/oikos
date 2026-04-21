@@ -69,7 +69,7 @@
   }
 }
 
-@media (min-width: 1440px) {
+@media (min-width: 1280px) {
   .dashboard__grid {
     grid-template-columns: repeat(4, 1fr);
   }
@@ -107,10 +107,8 @@
 
 .widget-greeting__content {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-0h);
-  flex: 1;
-  min-width: 0;
+  gap: var(--space-3);
+  align-items: center;
 }
 
 .widget-greeting__title {
@@ -120,7 +118,10 @@
 
 @media (min-width: 1024px) {
   .widget-greeting__title {
-    font-size: var(--text-2xl);
+    font-size: 1.4rem;
+    opacity: 0.85;
+    white-space: nowrap;
+    padding-top: 4px;
   }
 }
 
@@ -132,8 +133,9 @@
 .widget-greeting__chips {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-top: var(--space-2);
+  margin-top: 4px;
+  align-items: center;
+  gap: var(--space-2, 8px);
 }
 
 .greeting-chip {
@@ -150,6 +152,10 @@
 
 .greeting-chip--warn {
   background: var(--color-danger-translucent);
+}
+
+.greeting-chip--due {
+  background: rgba(245, 158, 11, 0.28);
 }
 
 /* --------------------------------------------------------
@@ -323,6 +329,16 @@
   font-size: var(--text-xs);
   color: var(--color-text-tertiary);
   margin-top: 1px;
+}
+
+.task-item__meta--overdue {
+  color: var(--color-danger);
+  font-weight: var(--font-weight-medium);
+}
+
+.task-item__meta--soon {
+  color: var(--color-soon);
+  font-weight: var(--font-weight-medium);
 }
 
 .task-item__meta--overdue {

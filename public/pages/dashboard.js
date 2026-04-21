@@ -66,20 +66,44 @@ function formatDateTime(isoString) {
   return `${dateStr}, ${timeStr}${suffix ? ' ' + suffix : ''}`.trim();
 }
 
-function formatDueDate(dateStr) {
+function formatDueDate(dateStr, timeStr) {
   if (!dateStr) return null;
-  const due = new Date(dateStr);
+
+  const dueDate = timeStr
+    ? new Date(`${dateStr}T${timeStr}`)
+    : new Date(`${dateStr}T23:59:59`);
+
+  if (isNaN(dueDate)) return null;
+
   const now = new Date();
-  const diffMs = due - now;
+  const diffMs = dueDate - now;
   const diffH = diffMs / (1000 * 60 * 60);
 
-  if (diffMs < 0) return { text: t('dashboard.overdue'),     overdue: true };
-  if (diffH < 24) return { text: t('dashboard.dueSoon'),    overdue: false };
-  if (diffH < 48) return { text: t('dashboard.dueTomorrow'), overdue: false };
-  return {
-    text: formatDate(due),
-    overdue: false,
-  };
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const dueDay = new Date(dueDate.getFullYear(), dueDate.getMonth(), dueDate.getDate());
+  const calDayDiff = Math.round((dueDay - today) / (1000 * 60 * 60 * 24));
+
+  const fullLabel = timeStr
+    ? `${formatDate(dueDate)}, ${formatTime(dueDate)}` // beide aus i18n.js
+    : formatDate(dueDate);
+
+  if (diffMs < 0) {
+    return { text: `${t('dashboard.overdue')} – ${fullLabel}`, overdue: true };
+  }
+
+  if (calDayDiff === 1 && dueDate.getHours() >= 22 && diffH < 24) {
+    return { text: `${t('dashboard.dueSoon')} – ${fullLabel}`, overdue: false, soon: true };
+  }
+
+  if (calDayDiff === 0) {
+    return { text: `${t('dashboard.dueToday')} – ${formatTime(dueDate)}`, overdue: false, soon: true };
+  }
+
+  if (calDayDiff === 1) {
+    return { text: `${t('dashboard.dueTomorrow')} – ${formatTime(dueDate)}`, overdue: false };
+  }
+
+  return { text: fullLabel, overdue: false };
 }
 
 const PRIORITY_LABELS = () => ({
@@ -147,13 +171,18 @@ function skeletonWidget(lines = 3) {
 // --------------------------------------------------------
 
 function renderGreeting(user, stats = {}) {
-  const { urgentCount = 0, todayEventCount = 0, todayMealTitle = null } = stats;
+  const { overdueCount = 0, dueSoonCount = 0, todayEventCount = 0, todayMealTitle = null } = stats;
 
   const statChips = [];
-  if (urgentCount > 0)
+  if (overdueCount > 0)
     statChips.push(`<span class="greeting-chip greeting-chip--warn">
       <i data-lucide="alert-circle" class="icon-sm" style="flex-shrink:0" aria-hidden="true"></i>
-      ${urgentCount > 1 ? t('dashboard.urgentTasksChipPlural', { count: urgentCount }) : t('dashboard.urgentTasksChip', { count: urgentCount })}
+      ${overdueCount > 1 ? t('dashboard.overdueTasksChipPlural', { count: overdueCount }) : t('dashboard.overdueTasksChip', { count: overdueCount })}
+    </span>`);
+  if (dueSoonCount > 0)
+    statChips.push(`<span class="greeting-chip greeting-chip--due">
+      <i data-lucide="clock" class="icon-sm" style="flex-shrink:0" aria-hidden="true"></i>
+      ${dueSoonCount > 1 ? t('dashboard.urgentTasksChipPlural', { count: dueSoonCount }) : t('dashboard.urgentTasksChip', { count: dueSoonCount })}
     </span>`);
   if (todayEventCount > 0)
     statChips.push(`<span class="greeting-chip">
@@ -166,12 +195,13 @@ function renderGreeting(user, stats = {}) {
       ${t('dashboard.todayMealChip', { title: esc(todayMealTitle) })}
     </span>`);
 
+  let time = new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' });
+
   return `
     <div class="widget-greeting">
       <div class="widget-greeting__inner">
         <div class="widget-greeting__content">
-          <div class="widget-greeting__title">${greeting(user.display_name)}</div>
-          <div class="widget-greeting__date">${formatDate(new Date())}</div>
+          <div class="widget-greeting__title">${formatDate(new Date())} - ${time}</div>
           ${statChips.length ? `<div class="widget-greeting__chips">${statChips.join('')}</div>` : ''}
         </div>
         <button class="widget-customize-btn" id="dashboard-customize-btn"
@@ -195,14 +225,14 @@ function renderUrgentTasks(tasks) {
   }
 
   const items = tasks.map((t) => {
-    const due = formatDueDate(t.due_date);
+    const due = formatDueDate(t.due_date, t.due_time);
     return `
-      <div class="task-item" data-route="/tasks?open=${t.id}" role="button" tabindex="0">
+      <div class="task-item" data-task-id="${t.id}" data-task-title="${esc(t.title)}" role="button" tabindex="0">
         ${t.priority !== 'none' ? `<div class="task-item__priority task-item__priority--${t.priority}" aria-hidden="true"></div>` : ''}
         <span class="sr-only">${PRIORITY_LABELS()[t.priority] ?? t.priority}</span>
         <div class="task-item__content">
           <div class="task-item__title">${esc(t.title)}</div>
-          ${due ? `<div class="task-item__meta ${due.overdue ? 'task-item__meta--overdue' : ''}">${due.text}</div>` : ''}
+          ${due ? `<div class="task-item__meta ${due.overdue ? 'task-item__meta--overdue' : ''} ${due.soon ? 'task-item__meta--soon' : ''}">${due.text}</div>` : ''}
         </div>
         ${t.assigned_color ? `
           <div class="task-item__avatar" style="background-color:${esc(t.assigned_color)}"
@@ -656,7 +686,14 @@ export async function render(container, { user }) {
 
   const today = new Date().toDateString();
   const stats = {
-    urgentCount:     (data.urgentTasks ?? []).filter((t) => t.priority === 'urgent' || t.priority === 'high').length,
+    overdueCount: (data.urgentTasks ?? []).filter((t) => {
+      const due = formatDueDate(t.due_date, t.due_time);
+      return due?.overdue === true;
+    }).length,
+    dueSoonCount: (data.urgentTasks ?? []).filter((t) => {
+      const due = formatDueDate(t.due_date, t.due_time);
+      return due?.soon === true;
+    }).length,
     todayEventCount: (data.upcomingEvents ?? []).filter((e) =>
       new Date(e.start_datetime).toDateString() === today
     ).length,
@@ -665,13 +702,15 @@ export async function render(container, { user }) {
       ?? null,
   };
 
+  const rerender = () => render(container, { user });
+
   function rebuildGrid(cfg) {
     const grid = container.querySelector('.dashboard__grid');
     if (!grid) return;
     const greeting = grid.querySelector('.widget-greeting');
     grid.replaceChildren(...(greeting ? [greeting] : []));
     grid.insertAdjacentHTML('beforeend', renderWidgets(cfg, data, weather));
-    wireLinks(container);
+    wireLinks(container, rerender);
     if (window.lucide) window.lucide.createIcons();
     wireWeatherRefresh(container);
   }
