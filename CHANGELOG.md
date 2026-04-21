@@ -7,11 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Calendar: `external_calendars` DB table (migration v14) stores display name and color per synced Google/Apple calendar; `calendar_events` gains a `calendar_ref_id` FK used for join-based name/color lookup in all calendar and dashboard queries
+- Calendar: Google and Apple sync services now fetch the calendar's display name and background color via `upsertExternalCalendar()` and persist them to the new table
+- Calendar: event popup, agenda, month, week, and day views now show the external calendar name as a colored `event-cal-label` badge when `cal_name` is present
+- Calendar: event popup and dashboard events list now display the event location using `fmtLocation()` which strips RFC 5545 backslash-escapes (`\n`, `\,`, `\;`, `\\`) and normalizes semicolons/newlines to comma-separated inline text
+- Utils: `fmtLocation(raw)` helper added to `html.js` for normalizing ICS `LOCATION` property strings
+- i18n: task due-date keys (`tasks.overdue`, `tasks.dueSoon`, `tasks.dueToday`, `tasks.dueTomorrow`, `tasks.noDueDate`) added to all 16 supported locale files
+
+### Changed
+- Dashboard: widget headers flattened — glass card replaced with transparent surface + bottom border; clock icon added to the urgent-tasks chip; overdue and due-soon counts computed separately using `effectiveDue()` for accuracy
+- Glass toolbar (desktop ≥ 1024 px): rounded card style (`border-radius`, full `border`) replaced with flat background + `border-top: 3px solid var(--module-accent)` + bottom border only, consistent with other page toolbars
+- Shopping and Budget page headers: `border-top: 3px solid var(--module-accent)` accent stripe added to `.list-tabs-bar` and `.budget-nav`, matching the visual language of all other module headers
+- Calendar agenda: event color indicator changed from a 10 px circle to a 3 px full-height left bar (`width: 3px; align-items: stretch`), matching the dashboard upcoming-events style
+- Tasks: filter panel now defaults to `status: 'open'` on first load instead of showing all tasks including completed ones
+- SW cache: bumped to `oikos-shell-v50` / `oikos-pages-v45` / `oikos-assets-v45`
+
+### Fixed
+- Tasks / Dashboard: sort order now strictly follows effective due date ascending; overdue tasks (due date+time in the past) always surface first in all views — list groups, Kanban columns, and the dashboard urgentTasks widget. Priority is used only as a tiebreaker for tasks sharing the same due datetime. Server-side sort moved from SQL to JavaScript using `effectiveDue()` for timezone-correct `due_time` handling (SQLite `DATE('now')` is UTC-only)
+- Tasks: due date chip now shows the time component when `due_time` is set; overdue/soon/today/tomorrow states are computed against the current moment rather than midnight
+- Dashboard: widget navigation links changed from `<a href>` to `<button type="button">` to prevent iOS Safari from intercepting touch events before the JS click handler fires; `.widget__header` given `position: relative; z-index: 2` to lift it above the backdrop-filter `::after` pseudo-element stacking context
+- Dashboard: FAB shortcut buttons now programmatically click the page's primary add-button after navigation, opening the new-item modal directly without requiring a second tap
+- Calendar: week-view allday row no longer stretches column widths when event titles are long — `.allday-cell` now has `min-width: 0; overflow: hidden` to constrain grid cells that would otherwise expand to fit `white-space: nowrap` content
+- Calendar: incorrect `|| 'var(--color-accent)'` color fallback removed from all five event rendering sites in month, week, allday, and popup views; events without a color now render without an inline `background-color` declaration
+- Modal: sheet swipe adds a 10 px dead zone before the `translateY` transform is applied, preventing involuntary micro-transforms on normal taps; the `style.transform = ''` reset in `touchend` is deferred via `requestAnimationFrame` so iOS WebKit does not cancel the subsequent `click` event on child buttons — fixes delete-confirm and edit buttons not responding after a partial swipe
+- Modal: `_doClose` now receives and captures the overlay element before any animation; prevents a race condition where opening a new modal (e.g. a confirm dialog) before the previous close animation finished caused `_doClose` to remove the new modal and leave its buttons permanently unresponsive
+- Router: page auto-reloads 8 s after the SW-update toast is shown, matching the toast's own display duration so the reload is never missed
+- Layout: modal overlay uses `overflow: hidden` and bottom-sheet scroll container uses `overflow-x: hidden` to prevent horizontal scroll bleed on narrow viewports; form inputs get `min-width: 0; box-sizing: border-box` to prevent overflow out of two-column grid containers
+- Reminders: field grid changed from `1fr 1fr` to `repeat(2, minmax(0, 1fr))` to prevent content from exceeding the grid track width
+
 ## [0.22.3] - 2026-04-21
 
 ### Fixed
 - Landing page setup commands now render with correct line breaks. The `.code-block` element has no `white-space: pre`, so explicit `<br>` tags are required; they were previously missing, causing all commands to flow as a single line.
-
 ## [0.22.2] - 2026-04-21
 
 ### Fixed
