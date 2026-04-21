@@ -627,10 +627,49 @@ function openCustomizeModal(currentConfig, onSave) {
 }
 
 // --------------------------------------------------------
+// Task Quick-Action Modal
+// --------------------------------------------------------
+
+function openTaskQuickAction(taskId, taskTitle, rerender) {
+  openModal({
+    title: taskTitle,
+    size: 'sm',
+    content: `
+      <div class="modal-actions">
+        <button type="button" class="btn btn--ghost" data-action="edit">
+          <i data-lucide="edit-2" style="width:16px;height:16px;" aria-hidden="true"></i>
+          ${t('common.edit')}
+        </button>
+        <button type="button" class="btn btn--primary" data-action="done">
+          <i data-lucide="check-circle" style="width:16px;height:16px;" aria-hidden="true"></i>
+          ${t('tasks.kanbanMoveToDone')}
+        </button>
+      </div>
+    `,
+    onSave: (panel) => {
+      panel.querySelector('[data-action="done"]').addEventListener('click', async () => {
+        try {
+          await api.patch(`/tasks/${taskId}/status`, { status: 'done' });
+          closeModal();
+          window.oikos?.showToast(t('tasks.swipedDoneToast'), 'success');
+          rerender();
+        } catch (err) {
+          window.oikos?.showToast(err.message, 'danger');
+        }
+      });
+      panel.querySelector('[data-action="edit"]').addEventListener('click', () => {
+        closeModal();
+        window.oikos.navigate(`/tasks?open=${taskId}`);
+      });
+    },
+  });
+}
+
+// --------------------------------------------------------
 // Navigations-Links verdrahten
 // --------------------------------------------------------
 
-function wireLinks(container) {
+function wireLinks(container, rerender) {
   container.querySelectorAll('[data-route]').forEach((el) => {
     if (el.id === 'fab-main' || el.closest('#fab-actions')) return;
     const go = () => window.oikos.navigate(el.dataset.route);
@@ -642,6 +681,15 @@ function wireLinks(container) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); }
       });
     }
+  });
+
+  // Task-Items öffnen Quick-Action-Modal statt direkt zu navigieren
+  container.querySelectorAll('.task-item[data-task-id]').forEach((el) => {
+    const show = () => openTaskQuickAction(el.dataset.taskId, el.dataset.taskTitle, rerender);
+    el.addEventListener('click', show);
+    el.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); }
+    });
   });
 }
 
