@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.10] - 2026-04-22
+
+### Fixed
+- iOS PWA: safe area fill now uses the same surface color as the bottom navigation bar, so it matches in both light and dark mode
+
 ## [0.23.9] - 2026-04-22
 
 ### Fixed

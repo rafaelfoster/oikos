@@ -91,7 +91,7 @@ nav,
     left: 0;
     right: 0;
     height: env(safe-area-inset-bottom, 0px);
-    background-color: var(--glass-bg);
+    background-color: color-mix(in srgb, var(--color-surface) 85%, transparent);
     backdrop-filter: var(--blur-md) saturate(180%);
     -webkit-backdrop-filter: var(--blur-md) saturate(180%);
     z-index: calc(var(--z-nav) - 1);
