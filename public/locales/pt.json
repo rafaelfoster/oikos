@@ -65,7 +65,7 @@
     "weatherRefresh": "Atualizar clima",
     "weatherRefreshTitle": "Atualizar",
     "weatherUpdated": "Clima atualizado",
-    "weatherFeelsLike": "Sensação {{temp}}° · {{humidity}}% · Vento {{wind}} km/h",
+    "weatherFeelsLike": "Sensação {{temp}}° · {{humidity}}% · Vento {{wind}} {{windUnit}}",
     "fabTaskLabel": "Adicionar tarefa",
     "fabCalendarLabel": "Adicionar evento",
     "fabShoppingLabel": "Adicionar compra",

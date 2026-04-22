@@ -72,7 +72,7 @@
     "weatherRefresh": "Wetter aktualisieren",
     "weatherRefreshTitle": "Aktualisieren",
     "weatherUpdated": "Wetter aktualisiert",
-    "weatherFeelsLike": "Gefühlt {{temp}}° · {{humidity}}% · Wind {{wind}} km/h",
+    "weatherFeelsLike": "Gefühlt {{temp}}° · {{humidity}}% · Wind {{wind}} {{windUnit}}",
     "fabTaskLabel": "Aufgabe hinzufügen",
     "fabCalendarLabel": "Termin hinzufügen",
     "fabShoppingLabel": "Einkauf hinzufügen",

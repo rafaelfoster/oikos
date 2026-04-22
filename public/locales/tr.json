@@ -65,7 +65,7 @@
     "weatherRefresh": "Hava durumunu yenile",
     "weatherRefreshTitle": "Yenile",
     "weatherUpdated": "Hava durumu güncellendi",
-    "weatherFeelsLike": "Hissedilen {{temp}}° · {{humidity}}% · Rüzgar {{wind}} km/s",
+    "weatherFeelsLike": "Hissedilen {{temp}}° · {{humidity}}% · Rüzgar {{wind}} {{windUnit}}",
     "fabTaskLabel": "Görev ekle",
     "fabCalendarLabel": "Etkinlik ekle",
     "fabShoppingLabel": "Alışveriş ekle",

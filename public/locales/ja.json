@@ -65,7 +65,7 @@
     "weatherRefresh": "天気を更新",
     "weatherRefreshTitle": "更新",
     "weatherUpdated": "天気を更新しました",
-    "weatherFeelsLike": "体感 {{temp}}° · {{humidity}}% · 風速 {{wind}} km/h",
+    "weatherFeelsLike": "体感 {{temp}}° · {{humidity}}% · 風速 {{wind}} {{windUnit}}",
     "fabTaskLabel": "タスクを追加",
     "fabCalendarLabel": "予定を追加",
     "fabShoppingLabel": "買い物を追加",

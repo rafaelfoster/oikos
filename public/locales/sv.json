@@ -65,7 +65,7 @@
     "weatherRefresh": "Uppdatera vädret",
     "weatherRefreshTitle": "Uppdatera",
     "weatherUpdated": "Väder uppdaterat",
-    "weatherFeelsLike": "Känns som {{temp}}° · {{humidity}}% · Vind {{wind}} km/h",
+    "weatherFeelsLike": "Känns som {{temp}}° · {{humidity}}% · Vind {{wind}} {{windUnit}}",
     "fabTaskLabel": "Lägg till uppgift",
     "fabCalendarLabel": "Lägg till händelse",
     "fabShoppingLabel": "Lägg till shopping",

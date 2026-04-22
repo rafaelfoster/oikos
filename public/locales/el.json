@@ -65,7 +65,7 @@
     "weatherRefresh": "Ανανέωση καιρού",
     "weatherRefreshTitle": "Ανανέωση",
     "weatherUpdated": "Καιρός ενημερώθηκε",
-    "weatherFeelsLike": "Αίσθηση {{temp}}° · {{humidity}}% · Άνεμος {{wind}} χλμ/ώ",
+    "weatherFeelsLike": "Αίσθηση {{temp}}° · {{humidity}}% · Άνεμος {{wind}} {{windUnit}}",
     "fabTaskLabel": "Προσθήκη εργασίας",
     "fabCalendarLabel": "Προσθήκη εκδήλωσης",
     "fabShoppingLabel": "Προσθήκη αγοράς",

@@ -65,7 +65,7 @@
     "weatherRefresh": "Обновить погоду",
     "weatherRefreshTitle": "Обновить",
     "weatherUpdated": "Погода обновлена",
-    "weatherFeelsLike": "Ощущается как {{temp}}° · {{humidity}}% · Ветер {{wind}} км/ч",
+    "weatherFeelsLike": "Ощущается как {{temp}}° · {{humidity}}% · Ветер {{wind}} {{windUnit}}",
     "fabTaskLabel": "Добавить задачу",
     "fabCalendarLabel": "Добавить событие",
     "fabShoppingLabel": "Добавить покупку",

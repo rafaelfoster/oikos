@@ -65,7 +65,7 @@
     "weatherRefresh": "تحديث الطقس",
     "weatherRefreshTitle": "تحديث",
     "weatherUpdated": "تم تحديث الطقس",
-    "weatherFeelsLike": "الإحساس {{temp}}° · {{humidity}}% · الريح {{wind}} كم/س",
+    "weatherFeelsLike": "الإحساس {{temp}}° · {{humidity}}% · الريح {{wind}} {{windUnit}}",
     "fabTaskLabel": "إضافة مهمة",
     "fabCalendarLabel": "إضافة حدث",
     "fabShoppingLabel": "إضافة تسوق",

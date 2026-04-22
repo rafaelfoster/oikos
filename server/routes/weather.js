@@ -105,7 +105,10 @@ router.get('/', async (req, res) => {
         humidity:   currentJson.main.humidity,
         icon:       currentJson.weather[0]?.icon,
         desc:       currentJson.weather[0]?.description,
-        wind_speed: Math.round((currentJson.wind?.speed ?? 0) * 3.6), // m/s → km/h
+        // metric/standard: m/s → km/h; imperial: already mph
+        wind_speed: units === 'imperial'
+          ? Math.round(currentJson.wind?.speed ?? 0)
+          : Math.round((currentJson.wind?.speed ?? 0) * 3.6),
       },
       forecast: forecastDays,
     };

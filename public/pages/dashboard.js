@@ -390,6 +390,7 @@ function renderWeatherWidget(weather) {
 
   const { city, current, forecast, units } = weather;
   const unitSymbol = units === 'imperial' ? '°F' : units === 'standard' ? 'K' : '°C';
+  const windUnit   = units === 'imperial' ? 'mph' : 'km/h';
 
   const forecastHtml = forecast.map((d, i) => {
     const date = new Date(d.date + 'T12:00:00');
@@ -419,7 +420,7 @@ function renderWeatherWidget(weather) {
             <div class="weather-widget__desc">${esc(current.desc)}</div>
             <div class="weather-widget__city">${esc(city)}</div>
             <div class="weather-widget__meta">
-              ${t('dashboard.weatherFeelsLike', { temp: current.feels_like, humidity: current.humidity, wind: current.wind_speed })}
+              ${t('dashboard.weatherFeelsLike', { temp: current.feels_like, humidity: current.humidity, wind: current.wind_speed, windUnit })}
             </div>
           </div>
           <img class="weather-widget__icon" src="${WEATHER_ICON_BASE}${current.icon}"

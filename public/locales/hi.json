@@ -65,7 +65,7 @@
     "weatherRefresh": "मौसम अपडेट करें",
     "weatherRefreshTitle": "अपडेट",
     "weatherUpdated": "मौसम अपडेट हो गया",
-    "weatherFeelsLike": "महसूस होता है {{temp}}° · {{humidity}}% · हवा {{wind}} km/h",
+    "weatherFeelsLike": "महसूस होता है {{temp}}° · {{humidity}}% · हवा {{wind}} {{windUnit}}",
     "fabTaskLabel": "कार्य जोड़ें",
     "fabCalendarLabel": "कार्यक्रम जोड़ें",
     "fabShoppingLabel": "खरीदारी जोड़ें",
