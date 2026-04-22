@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.12] - 2026-04-22
+
+### Fixed
+- iOS PWA: bottom navigation bar gap resolved by removing `overflow: hidden` from `<html>` (iOS Safari bug: this property clips `position: fixed` descendants) and restoring the `body::after` fill approach; nav bar height is no longer inflated by the safe area padding
+
 ## [0.23.11] - 2026-04-22
 
 ### Fixed

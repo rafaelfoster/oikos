@@ -144,10 +144,6 @@
   z-index: var(--z-nav);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
-  /* Füllt den iOS Home-Indicator-Bereich mit dem Nav-Hintergrund.
-   * Das padding erstreckt den Hintergrund der Nav bis zum physischen Bildschirmrand,
-   * ohne das Flex-Layout der App-Shell zu beeinflussen (nav-bottom hat kein flex-grow). */
-  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ── Items-Reihe ── */

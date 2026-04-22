@@ -21,9 +21,7 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* iOS PWA: verhindert Body-Scroll, der position:fixed-Elemente verschiebt */
   height: 100%;
-  overflow: hidden;
 }
 
 body {

@@ -5,10 +5,15 @@
  */
 
 /* ── Kein Rubber-Banding, kein Body-Scroll ──
- * overflow: hidden verhindert, dass body scrollbar wird, falls ein
- * Element minimal überläuft. overscroll-behavior: none deaktiviert
- * Pull-to-Refresh und Rubber-Banding. */
-html, body {
+ * overflow: hidden NUR auf body - NICHT auf html setzen.
+ * iOS Safari Bug: overflow:hidden auf <html> clippt position:fixed-Elemente,
+ * was body::after (Safe-Area-Fill) unsichtbar macht.
+ * overscroll-behavior: none auf html+body deaktiviert Pull-to-Refresh/Rubber-Banding. */
+html {
+  overscroll-behavior: none;
+}
+
+body {
   overflow: hidden;
   overscroll-behavior: none;
 }
@@ -21,21 +26,13 @@ html, body {
 
 /* ── Safe Area Insets (Notch, Dynamic Island, Gesture Bar) ──
  * Nur horizontale Safe Areas auf body. Vertikale Safe Areas werden über
- * .app-shell (padding-top im Standalone-Modus) und die Seiten-/Nav-Berechnungen
- * (padding-bottom via --safe-area-inset-bottom) gehandhabt.
+ * .app-shell (padding-top im Standalone-Modus) und body::after (unten) gehandhabt.
  * KEIN body padding-top/bottom - das würde .app-shell (height: 100dvh)
  * um den Safe-Area-Betrag aus dem Viewport schieben und Scroll-Bleed erzeugen. */
 body {
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
 }
-
-/* ── Bottom Nav über der Gesture Bar ──
- * layout.css nutzt --safe-area-inset-bottom Token;
- * hier als Fallback direkt via env() */
-/*.nav-bottom {
-  padding-bottom: env(safe-area-inset-bottom);
-}*/
 
 /* Touch-Targets werden über tokens.css (--target-sm/md/lg) und
  * komponentenspezifische Styles gehandhabt - siehe Redesign Phase E.
@@ -77,14 +74,21 @@ nav,
     overscroll-behavior-y: contain;
   }
 
-  /* iOS PWA: Schwarzen Streifen unter der Nav verhindern.
-   * iOS reserviert den Home-Indicator-Bereich unterhalb des CSS-Viewports.
-   * body::after füllt diesen Bereich mit dem gleichen Glass-Hintergrund wie die Nav.
-   * z-index: z-nav - 1 (unter der Nav) - dadurch rendert die Nav immer oben.
-   * Im Überlappungsbereich (Nav-Padding = Safe-Area) liegt die Nav darüber;
-   * in einem eventuellen Spalt zwischen Nav-Unterkante und Displayrand liegt
-   * body::after sichtbar - optisch identisch mit der Nav. */
-  /* body::after-Ansatz entfernt: layout.css setzt padding-bottom auf .nav-bottom
-   * direkt via env(safe-area-inset-bottom), was zuverlässiger ist als ein
-   * Fixed-Pseudo-Element (kann bei overflow:hidden auf html/body geclipt werden). */
+  /* iOS PWA: Home-Indicator-Bereich unter der Nav füllen.
+   * position:fixed ist erforderlich, damit body::after auch dann sichtbar ist,
+   * wenn der App-Shell-Inhalt den Home-Indicator-Bereich nicht erreicht.
+   * Funktioniert nur wenn html KEIN overflow:hidden hat (iOS Safari Bug:
+   * overflow:hidden auf <html> clippt position:fixed-Elemente). */
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: env(safe-area-inset-bottom, 0px);
+    background-color: color-mix(in srgb, var(--color-surface) 85%, transparent);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    z-index: calc(var(--z-nav) - 1);
+  }
 }
