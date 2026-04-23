@@ -43,7 +43,7 @@
     "main": "Huvudnavigering",
     "navigation": "Navigering",
     "quickActions": "Snabba åtgärder",
-    "recipes": "Recipes"
+    "recipes": "Recept"
   },
   "dashboard": {
     "title": "Översikt",
@@ -247,10 +247,10 @@
     "recipeUrlLabel": "Receptlänk (valfri)",
     "recipeUrlPlaceholder": "https://…",
     "openRecipe": "Öppna recept",
-    "savedRecipeLabel": "Saved recipe",
-    "savedRecipePlaceholder": "Select recipe",
-    "saveAsRecipe": "Save as recipe",
-    "recipeScaleLabel": "Scale ingredients"
+    "savedRecipeLabel": "Sparat recept",
+    "savedRecipePlaceholder": "Välj recept",
+    "saveAsRecipe": "Spara som recept",
+    "recipeScaleLabel": "Skala ingredienser"
   },
   "calendar": {
     "title": "Kalender",
@@ -614,27 +614,27 @@
     "unitMonths": "månader"
   },
   "recipes": {
-    "title": "Recipes",
-    "addRecipe": "Add recipe",
-    "editRecipe": "Edit recipe",
-    "emptyTitle": "No recipes yet",
-    "emptyDescription": "Save your favorite recipes and reuse them in meal planning.",
-    "titleLabel": "Title *",
-    "titlePlaceholder": "e.g. Pasta Carbonara",
-    "notesLabel": "Notes",
-    "notesPlaceholder": "Optional...",
-    "urlLabel": "Recipe link",
+    "title": "Recept",
+    "addRecipe": "Lägg till recept",
+    "editRecipe": "Redigera recept",
+    "emptyTitle": "Inga recept ännu",
+    "emptyDescription": "Spara dina favoritrecept och återanvänd dem i måltidsplaneraren.",
+    "titleLabel": "Titel *",
+    "titlePlaceholder": "ex. Pasta Carbonara",
+    "notesLabel": "Notering",
+    "notesPlaceholder": "Valfritt...",
+    "urlLabel": "Receptlänk",
     "urlPlaceholder": "https://...",
-    "ingredientsLabel": "Ingredients",
-    "addToMeals": "Add to meal plan",
-    "openLink": "Open recipe link",
-    "deleteConfirm": "Delete recipe \"{{title}}\"?",
-    "created": "Recipe saved.",
-    "updated": "Recipe updated.",
-    "deleted": "Recipe deleted.",
-    "titleRequired": "Title is required",
-    "duplicate": "Duplicate",
-    "duplicated": "Recipe duplicated.",
-    "copySuffix": "copy"
+    "ingredientsLabel": "Ingredienser",
+    "addToMeals": "Lägg till i måltidsplaneraren",
+    "openLink": "Öppna receptlänk",
+    "deleteConfirm": "Radera recept \"{{title}}\"?",
+    "created": "Recept sparat.",
+    "updated": "Recept uppdaterat.",
+    "deleted": "Recept raderat.",
+    "titleRequired": "Titel krävs",
+    "duplicate": "Duplicera",
+    "duplicated": "Recept duplicerat.",
+    "copySuffix": "kopia"
   }
 }
