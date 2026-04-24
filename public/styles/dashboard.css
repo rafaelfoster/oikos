@@ -1102,7 +1102,7 @@
 .widget-customize-btn:hover,
 .widget-customize-btn:focus-visible {
   background: var(--color-glass-hover);
-  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline: 2px solid var(--glass-highlight-mid);
   outline-offset: 2px;
 }
 

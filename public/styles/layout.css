@@ -169,7 +169,7 @@
   display: none;
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: var(--color-overlay);
   z-index: calc(var(--z-nav) + 1);
   backdrop-filter: blur(2px);
   -webkit-backdrop-filter: blur(2px);

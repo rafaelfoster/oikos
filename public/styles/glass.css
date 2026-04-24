@@ -90,7 +90,7 @@
 /* Blur nur wenn unterstützt */
 @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
   .modal-overlay {
-    background-color: rgba(0, 0, 0, 0.30);
+    background-color: var(--color-overlay-glass);
     backdrop-filter: var(--blur-xs) saturate(120%);
     -webkit-backdrop-filter: var(--blur-xs) saturate(120%);
   }
@@ -151,14 +151,14 @@
   box-shadow:
     var(--shadow-lg),
     var(--glass-inset-elevated),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+    var(--glass-inset-bottom-base);
 }
 
 .fab:hover {
   box-shadow:
     var(--shadow-lg),
     var(--glass-inset-strong),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+    var(--glass-inset-bottom-hover);
 }
 
 /* ================================================================
@@ -226,7 +226,7 @@ textarea.form-input {
   border-color: var(--color-accent);
   box-shadow:
     0 0 0 3px color-mix(in srgb, var(--color-accent) 20%, transparent),
-    inset 0 1px 2px rgba(0, 0, 0, 0.04);
+    var(--glass-inset-input);
 }
 
 /* ================================================================
@@ -242,7 +242,7 @@ textarea.form-input {
     background-color: color-mix(in srgb, var(--neutral-800) 90%, transparent);
     backdrop-filter: var(--blur-sm);
     -webkit-backdrop-filter: var(--blur-sm);
-    border: 1px solid rgba(255, 255, 255, 0.10);
+    border: 1px solid var(--glass-border-overlay);
   }
 }
 
@@ -282,8 +282,7 @@ textarea.form-input {
 .toggle__track::after {
   box-shadow:
     var(--shadow-sm),
-    inset 0 1px 0 rgba(255, 255, 255, 0.90),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+    var(--glass-inset-thumb);
 }
 
 .toggle input:checked + .toggle__track::after {
@@ -297,7 +296,7 @@ textarea.form-input {
   .fab-backdrop--visible {
     backdrop-filter: var(--blur-xs);
     -webkit-backdrop-filter: var(--blur-xs);
-    background: rgba(0, 0, 0, 0.18);
+    background: var(--color-backdrop-glass);
   }
 }
 
