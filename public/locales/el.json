@@ -43,7 +43,8 @@
     "main": "Κύρια πλοήγηση",
     "navigation": "Πλοήγηση",
     "quickActions": "Γρήγορες ενέργειες",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "Περισσότερα"
   },
   "dashboard": {
     "title": "Επισκόπηση",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Επαναφορά",
     "recurring": "Επαναλαμβανόμενο",
     "listView": "Προβολή λίστας",
-    "kanbanView": "Προβολή Kanban"
+    "kanbanView": "Προβολή Kanban",
+    "filterBtn": "Φίλτρο",
+    "filterClearAll": "Εκκαθάριση όλων των φίλτρων",
+    "filterGroupPerson": "Άτομο",
+    "filterGroupPriority": "Προτεραιότητα",
+    "filterGroupStatus": "Κατάσταση",
+    "swipedDoneToast": "Επισημάνθηκε ως ολοκληρωμένο.",
+    "swipedOpenToast": "Επισημάνθηκε ως ανοιχτό."
   },
   "shopping": {
     "title": "Αγορές",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Πέμπτη",
     "dayLongFriday": "Παρασκευή",
     "dayLongSaturday": "Σάββατο",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Επαναφορά στο αρχικό",
+      "resetToast": "Οι αλλαγές επαναφέρθηκαν."
+    }
   },
   "notes": {
     "title": "Σημειώσεις",
@@ -564,7 +576,40 @@
     "sectionBudget": "Προϋπολογισμός",
     "currencyLabel": "Νόμισμα",
     "currencyHint": "Ορίζει το νόμισμα για ολόκληρη την ενότητα προϋπολογισμού.",
-    "currencySaved": "Το νόμισμα αποθηκεύτηκε."
+    "currencySaved": "Το νόμισμα αποθηκεύτηκε.",
+    "ics": {
+      "title": "Συνδρομές ICS",
+      "add": "Προσθήκη συνδρομής",
+      "addedToast": "Η συνδρομή προστέθηκε.",
+      "deletedToast": "Η συνδρομή διαγράφηκε.",
+      "syncedToast": "Η συνδρομή συγχρονίστηκε.",
+      "confirm_delete": "Θέλετε πραγματικά να διαγράψετε αυτή τη συνδρομή; Όλα τα σχετικά γεγονότα θα διαγραφούν επίσης.",
+      "empty": "Δεν υπάρχουν ακόμα συνδρομές.",
+      "form": {
+        "name": "Όνομα",
+        "url": "URL ICS",
+        "color": "Χρώμα",
+        "shared": "Ορατό σε όλους"
+      },
+      "actions": {
+        "submit": "Προσθήκη",
+        "save": "Αποθήκευση",
+        "cancel": "Ακύρωση",
+        "delete": "Διαγραφή",
+        "edit": "Επεξεργασία",
+        "sync": "Συγχρονισμός τώρα"
+      },
+      "status": {
+        "lastSync": "Τελευταίος συγχρονισμός:",
+        "never": "Δεν έχει συγχρονιστεί ακόμα",
+        "syncing": "Συγχρονισμός...",
+        "syncError": "Σφάλμα συγχρονισμού"
+      },
+      "badges": {
+        "private": "Ιδιωτικό",
+        "shared": "Κοινόχρηστο"
+      }
+    }
   },
   "login": {
     "tagline": "Οικογενειακός προγραμματισμός. Ασφαλής. Φιλικός προς την ιδιωτικότητα. Ανοιχτός κώδικας.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Αναζήτηση",
+    "open": "Άνοιγμα αναζήτησης",
+    "placeholder": "Αναζήτηση…",
+    "noResults": "Δεν βρέθηκαν αποτελέσματα."
+  },
+  "reminders": {
+    "sectionTitle": "Υπενθύμιση",
+    "enableLabel": "Ορισμός υπενθύμισης",
+    "offsetLabel": "Υπενθύμιση",
+    "offsetNone": "Κανένα",
+    "offsetAtTime": "Κατά την ώρα έναρξης",
+    "offset15min": "15 λεπτά πριν",
+    "offset1hour": "1 ώρα πριν",
+    "offset1day": "1 ημέρα πριν",
+    "dateLabel": "Ημερομηνία",
+    "timeLabel": "Ώρα",
+    "toastTitle": "Υπενθύμιση",
+    "dismiss": "Απόρριψη",
+    "pendingBadgeTitle": "{{count}} εκκρεμής υπενθύμιση",
+    "pendingBadgeTitlePlural": "{{count}} εκκρεμείς υπενθυμίσεις",
+    "notificationPermission": "Ειδοποιήσεις προγράμματος περιήγησης",
+    "notificationEnable": "Ενεργοποίηση ειδοποιήσεων",
+    "notificationEnabled": "Ειδοποιήσεις ενεργές",
+    "notificationDenied": "Ειδοποιήσεις αποκλεισμένες",
+    "notificationHint": "Λάβετε ειδοποιήσεις ακόμα και όταν η εφαρμογή είναι ανοιχτή."
   }
 }

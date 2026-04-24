@@ -43,7 +43,8 @@
     "main": "Ana gezinme",
     "navigation": "Gezinme",
     "quickActions": "Hızlı işlemler",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "Daha Fazla"
   },
   "dashboard": {
     "title": "Genel Bakış",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Yeniden aç",
     "recurring": "Yinelenen",
     "listView": "Liste görünümü",
-    "kanbanView": "Kanban görünümü"
+    "kanbanView": "Kanban görünümü",
+    "filterBtn": "Filtrele",
+    "filterClearAll": "Tüm filtreleri temizle",
+    "filterGroupPerson": "Kişi",
+    "filterGroupPriority": "Öncelik",
+    "filterGroupStatus": "Durum",
+    "swipedDoneToast": "Tamamlandı olarak işaretlendi.",
+    "swipedOpenToast": "Açık olarak işaretlendi."
   },
   "shopping": {
     "title": "Alışveriş",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Perşembe",
     "dayLongFriday": "Cuma",
     "dayLongSaturday": "Cumartesi",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Orijinale sıfırla",
+      "resetToast": "Değişiklikler sıfırlandı."
+    }
   },
   "notes": {
     "title": "Notlar",
@@ -564,7 +576,40 @@
     "sectionBudget": "Bütçe",
     "currencyLabel": "Para birimi",
     "currencyHint": "Bütçe bölümünde kullanılan para birimini belirler.",
-    "currencySaved": "Para birimi kaydedildi."
+    "currencySaved": "Para birimi kaydedildi.",
+    "ics": {
+      "title": "ICS Abonelikleri",
+      "add": "Abonelik ekle",
+      "addedToast": "Abonelik eklendi.",
+      "deletedToast": "Abonelik silindi.",
+      "syncedToast": "Abonelik senkronize edildi.",
+      "confirm_delete": "Bu aboneliği gerçekten silmek istiyor musunuz? İlgili tüm etkinlikler de silinecek.",
+      "empty": "Henüz abonelik yok.",
+      "form": {
+        "name": "Ad",
+        "url": "ICS URL",
+        "color": "Renk",
+        "shared": "Herkes tarafından görülebilir"
+      },
+      "actions": {
+        "submit": "Ekle",
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "edit": "Düzenle",
+        "sync": "Şimdi senkronize et"
+      },
+      "status": {
+        "lastSync": "Son senkronizasyon:",
+        "never": "Henüz senkronize edilmedi",
+        "syncing": "Senkronize ediliyor...",
+        "syncError": "Senkronizasyon hatası"
+      },
+      "badges": {
+        "private": "Özel",
+        "shared": "Paylaşımlı"
+      }
+    }
   },
   "login": {
     "tagline": "Aile planlaması. Güvenli. Gizlilik dostu. Açık kaynak.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Arama",
+    "open": "Aramayı aç",
+    "placeholder": "Ara…",
+    "noResults": "Sonuç bulunamadı."
+  },
+  "reminders": {
+    "sectionTitle": "Hatırlatıcı",
+    "enableLabel": "Hatırlatıcı ayarla",
+    "offsetLabel": "Hatırlat",
+    "offsetNone": "Yok",
+    "offsetAtTime": "Başlangıç saatinde",
+    "offset15min": "15 dakika önce",
+    "offset1hour": "1 saat önce",
+    "offset1day": "1 gün önce",
+    "dateLabel": "Tarih",
+    "timeLabel": "Saat",
+    "toastTitle": "Hatırlatıcı",
+    "dismiss": "Kapat",
+    "pendingBadgeTitle": "{{count}} bekleyen hatırlatıcı",
+    "pendingBadgeTitlePlural": "{{count}} bekleyen hatırlatıcı",
+    "notificationPermission": "Tarayıcı bildirimleri",
+    "notificationEnable": "Bildirimleri etkinleştir",
+    "notificationEnabled": "Bildirimler etkin",
+    "notificationDenied": "Bildirimler engellendi",
+    "notificationHint": "Uygulama açıkken bile bildirim alın."
   }
 }

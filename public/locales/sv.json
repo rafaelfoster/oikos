@@ -43,7 +43,8 @@
     "main": "Huvudnavigering",
     "navigation": "Navigering",
     "quickActions": "Snabba åtgärder",
-    "recipes": "Recept"
+    "recipes": "Recept",
+    "more": "Mer"
   },
   "dashboard": {
     "title": "Översikt",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Öppna igen",
     "recurring": "Återkommande",
     "listView": "Listvy",
-    "kanbanView": "Kanban-vy"
+    "kanbanView": "Kanban-vy",
+    "filterBtn": "Filtrera",
+    "filterClearAll": "Rensa alla filter",
+    "filterGroupPerson": "Person",
+    "filterGroupPriority": "Prioritet",
+    "filterGroupStatus": "Status",
+    "swipedDoneToast": "Markerad som klar.",
+    "swipedOpenToast": "Markerad som öppen."
   },
   "shopping": {
     "title": "Shopping",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Torsdag",
     "dayLongFriday": "Fredag",
     "dayLongSaturday": "Lördag",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Återställ till original",
+      "resetToast": "Ändringar återställda."
+    }
   },
   "notes": {
     "title": "Anteckningar",
@@ -564,7 +576,40 @@
     "sectionBudget": "Budget",
     "currencyLabel": "Valuta",
     "currencyHint": "Ställer in valutan som används i hela budgetavsnittet.",
-    "currencySaved": "Valuta sparad."
+    "currencySaved": "Valuta sparad.",
+    "ics": {
+      "title": "ICS-prenumerationer",
+      "add": "Lägg till prenumeration",
+      "addedToast": "Prenumeration tillagd.",
+      "deletedToast": "Prenumeration borttagen.",
+      "syncedToast": "Prenumeration synkroniserad.",
+      "confirm_delete": "Vill du verkligen ta bort denna prenumeration? Alla tillhörande händelser tas också bort.",
+      "empty": "Inga prenumerationer ännu.",
+      "form": {
+        "name": "Namn",
+        "url": "ICS-URL",
+        "color": "Färg",
+        "shared": "Synlig för alla"
+      },
+      "actions": {
+        "submit": "Lägg till",
+        "save": "Spara",
+        "cancel": "Avbryt",
+        "delete": "Ta bort",
+        "edit": "Redigera",
+        "sync": "Synkronisera nu"
+      },
+      "status": {
+        "lastSync": "Senast synkroniserad:",
+        "never": "Inte synkroniserad ännu",
+        "syncing": "Synkroniserar...",
+        "syncError": "Synkroniseringsfel"
+      },
+      "badges": {
+        "private": "Privat",
+        "shared": "Delad"
+      }
+    }
   },
   "login": {
     "tagline": "Familjeplanering. Säker. Sekretessvänlig. Öppen källkod.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicera",
     "duplicated": "Recept duplicerat.",
     "copySuffix": "kopia"
+  },
+  "search": {
+    "title": "Sök",
+    "open": "Öppna sökning",
+    "placeholder": "Sök…",
+    "noResults": "Inga resultat hittades."
+  },
+  "reminders": {
+    "sectionTitle": "Påminnelse",
+    "enableLabel": "Ange påminnelse",
+    "offsetLabel": "Påminn",
+    "offsetNone": "Ingen",
+    "offsetAtTime": "Vid starttid",
+    "offset15min": "15 minuter innan",
+    "offset1hour": "1 timme innan",
+    "offset1day": "1 dag innan",
+    "dateLabel": "Datum",
+    "timeLabel": "Tid",
+    "toastTitle": "Påminnelse",
+    "dismiss": "Avfärda",
+    "pendingBadgeTitle": "{{count}} väntande påminnelse",
+    "pendingBadgeTitlePlural": "{{count}} väntande påminnelser",
+    "notificationPermission": "Webbläsarnotiser",
+    "notificationEnable": "Aktivera notiser",
+    "notificationEnabled": "Notiser aktiva",
+    "notificationDenied": "Notiser blockerade",
+    "notificationHint": "Få notiser även när appen är öppen."
   }
 }

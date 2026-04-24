@@ -43,7 +43,8 @@
     "main": "Navigation principale",
     "navigation": "Navigation",
     "quickActions": "Actions rapides",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "Plus"
   },
   "dashboard": {
     "title": "Accueil",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Rouvrir",
     "recurring": "Récurrent",
     "listView": "Vue liste",
-    "kanbanView": "Vue Kanban"
+    "kanbanView": "Vue Kanban",
+    "filterBtn": "Filtrer",
+    "filterClearAll": "Effacer tous les filtres",
+    "filterGroupPerson": "Personne",
+    "filterGroupPriority": "Priorité",
+    "filterGroupStatus": "Statut",
+    "swipedDoneToast": "Marqué comme terminé.",
+    "swipedOpenToast": "Marqué comme ouvert."
   },
   "shopping": {
     "title": "Courses",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Jeudi",
     "dayLongFriday": "Vendredi",
     "dayLongSaturday": "Samedi",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Réinitialiser",
+      "resetToast": "Modifications annulées."
+    }
   },
   "notes": {
     "title": "Notes",
@@ -564,7 +576,40 @@
     "sectionBudget": "Budget",
     "currencyLabel": "Devise",
     "currencyHint": "Définit la devise utilisée dans toute la section budget.",
-    "currencySaved": "Devise enregistrée."
+    "currencySaved": "Devise enregistrée.",
+    "ics": {
+      "title": "Abonnements ICS",
+      "add": "Ajouter un abonnement",
+      "addedToast": "Abonnement ajouté.",
+      "deletedToast": "Abonnement supprimé.",
+      "syncedToast": "Abonnement synchronisé.",
+      "confirm_delete": "Voulez-vous vraiment supprimer cet abonnement ? Tous les événements associés seront également supprimés.",
+      "empty": "Aucun abonnement pour le moment.",
+      "form": {
+        "name": "Nom",
+        "url": "URL ICS",
+        "color": "Couleur",
+        "shared": "Visible par tous"
+      },
+      "actions": {
+        "submit": "Ajouter",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "delete": "Supprimer",
+        "edit": "Modifier",
+        "sync": "Synchroniser maintenant"
+      },
+      "status": {
+        "lastSync": "Dernière sync. :",
+        "never": "Pas encore synchronisé",
+        "syncing": "Synchronisation...",
+        "syncError": "Erreur de sync."
+      },
+      "badges": {
+        "private": "Privé",
+        "shared": "Partagé"
+      }
+    }
   },
   "login": {
     "tagline": "Planification familiale. Sécurisée. Respectueuse de la vie privée. Open source.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Recherche",
+    "open": "Ouvrir la recherche",
+    "placeholder": "Rechercher…",
+    "noResults": "Aucun résultat trouvé."
+  },
+  "reminders": {
+    "sectionTitle": "Rappel",
+    "enableLabel": "Définir un rappel",
+    "offsetLabel": "Rappeler",
+    "offsetNone": "Aucun",
+    "offsetAtTime": "À l'heure de début",
+    "offset15min": "15 minutes avant",
+    "offset1hour": "1 heure avant",
+    "offset1day": "1 jour avant",
+    "dateLabel": "Date",
+    "timeLabel": "Heure",
+    "toastTitle": "Rappel",
+    "dismiss": "Ignorer",
+    "pendingBadgeTitle": "{{count}} rappel en attente",
+    "pendingBadgeTitlePlural": "{{count}} rappels en attente",
+    "notificationPermission": "Notifications du navigateur",
+    "notificationEnable": "Activer les notifications",
+    "notificationEnabled": "Notifications actives",
+    "notificationDenied": "Notifications bloquées",
+    "notificationHint": "Recevez des notifications même lorsque l'application est ouverte."
   }
 }

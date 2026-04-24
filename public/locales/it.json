@@ -43,7 +43,8 @@
     "main": "Navigazione principale",
     "navigation": "Navigazione",
     "quickActions": "Azioni rapide",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "Altro"
   },
   "dashboard": {
     "title": "Panoramica",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Riapri",
     "recurring": "Ricorrente",
     "listView": "Vista elenco",
-    "kanbanView": "Vista Kanban"
+    "kanbanView": "Vista Kanban",
+    "filterBtn": "Filtro",
+    "filterClearAll": "Cancella tutti i filtri",
+    "filterGroupPerson": "Persona",
+    "filterGroupPriority": "Priorità",
+    "filterGroupStatus": "Stato",
+    "swipedDoneToast": "Contrassegnato come fatto.",
+    "swipedOpenToast": "Contrassegnato come aperto."
   },
   "shopping": {
     "title": "Spesa",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Giovedì",
     "dayLongFriday": "Venerdì",
     "dayLongSaturday": "Sabato",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Ripristina originale",
+      "resetToast": "Modifiche ripristinate."
+    }
   },
   "notes": {
     "title": "Bacheca",
@@ -564,7 +576,40 @@
     "sectionBudget": "Bilancio",
     "currencyLabel": "Valuta",
     "currencyHint": "Imposta la valuta utilizzata in tutta la sezione budget.",
-    "currencySaved": "Valuta salvata."
+    "currencySaved": "Valuta salvata.",
+    "ics": {
+      "title": "Abbonamenti ICS",
+      "add": "Aggiungi abbonamento",
+      "addedToast": "Abbonamento aggiunto.",
+      "deletedToast": "Abbonamento eliminato.",
+      "syncedToast": "Abbonamento sincronizzato.",
+      "confirm_delete": "Vuoi davvero eliminare questo abbonamento? Anche tutti gli eventi associati verranno eliminati.",
+      "empty": "Nessun abbonamento ancora.",
+      "form": {
+        "name": "Nome",
+        "url": "URL ICS",
+        "color": "Colore",
+        "shared": "Visibile a tutti"
+      },
+      "actions": {
+        "submit": "Aggiungi",
+        "save": "Salva",
+        "cancel": "Annulla",
+        "delete": "Elimina",
+        "edit": "Modifica",
+        "sync": "Sincronizza ora"
+      },
+      "status": {
+        "lastSync": "Ultima sincronizzazione:",
+        "never": "Non ancora sincronizzato",
+        "syncing": "Sincronizzazione...",
+        "syncError": "Errore di sincronizzazione"
+      },
+      "badges": {
+        "private": "Privato",
+        "shared": "Condiviso"
+      }
+    }
   },
   "login": {
     "tagline": "Pianificazione familiare. Sicura. Rispettosa della privacy. Open source.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Ricerca",
+    "open": "Apri ricerca",
+    "placeholder": "Cerca…",
+    "noResults": "Nessun risultato trovato."
+  },
+  "reminders": {
+    "sectionTitle": "Promemoria",
+    "enableLabel": "Imposta promemoria",
+    "offsetLabel": "Ricordami",
+    "offsetNone": "Nessuno",
+    "offsetAtTime": "All'ora di inizio",
+    "offset15min": "15 minuti prima",
+    "offset1hour": "1 ora prima",
+    "offset1day": "1 giorno prima",
+    "dateLabel": "Data",
+    "timeLabel": "Ora",
+    "toastTitle": "Promemoria",
+    "dismiss": "Ignora",
+    "pendingBadgeTitle": "{{count}} promemoria in attesa",
+    "pendingBadgeTitlePlural": "{{count}} promemoria in attesa",
+    "notificationPermission": "Notifiche del browser",
+    "notificationEnable": "Attiva notifiche",
+    "notificationEnabled": "Notifiche attive",
+    "notificationDenied": "Notifiche bloccate",
+    "notificationHint": "Ricevi notifiche anche quando l'app è aperta."
   }
 }

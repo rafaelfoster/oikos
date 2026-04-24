@@ -43,7 +43,8 @@
     "main": "メインナビゲーション",
     "navigation": "ナビゲーション",
     "quickActions": "クイックアクション",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "もっと見る"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "再度開く",
     "recurring": "繰り返し",
     "listView": "リスト表示",
-    "kanbanView": "かんばん表示"
+    "kanbanView": "かんばん表示",
+    "filterBtn": "フィルター",
+    "filterClearAll": "すべてのフィルターをクリア",
+    "filterGroupPerson": "人物",
+    "filterGroupPriority": "優先度",
+    "filterGroupStatus": "ステータス",
+    "swipedDoneToast": "完了としてマーク。",
+    "swipedOpenToast": "未完了としてマーク。"
   },
   "shopping": {
     "title": "買い物",
@@ -322,7 +330,11 @@
     "dayLongThursday": "木曜日",
     "dayLongFriday": "金曜日",
     "dayLongSaturday": "土曜日",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "元に戻す",
+      "resetToast": "変更がリセットされました。"
+    }
   },
   "notes": {
     "title": "メモボード",
@@ -564,7 +576,40 @@
     "sectionBudget": "家計",
     "currencyLabel": "通貨",
     "currencyHint": "家計全体で使用する通貨を設定します。",
-    "currencySaved": "通貨を保存しました。"
+    "currencySaved": "通貨を保存しました。",
+    "ics": {
+      "title": "ICSサブスクリプション",
+      "add": "サブスクリプションを追加",
+      "addedToast": "サブスクリプションが追加されました。",
+      "deletedToast": "サブスクリプションが削除されました。",
+      "syncedToast": "サブスクリプションが同期されました。",
+      "confirm_delete": "このサブスクリプションを本当に削除しますか？関連するすべてのイベントも削除されます。",
+      "empty": "まだサブスクリプションはありません。",
+      "form": {
+        "name": "名前",
+        "url": "ICS URL",
+        "color": "色",
+        "shared": "全員に表示"
+      },
+      "actions": {
+        "submit": "追加",
+        "save": "保存",
+        "cancel": "キャンセル",
+        "delete": "削除",
+        "edit": "編集",
+        "sync": "今すぐ同期"
+      },
+      "status": {
+        "lastSync": "最終同期:",
+        "never": "まだ同期していません",
+        "syncing": "同期中...",
+        "syncError": "同期エラー"
+      },
+      "badges": {
+        "private": "プライベート",
+        "shared": "共有"
+      }
+    }
   },
   "login": {
     "tagline": "家族計画。安全。プライバシー重視。オープンソース。",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "検索",
+    "open": "検索を開く",
+    "placeholder": "検索…",
+    "noResults": "結果が見つかりませんでした。"
+  },
+  "reminders": {
+    "sectionTitle": "リマインダー",
+    "enableLabel": "リマインダーを設定",
+    "offsetLabel": "リマインド",
+    "offsetNone": "なし",
+    "offsetAtTime": "開始時刻に",
+    "offset15min": "15分前",
+    "offset1hour": "1時間前",
+    "offset1day": "1日前",
+    "dateLabel": "日付",
+    "timeLabel": "時刻",
+    "toastTitle": "リマインダー",
+    "dismiss": "解除",
+    "pendingBadgeTitle": "{{count}}件の未処理リマインダー",
+    "pendingBadgeTitlePlural": "{{count}}件の未処理リマインダー",
+    "notificationPermission": "ブラウザ通知",
+    "notificationEnable": "通知を有効にする",
+    "notificationEnabled": "通知が有効",
+    "notificationDenied": "通知がブロックされています",
+    "notificationHint": "アプリが開いているときでも通知を受け取ります。"
   }
 }

@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.15] - 2026-04-24
+
+### Fixed
+- All non-German locales (ar, el, en, es, fr, hi, it, ja, pt, ru, sv, tr, uk, zh): added missing translation keys for `nav.more`, `calendar.ics.reset/resetToast`, `settings.ics.*`, `tasks.filter*`, `tasks.swiped*`, `search.*`, and `reminders.*` — these were falling back to German strings for all non-German users
+
 ## [0.23.14] - 2026-04-23
 
 ### Fixed
