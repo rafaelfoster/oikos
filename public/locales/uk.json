@@ -43,7 +43,8 @@
     "main": "Головна навігація",
     "navigation": "Навігація",
     "quickActions": "Швидкі дії",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "Більше"
   },
   "dashboard": {
     "title": "Огляд",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Відкрити знову",
     "recurring": "Повторюване",
     "listView": "Список",
-    "kanbanView": "Канбан"
+    "kanbanView": "Канбан",
+    "filterBtn": "Фільтр",
+    "filterClearAll": "Скинути всі фільтри",
+    "filterGroupPerson": "Особа",
+    "filterGroupPriority": "Пріоритет",
+    "filterGroupStatus": "Статус",
+    "swipedDoneToast": "Позначено як виконане.",
+    "swipedOpenToast": "Позначено як відкрите."
   },
   "shopping": {
     "title": "Покупки",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Четвер",
     "dayLongFriday": "П'ятниця",
     "dayLongSaturday": "Субота",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Скинути до оригіналу",
+      "resetToast": "Зміни скинуто."
+    }
   },
   "notes": {
     "title": "Нотатки",
@@ -564,7 +576,40 @@
     "sectionBudget": "Бюджет",
     "currencyLabel": "Валюта",
     "currencyHint": "Встановлює валюту, що використовується в розділі бюджету.",
-    "currencySaved": "Валюту збережено."
+    "currencySaved": "Валюту збережено.",
+    "ics": {
+      "title": "ICS-підписки",
+      "add": "Додати підписку",
+      "addedToast": "Підписку додано.",
+      "deletedToast": "Підписку видалено.",
+      "syncedToast": "Підписку синхронізовано.",
+      "confirm_delete": "Ви справді хочете видалити цю підписку? Всі пов'язані події також будуть видалені.",
+      "empty": "Підписок поки немає.",
+      "form": {
+        "name": "Назва",
+        "url": "URL ICS",
+        "color": "Колір",
+        "shared": "Видно всім"
+      },
+      "actions": {
+        "submit": "Додати",
+        "save": "Зберегти",
+        "cancel": "Скасувати",
+        "delete": "Видалити",
+        "edit": "Редагувати",
+        "sync": "Синхронізувати зараз"
+      },
+      "status": {
+        "lastSync": "Остання синхронізація:",
+        "never": "Ще не синхронізовано",
+        "syncing": "Синхронізація...",
+        "syncError": "Помилка синхронізації"
+      },
+      "badges": {
+        "private": "Приватне",
+        "shared": "Спільне"
+      }
+    }
   },
   "login": {
     "tagline": "Планування для родини. Безпечно. Конфіденційно. Відкритий код.",
@@ -657,5 +702,11 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Пошук",
+    "open": "Відкрити пошук",
+    "placeholder": "Пошук…",
+    "noResults": "Результатів не знайдено."
   }
 }

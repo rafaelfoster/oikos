@@ -43,7 +43,8 @@
     "main": "主导航",
     "navigation": "导航",
     "quickActions": "快捷操作",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "更多"
   },
   "dashboard": {
     "title": "概览",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "重新打开",
     "recurring": "重复",
     "listView": "列表视图",
-    "kanbanView": "看板视图"
+    "kanbanView": "看板视图",
+    "filterBtn": "筛选",
+    "filterClearAll": "清除所有筛选",
+    "filterGroupPerson": "人员",
+    "filterGroupPriority": "优先级",
+    "filterGroupStatus": "状态",
+    "swipedDoneToast": "已标记为完成。",
+    "swipedOpenToast": "已标记为未完成。"
   },
   "shopping": {
     "title": "购物",
@@ -322,7 +330,11 @@
     "dayLongThursday": "星期四",
     "dayLongFriday": "星期五",
     "dayLongSaturday": "星期六",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "重置为原始",
+      "resetToast": "更改已重置。"
+    }
   },
   "notes": {
     "title": "便签板",
@@ -564,7 +576,40 @@
     "sectionBudget": "预算",
     "currencyLabel": "货币",
     "currencyHint": "设置整个预算区域使用的货币。",
-    "currencySaved": "货币已保存。"
+    "currencySaved": "货币已保存。",
+    "ics": {
+      "title": "ICS 订阅",
+      "add": "添加订阅",
+      "addedToast": "订阅已添加。",
+      "deletedToast": "订阅已删除。",
+      "syncedToast": "订阅已同步。",
+      "confirm_delete": "确定要删除此订阅吗？所有相关事件也将被删除。",
+      "empty": "暂无订阅。",
+      "form": {
+        "name": "名称",
+        "url": "ICS 链接",
+        "color": "颜色",
+        "shared": "所有人可见"
+      },
+      "actions": {
+        "submit": "添加",
+        "save": "保存",
+        "cancel": "取消",
+        "delete": "删除",
+        "edit": "编辑",
+        "sync": "立即同步"
+      },
+      "status": {
+        "lastSync": "上次同步:",
+        "never": "尚未同步",
+        "syncing": "同步中...",
+        "syncError": "同步错误"
+      },
+      "badges": {
+        "private": "私人",
+        "shared": "共享"
+      }
+    }
   },
   "login": {
     "tagline": "家庭规划。安全。注重隐私。开源。",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "搜索",
+    "open": "打开搜索",
+    "placeholder": "搜索…",
+    "noResults": "未找到结果。"
+  },
+  "reminders": {
+    "sectionTitle": "提醒",
+    "enableLabel": "设置提醒",
+    "offsetLabel": "提醒时间",
+    "offsetNone": "无",
+    "offsetAtTime": "在开始时",
+    "offset15min": "提前15分钟",
+    "offset1hour": "提前1小时",
+    "offset1day": "提前1天",
+    "dateLabel": "日期",
+    "timeLabel": "时间",
+    "toastTitle": "提醒",
+    "dismiss": "关闭",
+    "pendingBadgeTitle": "{{count}}个待处理提醒",
+    "pendingBadgeTitlePlural": "{{count}}个待处理提醒",
+    "notificationPermission": "浏览器通知",
+    "notificationEnable": "启用通知",
+    "notificationEnabled": "通知已启用",
+    "notificationDenied": "通知已被阻止",
+    "notificationHint": "即使应用程序打开时也能收到通知。"
   }
 }

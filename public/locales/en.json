@@ -43,7 +43,8 @@
     "main": "Main navigation",
     "navigation": "Navigation",
     "quickActions": "Quick actions",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "More"
   },
   "dashboard": {
     "title": "Overview",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Reopen",
     "recurring": "Recurring",
     "listView": "List view",
-    "kanbanView": "Kanban view"
+    "kanbanView": "Kanban view",
+    "filterBtn": "Filter",
+    "filterClearAll": "Clear all filters",
+    "filterGroupPerson": "Person",
+    "filterGroupPriority": "Priority",
+    "filterGroupStatus": "Status",
+    "swipedDoneToast": "Marked as done.",
+    "swipedOpenToast": "Marked as open."
   },
   "shopping": {
     "title": "Shopping",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Thursday",
     "dayLongFriday": "Friday",
     "dayLongSaturday": "Saturday",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Reset to original",
+      "resetToast": "Changes reset."
+    }
   },
   "notes": {
     "title": "Board",
@@ -564,7 +576,40 @@
     "sectionBudget": "Budget",
     "currencyLabel": "Currency",
     "currencyHint": "Sets the currency used throughout the budget section.",
-    "currencySaved": "Currency saved."
+    "currencySaved": "Currency saved.",
+    "ics": {
+      "title": "ICS Subscriptions",
+      "add": "Add subscription",
+      "addedToast": "Subscription added.",
+      "deletedToast": "Subscription deleted.",
+      "syncedToast": "Subscription synced.",
+      "confirm_delete": "Do you really want to delete this subscription? All associated events will also be deleted.",
+      "empty": "No subscriptions yet.",
+      "form": {
+        "name": "Name",
+        "url": "ICS URL",
+        "color": "Color",
+        "shared": "Visible to everyone"
+      },
+      "actions": {
+        "submit": "Add",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "sync": "Sync now"
+      },
+      "status": {
+        "lastSync": "Last synced:",
+        "never": "Not yet synced",
+        "syncing": "Syncing...",
+        "syncError": "Sync error"
+      },
+      "badges": {
+        "private": "Private",
+        "shared": "Shared"
+      }
+    }
   },
   "login": {
     "tagline": "Family planning. Secure. Privacy-friendly. Open source.",
@@ -657,5 +702,11 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Search",
+    "open": "Open search",
+    "placeholder": "Search…",
+    "noResults": "No results found."
   }
 }

@@ -43,7 +43,8 @@
     "main": "القائمة الرئيسية",
     "navigation": "التنقل",
     "quickActions": "الإجراءات السريعة",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "المزيد"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "إعادة الفتح",
     "recurring": "متكرر",
     "listView": "عرض القائمة",
-    "kanbanView": "عرض كانبان"
+    "kanbanView": "عرض كانبان",
+    "filterBtn": "تصفية",
+    "filterClearAll": "مسح جميع الفلاتر",
+    "filterGroupPerson": "الشخص",
+    "filterGroupPriority": "الأولوية",
+    "filterGroupStatus": "الحالة",
+    "swipedDoneToast": "تم وضع علامة مكتمل.",
+    "swipedOpenToast": "تم وضع علامة مفتوح."
   },
   "shopping": {
     "title": "التسوق",
@@ -322,7 +330,11 @@
     "dayLongThursday": "الخميس",
     "dayLongFriday": "الجمعة",
     "dayLongSaturday": "السبت",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "إعادة التعيين للأصل",
+      "resetToast": "تم إعادة تعيين التغييرات."
+    }
   },
   "notes": {
     "title": "لوحة الملاحظات",
@@ -564,7 +576,40 @@
     "sectionBudget": "الميزانية",
     "currencyLabel": "العملة",
     "currencyHint": "تحدد العملة المستخدمة في منطقة الميزانية بأكملها.",
-    "currencySaved": "تم حفظ العملة."
+    "currencySaved": "تم حفظ العملة.",
+    "ics": {
+      "title": "اشتراكات ICS",
+      "add": "إضافة اشتراك",
+      "addedToast": "تمت إضافة الاشتراك.",
+      "deletedToast": "تم حذف الاشتراك.",
+      "syncedToast": "تمت مزامنة الاشتراك.",
+      "confirm_delete": "هل تريد حقًا حذف هذا الاشتراك؟ ستُحذف أيضًا جميع الأحداث المرتبطة.",
+      "empty": "لا توجد اشتراكات بعد.",
+      "form": {
+        "name": "الاسم",
+        "url": "رابط ICS",
+        "color": "اللون",
+        "shared": "مرئي للجميع"
+      },
+      "actions": {
+        "submit": "إضافة",
+        "save": "حفظ",
+        "cancel": "إلغاء",
+        "delete": "حذف",
+        "edit": "تعديل",
+        "sync": "مزامنة الآن"
+      },
+      "status": {
+        "lastSync": "آخر مزامنة:",
+        "never": "لم تتم المزامنة بعد",
+        "syncing": "جارٍ المزامنة...",
+        "syncError": "خطأ في المزامنة"
+      },
+      "badges": {
+        "private": "خاص",
+        "shared": "مشترك"
+      }
+    }
   },
   "login": {
     "tagline": "تخطيط عائلي. آمن. يحترم الخصوصية. مفتوح المصدر.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "بحث",
+    "open": "فتح البحث",
+    "placeholder": "بحث…",
+    "noResults": "لم يتم العثور على نتائج."
+  },
+  "reminders": {
+    "sectionTitle": "تذكير",
+    "enableLabel": "تعيين تذكير",
+    "offsetLabel": "تذكير",
+    "offsetNone": "لا شيء",
+    "offsetAtTime": "في وقت البدء",
+    "offset15min": "قبل 15 دقيقة",
+    "offset1hour": "قبل ساعة واحدة",
+    "offset1day": "قبل يوم واحد",
+    "dateLabel": "التاريخ",
+    "timeLabel": "الوقت",
+    "toastTitle": "تذكير",
+    "dismiss": "تجاهل",
+    "pendingBadgeTitle": "{{count}} تذكير معلق",
+    "pendingBadgeTitlePlural": "{{count}} تذكيرات معلقة",
+    "notificationPermission": "إشعارات المتصفح",
+    "notificationEnable": "تفعيل الإشعارات",
+    "notificationEnabled": "الإشعارات نشطة",
+    "notificationDenied": "الإشعارات محظورة",
+    "notificationHint": "احصل على إشعارات حتى عندما يكون التطبيق مفتوحًا."
   }
 }

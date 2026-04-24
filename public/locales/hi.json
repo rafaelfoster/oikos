@@ -43,7 +43,8 @@
     "main": "मुख्य नेविगेशन",
     "navigation": "नेविगेशन",
     "quickActions": "त्वरित क्रियाएं",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "और"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "फिर से खोलें",
     "recurring": "आवर्ती",
     "listView": "सूची दृश्य",
-    "kanbanView": "कानबान दृश्य"
+    "kanbanView": "कानबान दृश्य",
+    "filterBtn": "फ़िल्टर",
+    "filterClearAll": "सभी फ़िल्टर हटाएं",
+    "filterGroupPerson": "व्यक्ति",
+    "filterGroupPriority": "प्राथमिकता",
+    "filterGroupStatus": "स्थिति",
+    "swipedDoneToast": "पूर्ण के रूप में चिह्नित।",
+    "swipedOpenToast": "खुले के रूप में चिह्नित।"
   },
   "shopping": {
     "title": "खरीदारी",
@@ -322,7 +330,11 @@
     "dayLongThursday": "गुरुवार",
     "dayLongFriday": "शुक्रवार",
     "dayLongSaturday": "शनिवार",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "मूल पर वापस जाएं",
+      "resetToast": "परिवर्तन रीसेट हो गए।"
+    }
   },
   "notes": {
     "title": "नोट बोर्ड",
@@ -564,7 +576,40 @@
     "sectionBudget": "बजट",
     "currencyLabel": "मुद्रा",
     "currencyHint": "पूरे बजट अनुभाग में उपयोग की जाने वाली मुद्रा सेट करता है।",
-    "currencySaved": "मुद्रा सहेजी गई।"
+    "currencySaved": "मुद्रा सहेजी गई।",
+    "ics": {
+      "title": "ICS सदस्यताएं",
+      "add": "सदस्यता जोड़ें",
+      "addedToast": "सदस्यता जोड़ी गई।",
+      "deletedToast": "सदस्यता हटाई गई।",
+      "syncedToast": "सदस्यता सिंक हुई।",
+      "confirm_delete": "क्या आप वाकई इस सदस्यता को हटाना चाहते हैं? सभी संबंधित इवेंट भी हटा दिए जाएंगे।",
+      "empty": "अभी तक कोई सदस्यता नहीं।",
+      "form": {
+        "name": "नाम",
+        "url": "ICS URL",
+        "color": "रंग",
+        "shared": "सभी के लिए दृश्यमान"
+      },
+      "actions": {
+        "submit": "जोड़ें",
+        "save": "सहेजें",
+        "cancel": "रद्द करें",
+        "delete": "हटाएं",
+        "edit": "संपादित करें",
+        "sync": "अभी सिंक करें"
+      },
+      "status": {
+        "lastSync": "अंतिम सिंक:",
+        "never": "अभी तक सिंक नहीं हुआ",
+        "syncing": "सिंक हो रहा है...",
+        "syncError": "सिंक त्रुटि"
+      },
+      "badges": {
+        "private": "निजी",
+        "shared": "साझा"
+      }
+    }
   },
   "login": {
     "tagline": "पारिवारिक योजना। सुरक्षित। गोपनीयता-अनुकूल। ओपन सोर्स।",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "खोज",
+    "open": "खोज खोलें",
+    "placeholder": "खोजें…",
+    "noResults": "कोई परिणाम नहीं मिला।"
+  },
+  "reminders": {
+    "sectionTitle": "अनुस्मारक",
+    "enableLabel": "अनुस्मारक सेट करें",
+    "offsetLabel": "याद दिलाएं",
+    "offsetNone": "कोई नहीं",
+    "offsetAtTime": "प्रारंभ समय पर",
+    "offset15min": "15 मिनट पहले",
+    "offset1hour": "1 घंटे पहले",
+    "offset1day": "1 दिन पहले",
+    "dateLabel": "तारीख",
+    "timeLabel": "समय",
+    "toastTitle": "अनुस्मारक",
+    "dismiss": "खारिज करें",
+    "pendingBadgeTitle": "{{count}} लंबित अनुस्मारक",
+    "pendingBadgeTitlePlural": "{{count}} लंबित अनुस्मारक",
+    "notificationPermission": "ब्राउज़र सूचनाएं",
+    "notificationEnable": "सूचनाएं सक्षम करें",
+    "notificationEnabled": "सूचनाएं सक्रिय",
+    "notificationDenied": "सूचनाएं अवरुद्ध",
+    "notificationHint": "ऐप खुली होने पर भी सूचनाएं प्राप्त करें।"
   }
 }

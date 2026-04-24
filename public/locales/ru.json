@@ -43,7 +43,8 @@
     "main": "Главная навигация",
     "navigation": "Навигация",
     "quickActions": "Быстрые действия",
-    "recipes": "Recipes"
+    "recipes": "Recipes",
+    "more": "Ещё"
   },
   "dashboard": {
     "title": "Обзор",
@@ -156,7 +157,14 @@
     "kanbanMoveToOpen": "Открыть снова",
     "recurring": "Повторяющееся",
     "listView": "Список",
-    "kanbanView": "Канбан"
+    "kanbanView": "Канбан",
+    "filterBtn": "Фильтр",
+    "filterClearAll": "Сбросить все фильтры",
+    "filterGroupPerson": "Человек",
+    "filterGroupPriority": "Приоритет",
+    "filterGroupStatus": "Статус",
+    "swipedDoneToast": "Отмечено как выполненное.",
+    "swipedOpenToast": "Отмечено как открытое."
   },
   "shopping": {
     "title": "Покупки",
@@ -322,7 +330,11 @@
     "dayLongThursday": "Четверг",
     "dayLongFriday": "Пятница",
     "dayLongSaturday": "Суббота",
-    "timeSuffix": ""
+    "timeSuffix": "",
+    "ics": {
+      "reset": "Сбросить к исходному",
+      "resetToast": "Изменения сброшены."
+    }
   },
   "notes": {
     "title": "Заметки",
@@ -564,7 +576,40 @@
     "sectionBudget": "Бюджет",
     "currencyLabel": "Валюта",
     "currencyHint": "Устанавливает валюту для всего раздела бюджета.",
-    "currencySaved": "Валюта сохранена."
+    "currencySaved": "Валюта сохранена.",
+    "ics": {
+      "title": "ICS-подписки",
+      "add": "Добавить подписку",
+      "addedToast": "Подписка добавлена.",
+      "deletedToast": "Подписка удалена.",
+      "syncedToast": "Подписка синхронизирована.",
+      "confirm_delete": "Вы действительно хотите удалить эту подписку? Все связанные события также будут удалены.",
+      "empty": "Подписок пока нет.",
+      "form": {
+        "name": "Название",
+        "url": "URL ICS",
+        "color": "Цвет",
+        "shared": "Видно всем"
+      },
+      "actions": {
+        "submit": "Добавить",
+        "save": "Сохранить",
+        "cancel": "Отмена",
+        "delete": "Удалить",
+        "edit": "Изменить",
+        "sync": "Синхронизировать сейчас"
+      },
+      "status": {
+        "lastSync": "Последняя синхронизация:",
+        "never": "Ещё не синхронизировано",
+        "syncing": "Синхронизация...",
+        "syncError": "Ошибка синхронизации"
+      },
+      "badges": {
+        "private": "Личное",
+        "shared": "Общее"
+      }
+    }
   },
   "login": {
     "tagline": "Семейное планирование. Безопасно. С уважением к приватности. Открытый исходный код.",
@@ -636,5 +681,32 @@
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
     "copySuffix": "copy"
+  },
+  "search": {
+    "title": "Поиск",
+    "open": "Открыть поиск",
+    "placeholder": "Поиск…",
+    "noResults": "Результаты не найдены."
+  },
+  "reminders": {
+    "sectionTitle": "Напоминание",
+    "enableLabel": "Установить напоминание",
+    "offsetLabel": "Напомнить",
+    "offsetNone": "Нет",
+    "offsetAtTime": "В момент начала",
+    "offset15min": "За 15 минут",
+    "offset1hour": "За 1 час",
+    "offset1day": "За 1 день",
+    "dateLabel": "Дата",
+    "timeLabel": "Время",
+    "toastTitle": "Напоминание",
+    "dismiss": "Отклонить",
+    "pendingBadgeTitle": "{{count}} ожидающее напоминание",
+    "pendingBadgeTitlePlural": "{{count}} ожидающих напоминания",
+    "notificationPermission": "Уведомления браузера",
+    "notificationEnable": "Включить уведомления",
+    "notificationEnabled": "Уведомления активны",
+    "notificationDenied": "Уведомления заблокированы",
+    "notificationHint": "Получайте уведомления, даже когда приложение открыто."
   }
 }
