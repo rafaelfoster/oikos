@@ -220,7 +220,9 @@
   --color-overlay:        var(--_color-overlay);
   --_color-overlay-light: rgba(0, 0, 0, 0.2);
   --color-overlay-light:  var(--_color-overlay-light);
+  --color-overlay-glass:  rgba(0, 0, 0, 0.30);  /* Glass-Modal-Overlay (zwischen overlay-light und overlay) */
   --color-backdrop-fab:   rgba(0, 0, 0, 0.25);
+  --color-backdrop-glass: rgba(0, 0, 0, 0.18);  /* Subtiler FAB-Backdrop hinter Glass */
 
   /* Glass-Overlays (fuer Elemente auf farbigen Hintergruenden) */
   --color-glass:       rgba(255, 255, 255, 0.18);
@@ -262,6 +264,7 @@
   --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
 
   /* Size-Skala */
+  --text-2xs:  0.625rem;   /* 10px - Sehr kleine Badges (z.B. Erinnerungs-Zähler) */
   --text-xs:   0.75rem;    /* 12px - Minimum, Captions, Badges, Nav-Labels */
   --text-sm:   0.8125rem;  /* 13px - Small/Secondary */
   --text-base: 0.9375rem;  /* 15px - Body (Desktop) */
@@ -380,6 +383,7 @@
   --glass-border:       var(--_glass-border);
   --_glass-border-subtle: rgba(255, 255, 255, 0.35);
   --glass-border-subtle:  var(--_glass-border-subtle);
+  --glass-border-overlay: rgba(255, 255, 255, 0.10);  /* immer-dunkle Surfaces (Toasts, Overlays) */
 
   /* a2) Glass-Hintergründe: Vibrancy-Stufe (transparenter, mehr Durchschein) */
   --_glass-bg-card:       rgba(255, 255, 255, 0.52);
@@ -412,6 +416,7 @@
   --glass-highlight:         var(--_glass-highlight);
   --_glass-highlight-subtle: rgba(255, 255, 255, 0.35);
   --glass-highlight-subtle:  var(--_glass-highlight-subtle);
+  --glass-highlight-mid:     rgba(255, 255, 255, 0.50);  /* Mittlere Stärke für Outlines auf dunklen Surfaces */
 
   /* d2) Inset-Specular: Oberrand-Sheen für Glass-Elemente (volle inset-Kurzform) */
   --glass-inset-soft:     inset 0 1px 0 rgba(255, 255, 255, 0.18);
@@ -419,6 +424,13 @@
   --glass-inset-medium:   inset 0 1px 0 rgba(255, 255, 255, 0.22);
   --glass-inset-elevated: inset 0 1px 0 rgba(255, 255, 255, 0.28);
   --glass-inset-strong:   inset 0 1px 0 rgba(255, 255, 255, 0.32);
+
+  /* d3) Dark-Inset-Specular: Unterrand-Schatten (komplementär zu den White-Insets oben) */
+  --glass-inset-bottom-base:  inset 0 -1px 0 rgba(0, 0, 0, 0.12);
+  --glass-inset-bottom-hover: inset 0 -1px 0 rgba(0, 0, 0, 0.16);
+  --glass-inset-thumb:        inset 0  1px 0 rgba(255, 255, 255, 0.90),
+                              inset 0 -1px 0 rgba(0, 0, 0, 0.08);
+  --glass-inset-input:        inset 0  1px 2px rgba(0, 0, 0, 0.04);
 
   /* e) Glass-Schatten */
   --_glass-shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 0 1px rgba(255, 255, 255, 0.55);

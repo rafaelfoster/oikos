@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.16] - 2026-04-24
+
+### Changed
+- Design tokens: replaced all remaining hardcoded color and size values in `layout.css`, `glass.css`, `dashboard.css`, and `reminders.css` with CSS custom properties
+- Design tokens: added `--text-2xs`, `--color-overlay-glass`, `--color-backdrop-glass`, `--glass-border-overlay`, `--glass-highlight-mid`, `--glass-inset-bottom-base`, `--glass-inset-bottom-hover`, `--glass-inset-thumb`, and `--glass-inset-input` to `tokens.css`
+
 ## [0.23.15] - 2026-04-24
 
 ### Fixed
