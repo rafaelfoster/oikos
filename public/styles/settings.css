@@ -321,6 +321,13 @@
   width: 100%;
 }
 
+.settings-token-output {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+}
+
 /* --------------------------------------------------------
    Theme-Toggle
    -------------------------------------------------------- */

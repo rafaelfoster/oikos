@@ -144,6 +144,17 @@ const MIGRATIONS_SQL = {
       created_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
       UNIQUE(category_key, name)
     );
+    CREATE TABLE IF NOT EXISTS api_tokens (
+      id           INTEGER PRIMARY KEY AUTOINCREMENT,
+      name         TEXT    NOT NULL,
+      token_hash   TEXT    NOT NULL UNIQUE,
+      token_prefix TEXT    NOT NULL,
+      created_by   INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      expires_at   TEXT,
+      revoked_at   TEXT,
+      last_used_at TEXT,
+      created_at   TEXT    NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+    );
     CREATE TRIGGER IF NOT EXISTS trg_users_updated_at
       AFTER UPDATE ON users FOR EACH ROW
       BEGIN UPDATE users SET updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now') WHERE id = OLD.id; END;
@@ -185,6 +196,8 @@ const MIGRATIONS_SQL = {
     CREATE INDEX IF NOT EXISTS idx_notes_pinned         ON notes(pinned);
     CREATE INDEX IF NOT EXISTS idx_budget_date          ON budget_entries(date);
     CREATE INDEX IF NOT EXISTS idx_budget_created_by    ON budget_entries(created_by);
+    CREATE INDEX IF NOT EXISTS idx_api_tokens_hash      ON api_tokens(token_hash);
+    CREATE INDEX IF NOT EXISTS idx_api_tokens_created_by ON api_tokens(created_by);
   `,
   2: `
     CREATE TABLE IF NOT EXISTS sync_config (

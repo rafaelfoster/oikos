@@ -74,6 +74,7 @@ const EXPECTED_TABLES = [
   'users', 'tasks', 'shopping_lists', 'shopping_items',
   'meals', 'meal_ingredients', 'calendar_events',
   'notes', 'contacts', 'budget_entries',
+  'budget_categories', 'budget_subcategories', 'api_tokens',
 ];
 
 EXPECTED_TABLES.forEach((table) => {
@@ -88,9 +89,18 @@ EXPECTED_TABLES.forEach((table) => {
 // --------------------------------------------------------
 // Test 4: Alle updated_at-Triggers vorhanden
 // --------------------------------------------------------
-const EXPECTED_TRIGGERS = EXPECTED_TABLES.filter((t) => t !== 'schema_migrations').map(
-  (t) => `trg_${t}_updated_at`
-);
+const EXPECTED_TRIGGERS = [
+  'users',
+  'tasks',
+  'shopping_lists',
+  'shopping_items',
+  'meals',
+  'meal_ingredients',
+  'calendar_events',
+  'notes',
+  'contacts',
+  'budget_entries',
+].map((t) => `trg_${t}_updated_at`);
 
 EXPECTED_TRIGGERS.forEach((trigger) => {
   test(`Trigger "${trigger}" existiert`, () => {
@@ -177,6 +187,17 @@ test('Idempotenz: Migration zweimal ausführen ändert nichts', () => {
   db.exec(MIGRATIONS_SQL[1]);
   const tables = db.prepare("SELECT count(*) as n FROM sqlite_master WHERE type='table'").get();
   assert(tables.n > 0, 'Tabellen sollten noch vorhanden sein');
+});
+
+test('API-Token anlegen und lesen', () => {
+  const result = db.prepare(`
+    INSERT INTO api_tokens (name, token_hash, token_prefix, created_by, expires_at)
+    VALUES ('MCP integration', 'hash-123', 'oikos_abc123', 1, '2026-12-31T23:59:59.000Z')
+  `).run();
+  const token = db.prepare('SELECT * FROM api_tokens WHERE id = ?').get(result.lastInsertRowid);
+  assert(token.name === 'MCP integration', 'Token name stimmt nicht');
+  assert(token.created_by === 1, 'Token creator stimmt nicht');
+  assert(token.revoked_at === null, 'Token sollte nicht widerrufen sein');
 });
 
 // --------------------------------------------------------

@@ -59,15 +59,17 @@ export async function render(container, { user }) {
   let prefs           = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR' };
   let categories      = [];
   let icsSubscriptions = [];
+  let apiTokens       = [];
 
   try {
-    const [usersRes, gStatus, aStatus, prefsRes, catsRes, icsRes] = await Promise.allSettled([
+    const [usersRes, gStatus, aStatus, prefsRes, catsRes, icsRes, apiTokensRes] = await Promise.allSettled([
       user.role === 'admin' ? auth.getUsers() : Promise.resolve({ data: [] }),
       api.get('/calendar/google/status'),
       api.get('/calendar/apple/status'),
       api.get('/preferences'),
       api.get('/shopping/categories'),
       api.get('/calendar/subscriptions'),
+      user.role === 'admin' ? api.get('/auth/api-tokens') : Promise.resolve({ data: [] }),
     ]);
     if (usersRes.status === 'fulfilled')  users            = usersRes.value.data  ?? [];
     if (gStatus.status  === 'fulfilled')  googleStatus     = gStatus.value;
@@ -75,6 +77,7 @@ export async function render(container, { user }) {
     if (prefsRes.status === 'fulfilled')  prefs            = prefsRes.value.data  ?? prefs;
     if (catsRes.status  === 'fulfilled')  categories       = catsRes.value.data   ?? [];
     if (icsRes.status   === 'fulfilled')  icsSubscriptions = icsRes.value.data    ?? [];
+    if (apiTokensRes.status === 'fulfilled') apiTokens     = apiTokensRes.value.data ?? [];
   } catch (_) { /* non-critical */ }
 
   const googleStatusText = googleStatus.connected
@@ -365,6 +368,35 @@ export async function render(container, { user }) {
 
         ${user?.role === 'admin' ? `
         <section class="settings-section">
+          <h2 class="settings-section__title">${t('settings.apiTokensTitle')}</h2>
+          <div class="settings-card">
+            <h3 class="settings-card__title">${t('settings.apiTokensCardTitle')}</h3>
+            <p class="form-hint" style="margin-bottom:var(--space-3)">${t('settings.apiTokensHint')}</p>
+            <ul class="settings-members" id="api-token-list">
+              ${apiTokens.map(apiTokenHtml).join('')}
+            </ul>
+            <form id="api-token-form" class="settings-form" autocomplete="off">
+              <div class="form-group">
+                <label class="form-label" for="api-token-name">${t('settings.apiTokenNameLabel')}</label>
+                <input class="form-input" type="text" id="api-token-name" maxlength="100" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="api-token-expires">${t('settings.apiTokenExpiresLabel')}</label>
+                <input class="form-input" type="datetime-local" id="api-token-expires" />
+                <p class="form-hint">${t('settings.apiTokenExpiresHint')}</p>
+              </div>
+              <div id="api-token-created" class="settings-token-output" hidden>
+                <label class="form-label" for="api-token-created-value">${t('settings.apiTokenCreatedLabel')}</label>
+                <input class="form-input" id="api-token-created-value" type="text" readonly />
+                <p class="form-hint">${t('settings.apiTokenCreatedHint')}</p>
+              </div>
+              <div id="api-token-error" class="form-error" hidden></div>
+              <button type="submit" class="btn btn--primary">${t('settings.apiTokenCreate')}</button>
+            </form>
+          </div>
+        </section>
+
+        <section class="settings-section">
           <h2 class="settings-section__title">${t('settings.sectionFamily')}</h2>
           <div class="settings-card" id="members-card">
             <ul class="settings-members" id="members-list">
@@ -424,17 +456,18 @@ export async function render(container, { user }) {
     });
   }
 
-  bindEvents(container, user, categories, icsSubscriptions);
+  bindEvents(container, user, categories, icsSubscriptions, apiTokens);
 }
 
 // --------------------------------------------------------
 // Event-Binding
 // --------------------------------------------------------
 
-function bindEvents(container, user, categories, icsSubscriptions) {
+function bindEvents(container, user, categories, icsSubscriptions, apiTokens) {
   bindTabEvents(container);
   bindCategoryEvents(container);
   bindIcsEvents(container, user, icsSubscriptions);
+  bindApiTokenEvents(container, apiTokens);
   // Theme-Toggle
   const themeToggle = container.querySelector('#theme-toggle');
   if (themeToggle) {
@@ -719,6 +752,109 @@ function bindDeleteButtons(container, user) {
         window.oikos?.showToast(err.message, 'danger');
       }
     });
+  });
+}
+
+function apiTokenHtml(token) {
+  const status = token.revoked_at
+    ? t('settings.apiTokenRevoked')
+    : token.expires_at && new Date(token.expires_at).getTime() <= Date.now()
+      ? t('settings.apiTokenExpired')
+      : t('settings.apiTokenActive');
+  const meta = [
+    `${t('settings.apiTokenPrefix')}: ${token.token_prefix}...`,
+    token.expires_at ? `${t('settings.apiTokenExpires')}: ${formatDateTime(token.expires_at)}` : t('settings.apiTokenNeverExpires'),
+    token.last_used_at ? `${t('settings.apiTokenLastUsed')}: ${formatDateTime(token.last_used_at)}` : t('settings.apiTokenNeverUsed'),
+    status,
+  ].join(' · ');
+
+  return `
+    <li class="settings-member" data-api-token-id="${token.id}">
+      <div class="settings-member__info">
+        <span class="settings-member__name">${esc(token.name)}</span>
+        <span class="settings-member__meta">${esc(meta)}</span>
+      </div>
+      <button class="btn btn--icon btn--danger-outline" data-revoke-api-token="${token.id}" data-name="${esc(token.name)}" ${token.revoked_at ? 'disabled' : ''} aria-label="${t('settings.apiTokenRevoke')}">
+        <i data-lucide="ban" aria-hidden="true"></i>
+      </button>
+    </li>
+  `;
+}
+
+function renderApiTokenList(container, tokens) {
+  const list = container.querySelector('#api-token-list');
+  if (!list) return;
+  list.replaceChildren();
+  tokens.forEach((token) => {
+    const tmp = document.createElement('template');
+    tmp.innerHTML = apiTokenHtml(token);
+    list.appendChild(tmp.content.firstElementChild);
+  });
+  if (window.lucide) window.lucide.createIcons();
+}
+
+function datetimeLocalToIso(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? null : date.toISOString();
+}
+
+function bindApiTokenEvents(container, initialTokens) {
+  const form = container.querySelector('#api-token-form');
+  const list = container.querySelector('#api-token-list');
+  if (!form || !list) return;
+
+  let tokens = [...initialTokens];
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = container.querySelector('#api-token-error');
+    const output = container.querySelector('#api-token-created');
+    const outputValue = container.querySelector('#api-token-created-value');
+    errorEl.hidden = true;
+    output.hidden = true;
+
+    const name = container.querySelector('#api-token-name').value.trim();
+    const expiresValue = container.querySelector('#api-token-expires').value;
+    const expires_at = datetimeLocalToIso(expiresValue);
+    if (expiresValue && !expires_at) {
+      showError(errorEl, t('settings.apiTokenInvalidExpiration'));
+      return;
+    }
+
+    const btn = form.querySelector('[type=submit]');
+    btn.disabled = true;
+    try {
+      const res = await api.post('/auth/api-tokens', { name, expires_at });
+      tokens.unshift(res.data);
+      renderApiTokenList(container, tokens);
+      form.reset();
+      outputValue.value = res.token;
+      output.hidden = false;
+      outputValue.focus();
+      outputValue.select();
+      window.oikos?.showToast(t('settings.apiTokenCreatedToast'), 'success');
+    } catch (err) {
+      showError(errorEl, err.message);
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  list.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-revoke-api-token]');
+    if (!btn) return;
+    const id = Number(btn.dataset.revokeApiToken);
+    const name = btn.dataset.name;
+    if (!await confirmModal(t('settings.apiTokenRevokeConfirm', { name }), { danger: true, confirmLabel: t('settings.apiTokenRevoke') })) return;
+    try {
+      await api.delete(`/auth/api-tokens/${id}`);
+      tokens = tokens.map((token) => token.id === id ? { ...token, revoked_at: new Date().toISOString() } : token);
+      renderApiTokenList(container, tokens);
+      window.oikos?.showToast(t('settings.apiTokenRevokedToast'), 'default');
+    } catch (err) {
+      window.oikos?.showToast(err.message, 'danger');
+    }
   });
 }
 
