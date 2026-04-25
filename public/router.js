@@ -313,7 +313,8 @@ function renderAppShell(container) {
   logoSvg.setAttribute('fill', 'none');
   const defs = document.createElementNS(SVG_NS, 'defs');
   const grad = document.createElementNS(SVG_NS, 'linearGradient');
-  grad.setAttribute('id', 'oikos-logo-bg');
+  const gradId = `oikos-logo-bg-${Math.random().toString(36).slice(2, 7)}`;
+  grad.setAttribute('id', gradId);
   grad.setAttribute('x1', '0'); grad.setAttribute('y1', '0');
   grad.setAttribute('x2', '160'); grad.setAttribute('y2', '160');
   grad.setAttribute('gradientUnits', 'userSpaceOnUse');
@@ -328,7 +329,7 @@ function renderAppShell(container) {
   logoSvg.appendChild(defs);
   const bgRect = document.createElementNS(SVG_NS, 'rect');
   bgRect.setAttribute('width', '160'); bgRect.setAttribute('height', '160');
-  bgRect.setAttribute('rx', '36'); bgRect.setAttribute('fill', 'url(#oikos-logo-bg)');
+  bgRect.setAttribute('rx', '36'); bgRect.setAttribute('fill', `url(#${gradId})`);
   logoSvg.appendChild(bgRect);
   const housePath = document.createElementNS(SVG_NS, 'path');
   housePath.setAttribute('d', 'M80 36L36 72V120C36 122.2 37.8 124 40 124H68V96H92V124H120C122.2 124 124 122.2 124 120V72L80 36Z');
@@ -528,17 +529,41 @@ function initSearch(container) {
   const results      = container.querySelector('#search-results');
   if (!searchBtn || !overlay || !input || !results) return;
 
+  // Leichtgewichtiger Focus Trap für das Search Overlay.
+  // Eigenständig (kein modal.js), da modul-globale Variablen in modal.js
+  // bei gleichzeitig offenem Modal überschrieben würden.
+  let _searchTrapHandler = null;
+
   function openSearch() {
     if (window._closeMoreSheet) window._closeMoreSheet();
     overlay.setAttribute('aria-hidden', 'false');
     overlay.classList.add('search-overlay--visible');
     setTimeout(() => input.focus(), 50);
     if (window.lucide) window.lucide.createIcons();
+
+    const FOCUSABLE = 'a[href],button:not([disabled]),input,select,textarea,[tabindex]:not([tabindex="-1"])';
+    _searchTrapHandler = (e) => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(overlay.querySelectorAll(FOCUSABLE));
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last  = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault(); last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault(); first.focus();
+      }
+    };
+    overlay.addEventListener('keydown', _searchTrapHandler);
   }
 
   function closeSearch() {
     overlay.setAttribute('aria-hidden', 'true');
     overlay.classList.remove('search-overlay--visible');
+    if (_searchTrapHandler) {
+      overlay.removeEventListener('keydown', _searchTrapHandler);
+      _searchTrapHandler = null;
+    }
     input.value = '';
     results.replaceChildren();
   }

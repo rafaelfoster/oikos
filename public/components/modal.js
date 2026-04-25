@@ -131,7 +131,7 @@ function _wireSheetSwipe(panel) {
   panel.addEventListener('touchmove', (e) => {
     if (!dragging) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy < 0) { dragging = false; return; } // Aufwärts-Scroll: Swipe abbrechen
+    if (dy < 0) { panel.style.transform = 'translateY(0)'; return; } // Aufwärts: Panel zurücksetzen, dragging bleibt aktiv
     // Erst ab 10px Bewegung animieren: Verhindert winzige Transforms durch
     // normale Taps, die danach zurückgesetzt werden müssten.
     if (dy > 10) panel.style.transform = `translateY(${(dy - 10) * 0.6}px)`;
@@ -218,7 +218,7 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
   const sizeClass = size !== 'md' ? ` modal-panel--${size}` : '';
 
   const html = `
-    <div class="modal-overlay" id="shared-modal-overlay" aria-label="${t('modal.overlayLabel')}" role="presentation">
+    <div class="modal-overlay" id="shared-modal-overlay" aria-label="${t('modal.overlayLabel')}">
       <div class="modal-panel${sizeClass}" role="dialog" aria-modal="true"
            aria-labelledby="shared-modal-title">
         <div class="modal-panel__header">
