@@ -1990,13 +1990,11 @@
 button i[data-lucide],
 button svg { pointer-events: none; }
 
-/* Kompakter Icon-Button (36×36) für Icons in engen Listenkontexten */
+/* Kompakter Icon-Button: 44px Klickfläche, optisch kompakt durch geringes Padding */
 .btn--icon-sm {
   padding: var(--space-1);
-  min-height: unset;
-  min-width: unset;
-  width: 36px;
-  height: 36px;
+  min-height: var(--target-base);
+  min-width: var(--target-base);
 }
 
 /* Textarea: vertikale Größenänderung ist nutzbar */

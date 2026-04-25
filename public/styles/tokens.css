@@ -307,10 +307,10 @@
   /* --------------------------------------------------------
    * 11b. Touch-Target Sizes
    * -------------------------------------------------------- */
-  --target-sm: 32px;
-  --target-md: 40px;
-  --target-lg: 48px;
-  --target-base: 44px;
+  --target-sm: 32px;    /* Visuelle Größe (z.B. Logos) — kein Touch-Target */
+  --target-md: 40px;    /* Desktop Touch-Target (Maus) */
+  --target-lg: 48px;    /* Mobile Touch-Target (Finger) */
+  --target-base: 44px;  /* iOS-Minimum Touch-Target (44pt) */
 
   /* --------------------------------------------------------
    * 12. Layout
