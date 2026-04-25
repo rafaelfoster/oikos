@@ -131,7 +131,7 @@ function _wireSheetSwipe(panel) {
   panel.addEventListener('touchmove', (e) => {
     if (!dragging) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy < 0) { dragging = false; return; } // Aufwärts-Scroll: Swipe abbrechen
+    if (dy < 0) { panel.style.transform = 'translateY(0)'; return; } // Aufwärts: Panel zurücksetzen, dragging bleibt aktiv
     // Erst ab 10px Bewegung animieren: Verhindert winzige Transforms durch
     // normale Taps, die danach zurückgesetzt werden müssten.
     if (dy > 10) panel.style.transform = `translateY(${(dy - 10) * 0.6}px)`;
