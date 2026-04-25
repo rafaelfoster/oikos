@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.23.17] - 2026-04-25
+
+### Fixed
+- Italian (it) locale: translated all missing strings in the recipes section (`nav.recipes`, `meals.savedRecipeLabel`, `meals.savedRecipePlaceholder`, `meals.saveAsRecipe`, `meals.recipeScaleLabel`, and all `recipes.*` keys) — contributed by @albanobattistella
+
 ## [0.23.16] - 2026-04-24
 
 ### Changed
