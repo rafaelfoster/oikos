@@ -192,15 +192,15 @@ function requireAuth(req, res, next) {
   const apiToken = authenticateApiToken(req);
   if (apiToken) {
     req.authMethod = 'api_token';
-    req.session = {
-      userId: apiToken.created_by,
-      role: apiToken.role,
-    };
+    req.authUserId = apiToken.created_by;
+    req.authRole = apiToken.role;
     return next();
   }
 
   if (req.session && req.session.userId) {
     req.authMethod = 'session';
+    req.authUserId = req.session.userId;
+    req.authRole = req.session.role;
     return next();
   }
   res.status(401).json({ error: 'Not authenticated.', code: 401 });
@@ -210,7 +210,7 @@ function requireAuth(req, res, next) {
  * Prüft ob der authentifizierte User Admin-Rolle hat.
  */
 function requireAdmin(req, res, next) {
-  if (req.session && req.session.role === 'admin') {
+  if (req.authRole === 'admin') {
     return next();
   }
   res.status(403).json({ error: 'Permission denied.', code: 403 });
@@ -363,10 +363,12 @@ router.get('/me', requireAuth, (req, res) => {
   try {
     const user = db.get()
       .prepare('SELECT id, username, display_name, avatar_color, role FROM users WHERE id = ?')
-      .get(req.session.userId);
+      .get(req.authUserId);
 
     if (!user) {
-      req.session.destroy(() => {});
+      if (req.authMethod === 'session' && typeof req.session.destroy === 'function') {
+        req.session.destroy(() => {});
+      }
       return res.status(401).json({ error: 'User not found.', code: 401 });
     }
 
@@ -448,7 +450,7 @@ router.post('/api-tokens', requireAuth, requireAdmin, csrfMiddleware, (req, res)
     const result = db.get().prepare(`
       INSERT INTO api_tokens (name, token_hash, token_prefix, created_by, expires_at)
       VALUES (?, ?, ?, ?, ?)
-    `).run(name, tokenHash, tokenPrefix, req.session.userId, normalizedExpiresAt);
+    `).run(name, tokenHash, tokenPrefix, req.authUserId, normalizedExpiresAt);
 
     const row = db.get().prepare(`
       SELECT t.*, u.display_name AS creator_name
@@ -551,14 +553,14 @@ router.patch('/me/password', requireAuth, csrfMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'New password must be at least 8 characters long.', code: 400 });
     }
 
-    const user = db.get().prepare('SELECT password_hash FROM users WHERE id = ?').get(req.session.userId);
+    const user = db.get().prepare('SELECT password_hash FROM users WHERE id = ?').get(req.authUserId);
     if (!user) return res.status(404).json({ error: 'User not found.', code: 404 });
 
     const valid = await bcrypt.compare(current_password, user.password_hash);
     if (!valid) return res.status(401).json({ error: 'Current password is incorrect.', code: 401 });
 
     const hash = await bcrypt.hash(new_password, 12);
-    db.get().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.session.userId);
+    db.get().prepare('UPDATE users SET password_hash = ? WHERE id = ?').run(hash, req.authUserId);
 
     // Alle anderen Sessions dieses Users invalidieren (aktuelle behalten)
     const currentSid = req.sessionID;
@@ -567,7 +569,7 @@ router.patch('/me/password', requireAuth, csrfMiddleware, async (req, res) => {
       if (row.sid === currentSid) continue;
       try {
         const sess = JSON.parse(row.sess);
-        if (sess.userId === req.session.userId) {
+        if (sess.userId === req.authUserId) {
           db.get().prepare('DELETE FROM sessions WHERE sid = ?').run(row.sid);
         }
       } catch { /* ignore malformed session */ }
@@ -589,7 +591,7 @@ router.delete('/users/:id', requireAuth, requireAdmin, csrfMiddleware, (req, res
   try {
     const userId = parseInt(req.params.id, 10);
 
-    if (userId === req.session.userId) {
+    if (userId === req.authUserId) {
       return res.status(400).json({ error: 'You cannot delete your own account.', code: 400 });
     }
 

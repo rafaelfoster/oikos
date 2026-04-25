@@ -12,14 +12,22 @@ const isProduction = process.env.NODE_ENV === 'production';
 function emit(level, mod, msg, extra) {
   if (LEVELS[level] < currentLevel) return;
 
+  const normalizedExtra = extra instanceof Error
+    ? {
+        name: extra.name,
+        message: extra.message,
+        stack: extra.stack,
+      }
+    : extra;
+
   if (isProduction) {
     const entry = { ts: new Date().toISOString(), level, mod, msg };
-    if (extra !== undefined) entry.extra = extra;
+    if (normalizedExtra !== undefined) entry.extra = normalizedExtra;
     process.stdout.write(JSON.stringify(entry) + '\n');
   } else {
     const prefix = `[${mod}]`;
-    if (extra !== undefined) {
-      console[level === 'debug' ? 'log' : level](prefix, msg, extra);
+    if (normalizedExtra !== undefined) {
+      console[level === 'debug' ? 'log' : level](prefix, msg, normalizedExtra);
     } else {
       console[level === 'debug' ? 'log' : level](prefix, msg);
     }
