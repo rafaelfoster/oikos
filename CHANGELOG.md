@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.1] - 2026-04-25
+
+### Fixed
+- Accessibility: skip-to-content link added to `index.html` — keyboard users can now bypass navigation and jump directly to main content
+- Accessibility: removed `role="presentation"` from modal overlay — restores screen reader access and resolves conflict with existing `aria-label`
+- Accessibility: search overlay now traps keyboard focus — tabbing can no longer escape the overlay into the hidden page behind it
+- Interaction: modal swipe-to-close — kept `dragging` flag active on upswing so the panel snaps back correctly instead of getting stuck
+- Rendering: SVG gradient IDs in the logo are now unique per render — prevents DOM ID collisions when the logo is mounted more than once
+- Touch targets: `.btn--icon-sm` minimum size raised from 36×36px to 44×44px (`--target-base`) — meets iOS minimum touch target guideline
+- Design tokens: added `--target-base: 44px` and documented `--target-sm: 32px` as visual-only (not a touch target)
+
 ## [0.24.0] - 2026-04-25
 
 ### Added
