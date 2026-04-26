@@ -36,7 +36,7 @@
     "calendar": "Kalender",
     "meals": "Essen",
     "shopping": "Einkauf",
-    "notes": "Pinnwand",
+    "notes": "Notizen",
     "contacts": "Kontakte",
     "budget": "Budget",
     "settings": "Einstellungen",
@@ -343,7 +343,7 @@
     }
   },
   "notes": {
-    "title": "Pinnwand",
+    "title": "Notizen",
     "newNote": "Neue Notiz",
     "editNote": "Notiz bearbeiten",
     "addNoteLabel": "Neue Notiz",
