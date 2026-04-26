@@ -326,8 +326,8 @@ function openRecipeModal(mode, recipe = null) {
   });
 }
 
-function closeModal() {
-  closeSharedModal();
+function closeModal({ force = false } = {}) {
+  closeSharedModal({ force });
 }
 
 async function saveRecipe(panel, mode, recipe) {
@@ -361,7 +361,7 @@ async function saveRecipe(panel, mode, recipe) {
       if (idx >= 0) state.recipes[idx] = res.data;
     }
 
-    closeModal();
+    closeModal({ force: true });
     renderRecipeList();
     window.oikos?.showToast(mode === 'create' ? t('recipes.created') : t('recipes.updated'), 'success');
   } catch (err) {

@@ -707,7 +707,7 @@ function openMealModal(opts) {
           if (res.data.transferred > 0) {
             window.oikos?.showToast(res.data.transferred !== 1 ? t('meals.transferSuccessPlural', { count: res.data.transferred }) : t('meals.transferSuccess', { count: res.data.transferred }), 'success');
             await loadWeek(state.currentWeek);
-            closeModal();
+            closeModal({ force: true });
             renderWeekGrid();
           } else {
             window.oikos?.showToast(t('meals.transferAlreadyDone'), 'info');
@@ -843,8 +843,8 @@ function ingredientRowHTML(name, qty, id, category = DEFAULT_CATEGORY_NAME) {
   `;
 }
 
-function closeModal() {
-  closeSharedModal();
+function closeModal({ force = false } = {}) {
+  closeSharedModal({ force });
   state.modal = null;
 }
 
@@ -894,7 +894,7 @@ async function saveModal(overlay) {
       await loadWeek(state.currentWeek);
     }
 
-    closeModal();
+    closeModal({ force: true });
     renderWeekGrid();
     window.oikos?.showToast(mode === 'create' ? t('meals.addMealTitle') : t('meals.editMeal'), 'success');
   } catch (err) {

@@ -16,6 +16,7 @@ import { t } from '/i18n.js';
 let activeOverlay = null;
 let previouslyFocused = null;
 let focusTrapHandler = null;
+let _initialFormSnapshot = null;
 
 // Overlay-Dimming: theme-color abdunkeln im Standalone-Modus
 const OVERLAY_THEME_COLOR = '#1A1A1A';
@@ -96,6 +97,20 @@ function trapFocus(container) {
   if (first) {
     setTimeout(() => first.focus(), 50);
   }
+}
+
+// --------------------------------------------------------
+// Dirty-Check Helpers
+// --------------------------------------------------------
+
+function serializeForm(container) {
+  const inputs = container.querySelectorAll('input, select, textarea');
+  return Array.from(inputs).map((el) => `${el.name || el.id}=${el.value}`).join('&');
+}
+
+function isFormDirty(container) {
+  if (!_initialFormSnapshot) return false;
+  return serializeForm(container) !== _initialFormSnapshot;
 }
 
 // --------------------------------------------------------
@@ -204,9 +219,10 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
   // ID sofort entfernen damit getElementById() nach dem Einfügen des neuen Modals
   // nicht die noch animierende alte Instanz zurückgibt – sonst landen alle
   // Event-Listener am falschen Element und Buttons reagieren nicht.
+  // force=true: kein Dirty-Check beim programmatischen Ersetzen (z.B. confirmModal öffnet sich).
   if (activeOverlay) {
     activeOverlay.removeAttribute('id');
-    closeModal();
+    closeModal({ force: true });
   }
 
   // Focus-Restore vorbereiten
@@ -242,6 +258,14 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
   // Focus-Trap
   const panel = activeOverlay.querySelector('.modal-panel');
   trapFocus(panel);
+
+  // Snapshot für Dirty-Check (kurzer Delay: Felder könnten noch per JS befüllt werden)
+  _initialFormSnapshot = null;
+  setTimeout(() => {
+    if (activeOverlay) {
+      _initialFormSnapshot = serializeForm(activeOverlay.querySelector('.modal-panel') ?? activeOverlay);
+    }
+  }, 150);
 
   // Swipe-to-Close auf Mobile
   if (window.innerWidth < 768) {
@@ -279,8 +303,21 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
 // closeModal
 // --------------------------------------------------------
 
-export function closeModal() {
+export async function closeModal({ force = false } = {}) {
   if (!activeOverlay) return;
+
+  if (!force) {
+    const panel = activeOverlay.querySelector('.modal-panel');
+    if (panel && isFormDirty(panel)) {
+      const confirmed = await confirmModal(t('modal.unsavedChanges'), {
+        danger: false,
+        confirmLabel: t('modal.discardChanges'),
+      });
+      if (!confirmed) return;
+    }
+  }
+
+  _initialFormSnapshot = null;
 
   document.removeEventListener('keydown', onEscape);
 

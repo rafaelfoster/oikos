@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Kapat",
-    "overlayLabel": "Modal iletişim kutusu arka planı"
+    "overlayLabel": "Modal iletişim kutusu arka planı",
+    "unsavedChanges": "Değişiklikler iptal edilsin mi?",
+    "discardChanges": "İptal et"
   },
   "rrule": {
     "freqNone": "Tekrar yok",

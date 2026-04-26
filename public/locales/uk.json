@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Закрити",
-    "overlayLabel": "Фон модального вікна"
+    "overlayLabel": "Фон модального вікна",
+    "unsavedChanges": "Скасувати зміни?",
+    "discardChanges": "Скасувати"
   },
   "rrule": {
     "freqNone": "Без повторення",

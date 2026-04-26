@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.4] - 2026-04-26
+
+### Added
+- Modal: closing a modal (via Escape, swipe, overlay click, or X button) now shows a "Discard changes?" confirmation dialog when the form has been modified since it was opened; saving or deleting bypasses the prompt
+
 ## [0.25.3] - 2026-04-26
 
 ### Changed

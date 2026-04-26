@@ -607,7 +607,7 @@ function openBudgetModal({ mode, entry = null }) {
       panel.querySelector('#bm-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#bm-delete')?.addEventListener('click', async () => {
-        closeModal();
+        closeModal({ force: true });
         await deleteEntry(entry.id);
       });
 
@@ -642,7 +642,7 @@ function openBudgetModal({ mode, entry = null }) {
           const sumRes  = await api.get(`/budget/summary?month=${state.month}`);
           state.summary = sumRes.data;
 
-          closeModal();
+          closeModal({ force: true });
           renderBody();
           window.oikos?.showToast(mode === 'create' ? t('budget.addedToast') : t('budget.savedToast'), 'success');
         } catch (err) {

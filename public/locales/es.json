@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Cerrar",
-    "overlayLabel": "Fondo del cuadro de diálogo modal"
+    "overlayLabel": "Fondo del cuadro de diálogo modal",
+    "unsavedChanges": "¿Descartar cambios?",
+    "discardChanges": "Descartar"
   },
   "rrule": {
     "freqNone": "Sin repetición",

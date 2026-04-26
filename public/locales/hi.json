@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "बंद करें",
-    "overlayLabel": "मोडल डायलॉग पृष्ठभूमि"
+    "overlayLabel": "मोडल डायलॉग पृष्ठभूमि",
+    "unsavedChanges": "बदलाव छोड़ें?",
+    "discardChanges": "छोड़ें"
   },
   "rrule": {
     "freqNone": "कोई दोहराव नहीं",

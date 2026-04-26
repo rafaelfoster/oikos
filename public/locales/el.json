@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Κλείσιμο",
-    "overlayLabel": "Φόντο αναδυόμενου παραθύρου"
+    "overlayLabel": "Φόντο αναδυόμενου παραθύρου",
+    "unsavedChanges": "Απόρριψη αλλαγών;",
+    "discardChanges": "Απόρριψη"
   },
   "rrule": {
     "freqNone": "Χωρίς επανάληψη",

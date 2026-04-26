@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "إغلاق",
-    "overlayLabel": "خلفية مربع الحوار"
+    "overlayLabel": "خلفية مربع الحوار",
+    "unsavedChanges": "تجاهل التغييرات؟",
+    "discardChanges": "تجاهل"
   },
   "rrule": {
     "freqNone": "بدون تكرار",

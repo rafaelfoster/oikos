@@ -304,7 +304,7 @@ function openContactModal({ mode, contact = null }) {
       panel.querySelector('#cm-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#cm-delete')?.addEventListener('click', async () => {
-        closeModal();
+        closeModal({ force: true });
         await deleteContact(contact.id);
       });
 
@@ -336,7 +336,7 @@ function openContactModal({ mode, contact = null }) {
             const idx = state.contacts.findIndex((c) => c.id === contact.id);
             if (idx !== -1) state.contacts[idx] = res.data;
           }
-          closeModal();
+          closeModal({ force: true });
           renderList();
           window.oikos?.showToast(mode === 'create' ? t('contacts.savedToast') : t('contacts.updatedToast'), 'success');
         } catch (err) {

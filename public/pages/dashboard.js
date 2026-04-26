@@ -637,7 +637,7 @@ function openCustomizeModal(currentConfig, onSave) {
         saveBtn.disabled = true;
         try {
           await api.put('/preferences', { dashboard_widgets: draft });
-          closeModal();
+          closeModal({ force: true });
           onSave(draft);
           window.oikos?.showToast(t('dashboard.customizeSaved'), 'success', 1500);
         } catch {
@@ -674,7 +674,7 @@ function openTaskQuickAction(taskId, taskTitle, rerender) {
       panel.querySelector('[data-action="done"]').addEventListener('click', async () => {
         try {
           await api.patch(`/tasks/${taskId}/status`, { status: 'done' });
-          closeModal();
+          closeModal({ force: true });
           window.oikos?.showToast(t('tasks.swipedDoneToast'), 'success');
           rerender();
         } catch (err) {
@@ -682,7 +682,7 @@ function openTaskQuickAction(taskId, taskTitle, rerender) {
         }
       });
       panel.querySelector('[data-action="edit"]').addEventListener('click', () => {
-        closeModal();
+        closeModal({ force: true });
         window.oikos.navigate(`/tasks?open=${taskId}`);
       });
     },

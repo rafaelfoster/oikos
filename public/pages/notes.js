@@ -445,7 +445,7 @@ function openNoteModal({ mode, note = null }) {
             if (idx !== -1) state.notes[idx] = res.data;
             state.notes.sort((a, b) => b.pinned - a.pinned);
           }
-          closeModal();
+          closeModal({ force: true });
           renderGrid();
           window.oikos?.showToast(mode === 'create' ? t('notes.createdToast') : t('notes.savedToast'), 'success');
         } catch (err) {
@@ -476,7 +476,7 @@ async function togglePin(id) {
 }
 
 async function deleteNote(id) {
-  closeModal();
+  closeModal({ force: true });
   const note = state.notes.find((n) => n.id === id);
   state.notes = state.notes.filter((n) => n.id !== id);
   renderGrid();

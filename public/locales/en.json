@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Close",
-    "overlayLabel": "Modal dialog background"
+    "overlayLabel": "Modal dialog background",
+    "unsavedChanges": "Discard changes?",
+    "discardChanges": "Discard"
   },
   "rrule": {
     "freqNone": "No recurrence",

@@ -709,7 +709,9 @@
   },
   "modal": {
     "closeLabel": "Schließen",
-    "overlayLabel": "Modaler Dialog-Hintergrund"
+    "overlayLabel": "Modaler Dialog-Hintergrund",
+    "unsavedChanges": "Änderungen verwerfen?",
+    "discardChanges": "Verwerfen"
   },
   "rrule": {
     "freqNone": "Keine Wiederholung",

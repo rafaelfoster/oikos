@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Stäng",
-    "overlayLabel": "Bakgrund för modal dialog"
+    "overlayLabel": "Bakgrund för modal dialog",
+    "unsavedChanges": "Ignorera ändringar?",
+    "discardChanges": "Ignorera"
   },
   "rrule": {
     "freqNone": "Ingen upprepning",

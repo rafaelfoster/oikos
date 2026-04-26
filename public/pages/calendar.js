@@ -867,7 +867,7 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
       panel.querySelector('#modal-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#modal-delete')?.addEventListener('click', async () => {
-        closeModal();
+        closeModal({ force: true });
         await deleteEvent(event.id);
       });
 
@@ -1060,7 +1060,7 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null) {
       }
     }
 
-    closeModal();
+    closeModal({ force: true });
     renderView();
     window.oikos?.showToast(mode === 'create' ? t('calendar.createdToast') : t('calendar.savedToast'), 'success');
   } catch (err) {

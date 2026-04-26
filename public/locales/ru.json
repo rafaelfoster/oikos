@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Закрыть",
-    "overlayLabel": "Фон модального диалога"
+    "overlayLabel": "Фон модального диалога",
+    "unsavedChanges": "Отменить изменения?",
+    "discardChanges": "Отменить"
   },
   "rrule": {
     "freqNone": "Без повтора",

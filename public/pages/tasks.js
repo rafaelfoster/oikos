@@ -570,7 +570,7 @@ async function handleFormSubmit(e, container) {
     }
 
     btnSuccess(submitBtn, originalLabel);
-    setTimeout(() => closeModal(), 700);
+    setTimeout(() => closeModal({ force: true }), 700);
     await loadTasks(container);
   } catch (err) {
     errorEl.textContent = err.message;
@@ -582,7 +582,7 @@ async function handleFormSubmit(e, container) {
 }
 
 async function handleDeleteTask(id, container) {
-  closeModal();
+  closeModal({ force: true });
   const itemEl = container.querySelector(`[data-task-id="${id}"]`);
   if (itemEl) itemEl.style.display = 'none';
 

@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Chiudi",
-    "overlayLabel": "Sfondo del dialogo modale"
+    "overlayLabel": "Sfondo del dialogo modale",
+    "unsavedChanges": "Annullare le modifiche?",
+    "discardChanges": "Annulla"
   },
   "rrule": {
     "freqNone": "Nessuna ripetizione",

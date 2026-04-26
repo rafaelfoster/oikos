@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "关闭",
-    "overlayLabel": "模态对话框背景"
+    "overlayLabel": "模态对话框背景",
+    "unsavedChanges": "放弃更改？",
+    "discardChanges": "放弃"
   },
   "rrule": {
     "freqNone": "不重复",

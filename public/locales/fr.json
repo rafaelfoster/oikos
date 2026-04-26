@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "Fermer",
-    "overlayLabel": "Arrière-plan de la boîte de dialogue modale"
+    "overlayLabel": "Arrière-plan de la boîte de dialogue modale",
+    "unsavedChanges": "Abandonner les modifications ?",
+    "discardChanges": "Abandonner"
   },
   "rrule": {
     "freqNone": "Pas de répétition",

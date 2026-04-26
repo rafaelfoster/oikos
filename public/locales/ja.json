@@ -703,7 +703,9 @@
   },
   "modal": {
     "closeLabel": "閉じる",
-    "overlayLabel": "モーダルダイアログの背景"
+    "overlayLabel": "モーダルダイアログの背景",
+    "unsavedChanges": "変更を破棄しますか？",
+    "discardChanges": "破棄"
   },
   "rrule": {
     "freqNone": "繰り返しなし",
