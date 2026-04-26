@@ -1647,7 +1647,17 @@
   opacity: 0.85;
 }
 
+.toast__undo {
+  -webkit-tap-highlight-color: transparent;
+  transition: opacity var(--transition-fast), transform 0.08s ease;
+}
+
 .toast__undo:hover {
+  opacity: 1;
+}
+
+.toast__undo:active {
+  transform: scale(0.94);
   opacity: 1;
 }
 

@@ -294,6 +294,22 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
   // Callback für Aufrufer (Form-Events binden etc.)
   if (typeof onSave === 'function') onSave(panel);
 
+  // Loading-State: btn--loading auf Submit-Button während async-Save.
+  // rAF-Check: Validierung schlägt fehl → btn bleibt enabled → Loading sofort entfernen.
+  // MutationObserver: Error-Pfad → btn wird re-enabled → Loading entfernen.
+  panel.addEventListener('submit', (e) => {
+    const btn = e.target.querySelector('[type="submit"], .btn--primary');
+    if (!btn || btn.disabled) return;
+    btn.classList.add('btn--loading');
+    requestAnimationFrame(() => {
+      if (!btn.disabled) { btn.classList.remove('btn--loading'); return; }
+      const mo = new MutationObserver(() => {
+        if (!btn.disabled) { btn.classList.remove('btn--loading'); mo.disconnect(); }
+      });
+      mo.observe(btn, { attributes: true, attributeFilter: ['disabled'] });
+    });
+  }, { capture: true });
+
   // Standalone: Statusbar abdunkeln (Overlay-Effekt)
   if (window.oikos?.setThemeColor) {
     window.oikos.setThemeColor(OVERLAY_THEME_COLOR, OVERLAY_THEME_COLOR);
@@ -620,6 +636,7 @@ export function validateAll(formContainer) {
  * @param {string} [originalLabel]
  */
 export function btnSuccess(btn, originalLabel) {
+  btn.classList.remove('btn--loading');
   const label = originalLabel ?? btn.textContent;
   btn.classList.add('btn--success');
   const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;

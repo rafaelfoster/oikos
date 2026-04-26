@@ -406,11 +406,16 @@
   color: var(--color-text-primary);
   margin-bottom: var(--space-1);
   cursor: pointer;
+  text-decoration: line-through;
+  text-decoration-color: transparent;
+  transition:
+    color var(--transition-fast),
+    text-decoration-color var(--transition-base);
 }
 
 .task-card--done .task-card__title {
-  text-decoration: line-through;
   color: var(--color-text-secondary);
+  text-decoration-color: var(--color-text-secondary);
 }
 
 .task-card__meta {
