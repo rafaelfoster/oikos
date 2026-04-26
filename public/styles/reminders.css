@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  color: var(--color-accent);
+  color: var(--module-reminders);
 }
 
 .toast__reminder-text {

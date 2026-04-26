@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.3] - 2026-04-26
+
+### Added
+- Design tokens: `--blur-2xs: blur(2px)` added to the blur scale — fills the gap below `--blur-xs` (4px), used for subtle overlay blurs
+- Design tokens: `--module-reminders: #0E7490` (Cyan-700, WCAG AA) added for the reminders feature; dark mode variant `#22D3EE` (Cyan-400)
+
+### Fixed
+- Design tokens: hardcoded `blur(16px)`, `blur(2px)`, and `blur(12px)` in `layout.css` replaced with `var(--blur-md)`, `var(--blur-2xs)`, and `var(--blur-sm)` — `prefers-reduced-transparency` now correctly disables all backdrop-filter effects including bottom nav, more-sheet backdrop, and sticky headers
+- Accessibility: `layout.css` now has a `prefers-reduced-transparency` block for `.nav-bottom`, `.more-backdrop`, and `.sticky-header` — these three elements previously kept their backdrop-filter active even when the user requested reduced transparency
+- Reminders: reminder bell icon in toasts now uses `var(--module-reminders)` instead of the generic `var(--color-accent)`
+
 ## [0.24.2] - 2026-04-26
 
 ### Fixed

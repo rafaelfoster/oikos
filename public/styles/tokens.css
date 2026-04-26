@@ -170,8 +170,10 @@
   --module-contacts:   var(--_module-contacts);    /* Kräftiges Blau - Kontakte */
   --_module-budget:    #0F766E;
   --module-budget:     var(--_module-budget);      /* Teal-700 - Finanzen, Stabilität */
-  --_module-settings:  #6E7781;
-  --module-settings:   var(--_module-settings);   /* Grau - Konfiguration */
+  --_module-settings:   #6E7781;
+  --module-settings:    var(--_module-settings);   /* Grau - Konfiguration */
+  --_module-reminders:  #0E7490;
+  --module-reminders:   var(--_module-reminders);  /* Cyan-700 - Erinnerungen, 6.3:1 auf weiß — WCAG AA */
 
   /* --------------------------------------------------------
    * 5. Farben - Mahlzeit-Typen
@@ -405,6 +407,7 @@
   --glass-tint-strength:  var(--_glass-tint-strength);
 
   /* b) Blur-Stufen */
+  --blur-2xs: blur(2px);
   --blur-xs:  blur(4px);
   --blur-sm:  blur(8px);
   --blur-md:  blur(16px);
@@ -524,8 +527,9 @@
     --_module-shopping:  #F472B6;
     --_module-notes:     #FCD34D;
     --_module-contacts:  #60A5FA;
-    --_module-budget:    #2DD4BF;
-    --_module-settings:  #94A3B8;
+    --_module-budget:      #2DD4BF;
+    --_module-settings:    #94A3B8;
+    --_module-reminders:   #22D3EE;   /* Cyan-400 */
 
     --_meal-breakfast:       #F59E0B;
     --_meal-breakfast-light: #332400;
@@ -627,8 +631,9 @@
     --_module-shopping:  #F472B6;   /* Pink-400 */
     --_module-notes:     #FCD34D;
     --_module-contacts:  #60A5FA;
-    --_module-budget:    #2DD4BF;   /* Teal-400 */
-    --_module-settings:  #94A3B8;
+    --_module-budget:      #2DD4BF;   /* Teal-400 */
+    --_module-settings:    #94A3B8;
+    --_module-reminders:   #22D3EE;   /* Cyan-400 */
 
     /* Mahlzeit-Typ */
     --_meal-breakfast:       #F59E0B;
@@ -692,6 +697,7 @@
     --glass-highlight:        transparent;
     --glass-highlight-subtle: transparent;
     --glass-tint-strength: 0%;
+    --blur-2xs: blur(0px);
     --blur-xs:  blur(0px);
     --blur-sm:  blur(0px);
     --blur-md:  blur(0px);
@@ -716,6 +722,7 @@
     --glass-border-subtle: var(--color-text-secondary);
     --glass-highlight:        transparent;
     --glass-highlight-subtle: transparent;
+    --blur-2xs: blur(0px);
     --blur-xs:  blur(0px);
     --blur-sm:  blur(0px);
     --blur-md:  blur(0px);
