@@ -54,7 +54,7 @@ export async function render(container) {
           <div class="login-error" id="login-error" role="alert" aria-live="polite" hidden></div>
 
           <button type="submit" class="btn btn--primary login-form__submit" id="login-btn">
-            ${t('login.loginButton')}
+            <span class="login-btn__label">${t('login.loginButton')}</span>
           </button>
         </form>
       </div>
@@ -84,8 +84,14 @@ export async function render(container) {
       return;
     }
 
+    const labelEl = submitBtn.querySelector('.login-btn__label');
+
     submitBtn.disabled = true;
-    submitBtn.textContent = t('login.loggingIn');
+    labelEl.textContent = t('login.loggingIn');
+    const spinner = document.createElement('span');
+    spinner.className = 'login-spinner';
+    spinner.setAttribute('aria-hidden', 'true');
+    submitBtn.insertBefore(spinner, labelEl);
 
     try {
       const result = await auth.login(username, password);
@@ -97,7 +103,8 @@ export async function render(container) {
       );
     } finally {
       submitBtn.disabled = false;
-      submitBtn.textContent = t('login.loginButton');
+      labelEl.textContent = t('login.loginButton');
+      spinner.remove();
     }
   });
 }
