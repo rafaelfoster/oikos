@@ -17,6 +17,7 @@ let activeOverlay = null;
 let previouslyFocused = null;
 let focusTrapHandler = null;
 let _initialFormSnapshot = null;
+let _isClosing = false;
 
 // Overlay-Dimming: theme-color abdunkeln im Standalone-Modus
 const OVERLAY_THEME_COLOR = '#1A1A1A';
@@ -285,7 +286,7 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
 
   // Close-Button
   activeOverlay.querySelector('[data-action="close-modal"]')
-    ?.addEventListener('click', closeModal);
+    ?.addEventListener('click', () => closeModal());
 
   // Escape
   document.addEventListener('keydown', onEscape);
@@ -304,16 +305,23 @@ export function openModal({ title, content, onSave, onDelete, size = 'md' } = {}
 // --------------------------------------------------------
 
 export async function closeModal({ force = false } = {}) {
-  if (!activeOverlay) return;
+  if (!activeOverlay || _isClosing) return;
+  _isClosing = true;
 
   if (!force) {
     const panel = activeOverlay.querySelector('.modal-panel');
     if (panel && isFormDirty(panel)) {
-      const confirmed = await confirmModal(t('modal.unsavedChanges'), {
-        danger: false,
-        confirmLabel: t('modal.discardChanges'),
-      });
-      if (!confirmed) return;
+      let confirmed;
+      try {
+        confirmed = await confirmModal(t('modal.unsavedChanges'), {
+          danger: false,
+          confirmLabel: t('modal.discardChanges'),
+        });
+      } catch (err) {
+        _isClosing = false;
+        throw err;
+      }
+      if (!confirmed) { _isClosing = false; return; }
     }
   }
 
@@ -341,14 +349,16 @@ export async function closeModal({ force = false } = {}) {
   if (isMobile && panel) {
     panel.classList.add('modal-panel--closing');
     // Fallback-Timer falls animationend nicht feuert (prefers-reduced-motion, Tab-Wechsel etc.)
-    const fallback = setTimeout(() => _doClose(capturedOverlay), 300);
+    const fallback = setTimeout(() => { _isClosing = false; _doClose(capturedOverlay); }, 300);
     panel.addEventListener('animationend', () => {
       clearTimeout(fallback);
+      _isClosing = false;
       _doClose(capturedOverlay);
     }, { once: true });
     return;
   }
 
+  _isClosing = false;
   _doClose(capturedOverlay);
 }
 
