@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.6] - 2026-04-27
+
+### Changed
+- Tasks: completing a task now animates the strikethrough line instead of snapping it on instantly
+- Modal: save button shows a spinner during async API calls; the spinner disappears immediately if form validation fails, and on API error when the button is re-enabled
+- Toast: the Undo button now gives tactile press feedback (scale + removes browser tap highlight) for reliable interaction within the 5-second window
+
 ## [0.25.5] - 2026-04-26
 
 ### Added
