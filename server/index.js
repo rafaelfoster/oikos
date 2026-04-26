@@ -57,10 +57,10 @@ app.use(helmet({
         // Alpine.js CDN (optional, falls verwendet)
         'https://cdn.jsdelivr.net',
       ],
-      styleSrc: ["'self'", "'unsafe-inline'", 'https://cdn.jsdelivr.net'],
+      styleSrc: ["'self'", "'unsafe-inline'"],
       imgSrc: ["'self'", 'data:'],
       connectSrc: ["'self'"],
-      fontSrc: ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+      fontSrc: ["'self'"],
       objectSrc: ["'none'"],
       frameSrc: ["'none'"],
       // upgrade-insecure-requests nur mit HTTPS aktivieren
@@ -176,9 +176,6 @@ function sendOpenApi(req, res) {
 
 app.get('/api/v1/openapi.json', sendOpenApi);
 app.get('/openapi.json', sendOpenApi);
-app.get('/docs', (_req, res) => {
-  res.sendFile(path.join(import.meta.dirname, '..', 'public', 'doc-assets', 'swagger.html'));
-});
 
 // Alle weiteren API-Routen erfordern Authentifizierung + CSRF-Schutz
 app.use('/api/v1', requireAuth);
