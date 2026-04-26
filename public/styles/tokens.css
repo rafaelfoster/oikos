@@ -244,6 +244,10 @@
   --shadow-md:  var(--_shadow-md);
   --_shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
   --shadow-lg:  var(--_shadow-lg);
+  --_shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-xl:  var(--_shadow-xl);
+  --_shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --shadow-xs:  var(--_shadow-xs);
 
   /* --------------------------------------------------------
    * 9. Border-Radien
@@ -542,6 +546,8 @@
     --_shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
     --_shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
     --_shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --_shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.60), 0 4px 12px rgba(0, 0, 0, 0.25);
+    --_shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
 
     --_glass-bg:               rgba(28, 28, 26, 0.75);
     --_glass-bg-hover:         rgba(38, 38, 36, 0.82);
@@ -647,6 +653,8 @@
     --_shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25);
     --_shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
     --_shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --_shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.60), 0 4px 12px rgba(0, 0, 0, 0.25);
+    --_shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.30);
 
     /* Glass */
     --_glass-bg:              rgba(28, 28, 26, 0.75);

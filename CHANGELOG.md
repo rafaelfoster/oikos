@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.24.2] - 2026-04-26
+
+### Fixed
+- Design tokens: added missing `--shadow-xl` and `--shadow-xs` tokens (with dark mode variants) — resolves undefined CSS custom property references in kanban drag ghost and dashboard widget toggle
+- Design tokens: `--color-surface-raised` replaced with `--color-surface-hover` in `dashboard.css` — was undefined, causing unstyled hover states in the widget customizer
+- Design tokens: `--color-text` replaced with `--color-text-primary` in `dashboard.css` — was undefined, causing invisible text on hover in the widget customizer
+- Design tokens: hardcoded `font-weight` values (`700`, `500`, `600`) in `reminders.css` replaced with `--font-weight-bold`, `--font-weight-medium`, `--font-weight-semibold`
+
 ## [0.24.1] - 2026-04-25
 
 ### Fixed

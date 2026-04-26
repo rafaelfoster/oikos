@@ -19,7 +19,7 @@
   background: var(--color-priority-urgent);
   color: var(--color-text-on-accent);
   font-size: var(--text-2xs);
-  font-weight: 700;
+  font-weight: var(--font-weight-bold);
   line-height: 16px;
   text-align: center;
   pointer-events: none;
@@ -57,7 +57,7 @@
 
 .toast__reminder-text span {
   font-size: var(--text-sm, 0.875rem);
-  font-weight: 500;
+  font-weight: var(--font-weight-medium);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -79,7 +79,7 @@
 
 .reminder-section__title {
   font-size: var(--text-sm, 0.875rem);
-  font-weight: 600;
+  font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);
 }
 

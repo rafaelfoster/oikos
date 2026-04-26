@@ -1125,7 +1125,7 @@
 }
 
 .customize-row:hover {
-  background-color: var(--color-surface-raised);
+  background-color: var(--color-surface-hover);
 }
 
 .customize-row__toggle {
@@ -1212,8 +1212,8 @@
 }
 
 .customize-row__btn:hover:not(:disabled) {
-  background-color: var(--color-surface-raised);
-  color: var(--color-text);
+  background-color: var(--color-surface-hover);
+  color: var(--color-text-primary);
 }
 
 .customize-row__btn:disabled {
