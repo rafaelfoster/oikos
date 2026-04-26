@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.25.0] - 2026-04-25
+
+### Added
+- API token authentication: admins can create named Bearer / X-API-Key tokens for external integrations; tokens are SHA-256-hashed at rest, support optional expiry and revocation, and track last-used timestamp
+- Settings: new "API Tokens" section for admins to create and revoke tokens; the full token value is shown only once immediately after creation
+- OpenAPI 3.0 specification served at `/api/v1/openapi.json` and `/openapi.json` (download via `?download=1`)
+- Budget: new endpoints `GET /api/v1/budget/categories` and `GET /api/v1/budget/categories/:key/subcategories` with optional `?lang=` localisation
+
+### Changed
+- `server/logger.js` now serialises `Error` objects into structured JSON fields (name, message, stack) instead of logging `{}`
+
 ## [0.24.4] - 2026-04-26
 
 ### Added
