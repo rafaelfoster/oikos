@@ -100,9 +100,10 @@ function readImageAsDataUrl(file) {
       return reject(new Error(t('settings.profilePictureFileTooLarge')));
     }
 
-    const img = new Image();
-    const objectUrl = URL.createObjectURL(file);
-    img.onload = () => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
       try {
         const maxSize = 512;
         const scale = Math.min(1, maxSize / Math.max(img.width, img.height));
@@ -114,22 +115,20 @@ function readImageAsDataUrl(file) {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.86);
-        URL.revokeObjectURL(objectUrl);
         if (dataUrl.length > MAX_AVATAR_DATA_LENGTH) {
           reject(new Error(t('settings.profilePictureTooLarge')));
         } else {
           resolve(dataUrl);
         }
       } catch (err) {
-        URL.revokeObjectURL(objectUrl);
         reject(err);
       }
+      };
+      img.onerror = () => reject(new Error(t('settings.profilePictureReadError')));
+      img.src = reader.result;
     };
-    img.onerror = () => {
-      URL.revokeObjectURL(objectUrl);
-      reject(new Error(t('settings.profilePictureReadError')));
-    };
-    img.src = objectUrl;
+    reader.onerror = () => reject(new Error(t('settings.profilePictureReadError')));
+    reader.readAsDataURL(file);
   });
 }
 
