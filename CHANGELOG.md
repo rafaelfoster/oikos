@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.2] - 2026-04-27
+
+### Fixed
+- Dashboard: KPI summary bar removed — it duplicated the same widget categories (tasks, calendar, birthdays…) that are already visible as full widgets directly below
+- Dashboard: replaced the two-column main/side workspace layout with the established flat responsive grid so all widgets are consistently left-aligned across all screen sizes in the web view
+
 ## [0.26.1] - 2026-04-27
 
 ### Fixed
