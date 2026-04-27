@@ -1135,50 +1135,6 @@
   }
 }
 
-/* FAB (Floating Action Button) */
-.fab {
-  position: fixed;
-  bottom: calc(var(--nav-bottom-height) + var(--safe-area-inset-bottom) + var(--space-4));
-  right: var(--space-4);
-  width: 52px;
-  height: 52px;
-  border-radius: var(--radius-full);
-  background-color: var(--module-accent, var(--color-btn-primary));
-  color: var(--color-text-on-accent);
-  box-shadow: var(--shadow-lg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: calc(var(--z-nav) - 1);
-  transition:
-    transform var(--transition-fast),
-    background-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-  animation: fab-in 0.35s var(--ease-out) backwards;
-}
-
-.fab:hover {
-  background-color: color-mix(in srgb, var(--module-accent, var(--color-btn-primary)) 85%, black);
-  transform: scale(1.05);
-}
-
-.fab:active {
-  transform: scale(0.95);
-}
-
-.fab:focus-visible {
-  outline: 2px solid var(--color-bg);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 4px var(--color-accent);
-}
-
-@media (min-width: 1024px) {
-  .fab {
-    bottom: var(--space-8);
-    width: var(--target-lg);
-    height: var(--target-lg);
-  }
-}
 
 /* FAB und page-fab ausblenden wenn virtuelle Tastatur offen (nur Mobile) */
 @media (max-width: 1023px) {
