@@ -521,24 +521,9 @@ function renderQuickAction({ route, label, icon, tone = '' }) {
   `;
 }
 
-function renderKpiTile({ title, value, meta, icon, route, tone = '' }) {
-  return `
-    <button type="button" class="dashboard-kpi ${tone ? `dashboard-kpi--${tone}` : ''}" data-route="${route}">
-      <span class="dashboard-kpi__icon"><i data-lucide="${icon}" aria-hidden="true"></i></span>
-      <span class="dashboard-kpi__body">
-        <span class="dashboard-kpi__label">${title}</span>
-        <span class="dashboard-kpi__value">${value}</span>
-        <span class="dashboard-kpi__meta">${meta}</span>
-      </span>
-    </button>
-  `;
-}
 
-function renderDashboardOverview(user, stats = null, weather = null) {
+function renderDashboardOverview(user) {
   const dateLabel = formatDate(new Date());
-  const weatherLabel = weather
-    ? `${esc(weather.city)} · ${esc(weather.current?.temp)}${weather.units === 'imperial' ? '°F' : weather.units === 'standard' ? 'K' : '°C'}`
-    : t('dashboard.weather');
 
   const actions = [
     { route: '/tasks', label: t('nav.tasks'), icon: 'check-square', tone: 'blue' },
@@ -546,64 +531,6 @@ function renderDashboardOverview(user, stats = null, weather = null) {
     { route: '/shopping', label: t('nav.shopping'), icon: 'shopping-cart', tone: 'green' },
     { route: '/notes', label: t('nav.notes'), icon: 'sticky-note', tone: 'amber' },
   ].map(renderQuickAction).join('');
-
-  const kpis = stats ? [
-    renderKpiTile({
-      title: t('tasks.title'),
-      value: String(stats.overdueCount ?? 0),
-      meta: t('dashboard.overdue'),
-      icon: 'alert-circle',
-      route: '/tasks',
-      tone: 'danger',
-    }),
-    renderKpiTile({
-      title: t('nav.calendar'),
-      value: String(stats.todayEventCount ?? 0),
-      meta: t('common.today'),
-      icon: 'calendar-days',
-      route: '/calendar',
-      tone: 'calendar',
-    }),
-    renderKpiTile({
-      title: t('nav.meals'),
-      value: stats.todayMealTitle ? esc(stats.todayMealTitle) : '-',
-      meta: t('dashboard.todayMeals'),
-      icon: 'utensils',
-      route: '/meals',
-      tone: 'meals',
-    }),
-    renderKpiTile({
-      title: t('dashboard.weather'),
-      value: weatherLabel,
-      meta: t('dashboard.weatherRefreshTitle'),
-      icon: 'cloud-sun',
-      route: '/',
-      tone: 'weather',
-    }),
-    renderKpiTile({
-      title: t('nav.birthdays'),
-      value: String(stats.birthdayCount ?? 0),
-      meta: t('dashboard.upcomingBirthdays'),
-      icon: 'cake',
-      route: '/birthdays',
-      tone: 'birthdays',
-    }),
-    renderKpiTile({
-      title: t('dashboard.familyMembers'),
-      value: String(stats.familyCount ?? 0),
-      meta: t('dashboard.participantsAdded'),
-      icon: 'users',
-      route: '/settings',
-      tone: 'family',
-    }),
-  ].join('') : `
-    <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-    <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-    <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-    <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-    <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-    <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-  `;
 
   return `
     <section class="dashboard-overview">
@@ -620,35 +547,13 @@ function renderDashboardOverview(user, stats = null, weather = null) {
           </button>
         </div>
       </div>
-      <div class="dashboard-kpi-grid">
-        ${kpis}
-      </div>
     </section>
   `;
 }
 
-function widgetRegion(id) {
-  return ['budget', 'family', 'weather', 'shopping', 'meals'].includes(id) ? 'side' : 'main';
-}
-
 function widgetTileClass(id) {
-  const map = {
-    tasks: 'dashboard-tile--wide',
-    calendar: 'dashboard-tile--compact',
-    birthdays: 'dashboard-tile--compact',
-    budget: 'dashboard-tile--wide',
-    family: 'dashboard-tile--compact',
-    meals: 'dashboard-tile--compact',
-    notes: 'dashboard-tile--wide',
-    shopping: 'dashboard-tile--compact',
-    weather: 'dashboard-tile--wide',
-  };
-  return map[id] || 'dashboard-tile--compact';
-}
-
-function renderDashboardTile(id, html) {
-  if (!html) return '';
-  return `<section class="dashboard-tile dashboard-tile--${id} ${widgetTileClass(id)}">${html}</section>`;
+  const wideIds = ['tasks', 'budget', 'notes', 'weather'];
+  return wideIds.includes(id) ? 'widget--wide' : '';
 }
 
 function renderDashboardLayout(cfg, data, weather, currency) {
@@ -664,31 +569,16 @@ function renderDashboardLayout(cfg, data, weather, currency) {
     weather: () => (weather ? renderWeatherWidget(weather) : ''),
   };
 
-  const visible = cfg.filter((w) => w.visible && widgetById[w.id]);
-  const mainTiles = visible
-    .filter((w) => widgetRegion(w.id) === 'main')
-    .map((w) => renderDashboardTile(w.id, widgetById[w.id]()))
+  const tiles = cfg
+    .filter((w) => w.visible && widgetById[w.id])
+    .map((w) => {
+      const html = widgetById[w.id]();
+      if (!html) return '';
+      return `<div class="widget-wrapper ${widgetTileClass(w.id)}">${html}</div>`;
+    })
     .join('');
 
-  const sideTiles = visible
-    .filter((w) => widgetRegion(w.id) === 'side')
-    .map((w) => renderDashboardTile(w.id, widgetById[w.id]()))
-    .join('');
-
-  return `
-    <section class="dashboard-workspace">
-      <div class="dashboard-workspace__main">
-        <div class="dashboard-widget-grid">
-          ${mainTiles}
-        </div>
-      </div>
-      <aside class="dashboard-workspace__side">
-        <div class="dashboard-side-stack">
-          ${sideTiles}
-        </div>
-      </aside>
-    </section>
-  `;
+  return `<div class="dashboard__grid">${tiles}</div>`;
 }
 
 function renderDashboardSkeleton() {
@@ -700,32 +590,15 @@ function renderDashboardSkeleton() {
           <div class="skeleton skeleton-line skeleton-line--medium"></div>
         </div>
       </div>
-      <div class="dashboard-kpi-grid">
-        <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-        <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-        <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-        <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-        <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-        <div class="dashboard-kpi dashboard-kpi--skeleton"></div>
-      </div>
     </section>
-    <section class="dashboard-workspace">
-      <div class="dashboard-workspace__main">
-        <div class="dashboard-widget-grid">
-          ${skeletonWidget(3)}
-          ${skeletonWidget(3)}
-          ${skeletonWidget(2)}
-          ${skeletonWidget(3)}
-        </div>
-      </div>
-      <aside class="dashboard-workspace__side">
-        <div class="dashboard-side-stack">
-          ${skeletonWidget(3)}
-          ${skeletonWidget(3)}
-          ${skeletonWidget(2)}
-        </div>
-      </aside>
-    </section>
+    <div class="dashboard__grid">
+      ${skeletonWidget(3)}
+      ${skeletonWidget(3)}
+      ${skeletonWidget(2)}
+      ${skeletonWidget(3)}
+      ${skeletonWidget(3)}
+      ${skeletonWidget(2)}
+    </div>
   `;
 }
 
@@ -1130,26 +1003,6 @@ export async function render(container, { user }) {
     window.oikos?.showToast(t('dashboard.loadError'), 'warning');
   }
 
-  const today = new Date().toDateString();
-  const stats = {
-    overdueCount: (data.urgentTasks ?? []).filter((t) => {
-      const due = formatDueDate(t.due_date, t.due_time);
-      return due?.overdue === true;
-    }).length,
-    dueSoonCount: (data.urgentTasks ?? []).filter((t) => {
-      const due = formatDueDate(t.due_date, t.due_time);
-      return due?.soon === true;
-    }).length,
-    todayEventCount: (data.upcomingEvents ?? []).filter((e) =>
-      new Date(e.start_datetime).toDateString() === today
-    ).length,
-    todayMealTitle: (data.todayMeals ?? []).find((m) => m.meal_type === 'lunch')?.title
-      ?? (data.todayMeals ?? [])[0]?.title
-      ?? null,
-    birthdayCount: data.birthdayCount ?? (data.birthdays ?? []).length,
-    familyCount: (data.users ?? []).length,
-  };
-
   const rerender = () => render(container, { user });
 
   function rebuildDashboard(cfg) {
@@ -1157,7 +1010,7 @@ export async function render(container, { user }) {
     if (!shell) return;
     shell.replaceChildren();
     shell.insertAdjacentHTML('beforeend', `
-      ${renderDashboardOverview(user, stats, weather)}
+      ${renderDashboardOverview(user)}
       ${renderDashboardLayout(cfg, data, weather, currency)}
     `);
     wireLinks(container, rerender);
