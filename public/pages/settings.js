@@ -1129,7 +1129,7 @@ function openEditMemberModal(member, currentUser, users, container) {
           const idx = users.findIndex((u) => u.id === member.id);
           if (idx !== -1) users[idx] = res.user;
           if (currentUser.id === member.id) Object.assign(currentUser, res.user);
-          closeModal();
+          closeModal({ force: true });
           window.oikos?.showToast(t('settings.memberUpdatedToast', { name: res.user.display_name }), 'success');
           render(container, { user: currentUser });
         } catch (err) {
