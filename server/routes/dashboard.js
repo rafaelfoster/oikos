@@ -144,7 +144,7 @@ router.get('/', (req, res) => {
         (SELECT COUNT(*) FROM shopping_items si WHERE si.list_id = sl.id AND si.is_checked = 0) AS open_count,
         (SELECT COUNT(*) FROM shopping_items si WHERE si.list_id = sl.id) AS total_count
       FROM shopping_lists sl
-      HAVING open_count > 0
+      WHERE (SELECT COUNT(*) FROM shopping_items si WHERE si.list_id = sl.id AND si.is_checked = 0) > 0
       ORDER BY sl.updated_at DESC
       LIMIT 3
     `).all();

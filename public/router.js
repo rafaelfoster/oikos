@@ -343,7 +343,7 @@ async function renderPage(route, previousPath = null) {
     // Route-Announcer: Screenreader über Seitenwechsel informieren (gezielt, nicht gesamter Inhalt)
     const announcer = document.getElementById('route-announcer');
     if (announcer) {
-      const pageLabel = navItems().find((n) => n.path === path)?.label ?? path;
+      const pageLabel = navItems().find((n) => n.path === route.path)?.label ?? route.path;
       announcer.textContent = '';
       setTimeout(() => { announcer.textContent = pageLabel; }, 50);
     }
