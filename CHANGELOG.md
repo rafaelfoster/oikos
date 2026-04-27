@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-04-27
+
+### Added
+- Birthdays module: track family birthdays with name, birth date, optional photo and notes; each entry is automatically synced to the calendar as a yearly recurring event and to the reminder system
+- Birthdays dashboard widget: shows the next upcoming birthdays at a glance with age and days-until labels
+- Family Participants dashboard widget: displays the number of users added to the family with avatar initials
+- Budget Overview dashboard widget: shows monthly income, expenses, balance, savings rate and top expense category
+- Dashboard widget customisation extended to include the three new widgets (birthdays, budget, family)
+- Settings › General: admin option to set a custom application name shown in the sidebar, browser title and login screen
+- Birthday translations across all 16 supported locales
+
+### Changed
+- Service worker: mutable JS and CSS assets now use network-first caching to eliminate stale-asset issues after deployments
+
 ## [0.25.8] - 2026-04-27
 
 ### Fixed
