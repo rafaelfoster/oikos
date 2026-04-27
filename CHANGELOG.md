@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-04-27
+
+### Added
+- Navigation: sidebar nav items now show a native tooltip in the icon-only breakpoint (1024–1279 px), making all 11 modules discoverable without labels
+- PWA: offline banner appears at the top of the screen when the device loses connectivity, and hides automatically when the connection is restored
+- Desktop: global keyboard shortcuts — `/` (search), `n` (new), `?` (shortcut overview), `g d/t/c/s/n` (navigate to module)
+- Dashboard: widget order is now adjustable via drag-and-drop in the Customize modal; order is persisted in user preferences
+- UX: `deleteWithUndo` utility in `ux.js` — birthdays deletion now offers an undo toast identical to tasks, notes, contacts, and meals
+- UX: contextual onboarding hints added to empty states in all modules (tasks, contacts, notes, budget, shopping, birthdays, recipes)
+
+### Changed
+- Dashboard: widget title icons use `--color-text-secondary` instead of the module accent color, reducing visual noise when all widgets are visible
+- Performance: `reminders.css` is now lazy-loaded on demand instead of being included in every page load
+
+### Fixed
+- UI: modal close button increased from 40 px to 44 px to meet Apple HIG minimum tap target
+- UI: `.widget__link` elements now have a 44 px minimum touch target height with correct padding
+- CSS: removed dead `.fab` CSS block — all pages use `.page-fab`
+- UX: toasts can now be dismissed by swiping horizontally (> 40 px)
+
 ## [0.27.1] - 2026-04-27
 
 ### Fixed
