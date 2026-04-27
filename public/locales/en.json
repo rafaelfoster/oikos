@@ -872,5 +872,15 @@
   },
   "offline": {
     "banner": "Offline – reconnecting…"
+  },
+  "shortcuts": {
+    "search": "Open search",
+    "new": "Create new entry",
+    "help": "Keyboard shortcuts",
+    "goDash": "Dashboard",
+    "goTasks": "Tasks",
+    "goCal": "Calendar",
+    "goShop": "Shopping list",
+    "goNotes": "Notes"
   }
 }

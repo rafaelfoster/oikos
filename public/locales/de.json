@@ -891,5 +891,15 @@
   },
   "offline": {
     "banner": "Offline – Verbindung wird wiederhergestellt…"
+  },
+  "shortcuts": {
+    "search":  "Suche öffnen",
+    "new":     "Neuen Eintrag erstellen",
+    "help":    "Tastenkombinationen",
+    "goDash":  "Dashboard",
+    "goTasks": "Aufgaben",
+    "goCal":   "Kalender",
+    "goShop":  "Einkaufsliste",
+    "goNotes": "Notizen"
   }
 }

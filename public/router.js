@@ -6,6 +6,7 @@
 
 import { api, auth } from '/api.js';
 import { initI18n, getLocale, t } from '/i18n.js';
+import { esc } from '/utils/html.js';
 import { init as initReminders, stop as stopReminders } from '/reminders.js';
 
 // --------------------------------------------------------
@@ -542,6 +543,90 @@ function renderAppShell(container) {
   initNavHideOnScroll(container);
   initSearch(container);
   initOfflineBanner();
+  initKeyboardShortcuts();
+}
+
+const SHORTCUTS = [
+  { key: '/',   description: () => t('shortcuts.search'),  action: () => document.getElementById('search-btn')?.click() },
+  { key: 'n',   description: () => t('shortcuts.new'),     action: () => document.querySelector('.page-fab')?.click() },
+  { key: '?',   description: () => t('shortcuts.help'),    action: () => showShortcutsModal() },
+  { key: 'g d', description: () => t('shortcuts.goDash'),  action: () => navigate('/') },
+  { key: 'g t', description: () => t('shortcuts.goTasks'), action: () => navigate('/tasks') },
+  { key: 'g c', description: () => t('shortcuts.goCal'),   action: () => navigate('/calendar') },
+  { key: 'g s', description: () => t('shortcuts.goShop'),  action: () => navigate('/shopping') },
+  { key: 'g n', description: () => t('shortcuts.goNotes'), action: () => navigate('/notes') },
+];
+
+let _pendingKey = null;
+let _pendingTimer = null;
+
+function initKeyboardShortcuts() {
+  document.addEventListener('keydown', (e) => {
+    const tag = document.activeElement?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+    if (document.activeElement?.isContentEditable) return;
+    if (document.querySelector('.modal-overlay') && e.key !== 'Escape') return;
+
+    const key = e.key.toLowerCase();
+
+    if (_pendingKey === 'g' && key !== 'g') {
+      clearTimeout(_pendingTimer);
+      _pendingKey = null;
+      const combo = `g ${key}`;
+      const shortcut = SHORTCUTS.find((s) => s.key === combo);
+      if (shortcut) { e.preventDefault(); shortcut.action(); }
+      return;
+    }
+
+    if (key === 'g') {
+      _pendingKey = 'g';
+      _pendingTimer = setTimeout(() => { _pendingKey = null; }, 1000);
+      return;
+    }
+
+    const shortcut = SHORTCUTS.find((s) => s.key === key && !s.key.includes(' '));
+    if (shortcut) { e.preventDefault(); shortcut.action(); }
+  });
+}
+
+function showShortcutsModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+
+  const panel = document.createElement('div');
+  panel.className = 'modal-panel modal-panel--sm';
+  panel.setAttribute('role', 'dialog');
+  panel.setAttribute('aria-label', t('shortcuts.help'));
+
+  const rows = SHORTCUTS.map((s) => `
+    <div class="shortcuts-row">
+      <kbd class="shortcut-kbd">${esc(s.key)}</kbd>
+      <span class="shortcut-desc">${esc(s.description())}</span>
+    </div>
+  `).join('');
+
+  panel.insertAdjacentHTML('beforeend', `
+    <div class="modal-panel__header">
+      <span class="modal-panel__title">${esc(t('shortcuts.help'))}</span>
+      <button class="modal-panel__close btn--ghost" aria-label="${esc(t('common.close'))}">
+        <i data-lucide="x" style="width:16px;height:16px;" aria-hidden="true"></i>
+      </button>
+    </div>
+    <div class="modal-panel__body">
+      <div class="shortcuts-list">${rows}</div>
+    </div>
+  `);
+
+  panel.querySelector('.modal-panel__close').addEventListener('click', () => overlay.remove());
+  document.addEventListener('keydown', function onEsc(e) {
+    if (e.key === 'Escape') { overlay.remove(); document.removeEventListener('keydown', onEsc); }
+  });
+
+  overlay.appendChild(panel);
+  document.body.appendChild(overlay);
+  if (window.lucide) window.lucide.createIcons({ el: panel });
 }
 
 function initOfflineBanner() {
