@@ -751,6 +751,7 @@ function navItemEl({ path, label, icon }) {
   a.className = 'nav-item';
   a.setAttribute('role', 'listitem');
   a.setAttribute('aria-label', label);
+  a.setAttribute('title', label);
   const i = document.createElement('i');
   i.dataset.lucide = icon;
   i.className = 'nav-item__icon';
