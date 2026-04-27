@@ -1061,10 +1061,11 @@ export async function render(container, { user }) {
   function rebuildDashboard(cfg) {
     const shell = container.querySelector('#dashboard-shell');
     if (!shell) return;
-    shell.innerHTML = `
+    shell.replaceChildren();
+    shell.insertAdjacentHTML('beforeend', `
       ${renderDashboardOverview(user, stats, weather)}
       ${renderDashboardLayout(cfg, data, weather, currency)}
-    `;
+    `);
     wireLinks(container, rerender);
     if (window.lucide) window.lucide.createIcons();
     wireWeatherRefresh(container, (updatedWeather) => {

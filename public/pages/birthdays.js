@@ -65,11 +65,12 @@ function renderSuggestions() {
   const items = suggestions();
   if (!items.length) {
     dropdown.hidden = true;
-    dropdown.innerHTML = '';
+    dropdown.replaceChildren();
     return;
   }
   dropdown.hidden = false;
-  dropdown.innerHTML = items.map((birthday, idx) => `
+  dropdown.replaceChildren();
+  dropdown.insertAdjacentHTML('beforeend', items.map((birthday, idx) => `
     <button class="birthday-suggestion" type="button" data-index="${idx}" data-name="${esc(birthday.name)}">
       ${photoAvatar(birthday, 'birthday-avatar--xs')}
       <span>
@@ -77,20 +78,22 @@ function renderSuggestions() {
         <small>${esc(ageNote(birthday))}</small>
       </span>
     </button>
-  `).join('');
+  `).join(''));
 }
 
 function renderUpcoming() {
   const host = _container.querySelector('#birthdays-upcoming');
   if (!host) return;
   if (!state.upcoming.length) {
-    host.innerHTML = `<div class="empty-state empty-state--compact">
+    host.replaceChildren();
+    host.insertAdjacentHTML('beforeend', `<div class="empty-state empty-state--compact">
       <div class="empty-state__title">${t('birthdays.emptyTitle')}</div>
       <div class="empty-state__description">${t('birthdays.emptyDescription')}</div>
-    </div>`;
+    </div>`);
     return;
   }
-  host.innerHTML = state.upcoming.map((birthday) => `
+  host.replaceChildren();
+  host.insertAdjacentHTML('beforeend', state.upcoming.map((birthday) => `
     <article class="birthday-card">
       <div class="birthday-card__media">${photoAvatar(birthday)}</div>
       <div class="birthday-card__body">
@@ -106,7 +109,7 @@ function renderUpcoming() {
         <div class="birthday-card__note">${esc(ageNote(birthday))}</div>
       </div>
     </article>
-  `).join('');
+  `).join(''));
 }
 
 function renderList() {
@@ -114,14 +117,16 @@ function renderList() {
   if (!host) return;
   const list = filteredBirthdays();
   if (!list.length) {
-    host.innerHTML = `<div class="empty-state">
+    host.replaceChildren();
+    host.insertAdjacentHTML('beforeend', `<div class="empty-state">
       <div class="empty-state__title">${t('birthdays.emptyTitle')}</div>
       <div class="empty-state__description">${t('birthdays.emptyDescription')}</div>
-    </div>`;
+    </div>`);
     return;
   }
 
-  host.innerHTML = list.map((birthday) => `
+  host.replaceChildren();
+  host.insertAdjacentHTML('beforeend', list.map((birthday) => `
     <article class="birthday-item" data-id="${birthday.id}">
       <div class="birthday-item__media">${photoAvatar(birthday)}</div>
       <div class="birthday-item__body">
@@ -142,14 +147,15 @@ function renderList() {
         </button>
       </div>
     </article>
-  `).join('');
+  `).join(''));
 
   if (window.lucide) window.lucide.createIcons();
   stagger(host.querySelectorAll('.birthday-item'));
 }
 
 function renderPage() {
-  _container.innerHTML = `
+  _container.replaceChildren();
+  _container.insertAdjacentHTML('beforeend', `
     <div class="birthdays-page">
       <h1 class="sr-only">${t('birthdays.title')}</h1>
       <div class="birthdays-toolbar">
@@ -194,7 +200,7 @@ function renderPage() {
         <i data-lucide="plus" style="width:24px;height:24px" aria-hidden="true"></i>
       </button>
     </div>
-  `;
+  `);
 
   renderUpcoming();
   renderList();
@@ -304,7 +310,8 @@ function openBirthdayModal({ mode, birthday = null }) {
       const nameInput = panel.querySelector('#bd-name');
       const preview = panel.querySelector('#birthday-preview');
       const renderPreview = () => {
-        preview.innerHTML = birthdayPreviewHtml(nameInput.value.trim(), photoData);
+        preview.replaceChildren();
+        preview.insertAdjacentHTML('beforeend', birthdayPreviewHtml(nameInput.value.trim(), photoData));
       };
       nameInput.addEventListener('input', renderPreview);
       panel.querySelector('#bd-photo').addEventListener('change', async (e) => {

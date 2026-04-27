@@ -1,11 +1,11 @@
 services:
   oikos:
-#    image: ghcr.io/ulsklyc/oikos:latest
+    image: ghcr.io/ulsklyc/oikos:latest
     build: .                          # optional: use --build to build locally instead
     container_name: oikos
     restart: unless-stopped
     ports:
-      - "0.0.0.0:3100:3000"
+      - "0.0.0.0:3000:3000"
     volumes:
       - oikos_data:/data
     env_file:
@@ -19,7 +19,7 @@ services:
       # Direct HTTP access (no reverse proxy):
       - SESSION_SECURE=false
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3100/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', r => process.exit(r.statusCode === 200 ? 0 : 1))"]
       interval: 30s
       timeout: 10s
       retries: 3
