@@ -87,8 +87,8 @@ app.set('trust proxy', process.env.TRUST_PROXY !== undefined ? process.env.TRUST
 // --------------------------------------------------------
 // Request-Parsing
 // --------------------------------------------------------
-app.use(express.json({ limit: '1mb' }));
-app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(express.json({ limit: '7mb' }));
+app.use(express.urlencoded({ extended: true, limit: '7mb' }));
 
 // JSON-Parse-Fehler abfangen (gibt sonst HTML zurück)
 app.use((err, req, res, next) => {
@@ -96,7 +96,7 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: 'Invalid JSON in request body.', code: 400 });
   }
   if (err.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'Request body too large (max. 1 MB).', code: 413 });
+    return res.status(413).json({ error: 'Request body too large (max. 7 MB).', code: 413 });
   }
   next(err);
 });

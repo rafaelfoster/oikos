@@ -6,7 +6,7 @@ import { deleteBirthdayArtifacts, hydrateBirthday, syncBirthdayArtifacts, syncAl
 
 const log = createLogger('Birthdays');
 const router = express.Router();
-const MAX_PHOTO_LENGTH = 900_000;
+const MAX_PHOTO_LENGTH = 6_990_507; // ~5 MB raw image in base64
 const PHOTO_RE = /^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/;
 
 function validatePhotoData(val) {

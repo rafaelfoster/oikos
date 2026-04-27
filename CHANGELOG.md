@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.26.5] - 2026-04-27
+
+### Changed
+- Birthdays: increased maximum photo upload size from ~0.9 MB to 5 MB
+
 ## [0.26.4] - 2026-04-27
 
 ### Changed
