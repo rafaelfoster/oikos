@@ -2,7 +2,6 @@
   <img src="docs/logo.svg" alt="Oikos" width="120" />
   <h1>Oikos</h1>
   <p><strong>Self-hosted family planner for small households</strong></p>
-  <p>Tasks · Shopping Lists · Meal Planning · Recipes · Calendar Sync · Budget · Notes · Contacts · Birthdays · Reminders</p>
 
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" alt="MIT License"></a>
   <a href="https://github.com/ulsklyc/oikos/releases"><img src="https://img.shields.io/github/v/release/ulsklyc/oikos?style=flat-square&color=007AFF&label=release" alt="Latest Release"></a>
@@ -41,73 +40,63 @@
 
 <p align="center"><sub>Toggle GitHub light/dark mode to see both themes.</sub></p>
 
-## Highlights
+## Features
 
-**Task Management:** Shared tasks with deadlines, priorities, subtasks, recurring schedules, Kanban view with one-tap status buttons for touch devices
+| Module | Description |
+|---|---|
+| **Tasks** | Shared tasks with deadlines, priorities, subtasks, and recurring schedules. Kanban board with touch-friendly one-tap status buttons. |
+| **Shopping Lists** | Collaborative lists organized by aisle. Import ingredients from meal plans in one click. |
+| **Meal Planning** | Weekly drag-and-drop planner. Export ingredient lists directly to your shopping list. |
+| **Recipes** | Create, duplicate, and scale reusable recipes. Pre-fill meal slots from a recipe or save any meal as a recipe. |
+| **Calendar** | Two-way sync with Google Calendar (OAuth) and Apple iCloud (CalDAV). Subscribe to any public ICS/webcal URL with per-subscription color and visibility. |
+| **Budget** | Track income and expenses with recurring entries, monthly trends, and CSV export. 35 predefined categories plus custom ones. Supports 15 currencies. |
+| **Notes & Contacts** | Colored sticky notes with Markdown support. Contact directory with vCard import/export. |
+| **Birthdays** | Birthday tracker with automatic annual calendar events, age display, profile photos, and 1-day-before reminders. |
+| **Reminders** | Time-based reminders on tasks and calendar events. In-app notification badge. |
+| **Family** | Assign family roles and profile pictures per member. |
+| **API Tokens** | Named Bearer / X-API-Key tokens for external integrations. SHA-256-hashed at rest, with optional expiry. OpenAPI 3.0 spec at `/api/v1/openapi.json`. |
 
-**Shopping Lists:** Collaborative lists with aisle categories and one-click import from meal plans
+## Design & Technology
 
-**Meal Planning:** Weekly drag-and-drop planner with ingredient lists and shopping export
-
-**Recipes:** Create, edit, duplicate, and delete reusable recipes with notes, a recipe link, and per-ingredient categories. Pre-fill meal slots from a recipe and scale ingredient quantities; save any meal as a recipe with one click.
-
-**Calendar Sync:** Two-way sync with Google Calendar (OAuth) and Apple iCloud (CalDAV); subscribe to any public ICS/webcal URL with per-subscription color, private/shared visibility, and automatic sync
-
-**Budget Tracking:** Income and expenses, recurring entries, DB-backed expense categories with subcategories (35 predefined + custom), configurable currency (15 currencies), monthly trends, CSV export
-
-**Notes & Contacts:** Colored sticky notes with Markdown, contact directory with vCard import/export
-
-**Birthdays:** Personal birthday tracker with automatic annual calendar events, age calculation, profile photos (≤ 5 MB), and 1-day-before reminders — auto-synced, no manual setup needed.
-
-**Reminders:** Time-based reminders on any task or calendar event, with an in-app notification badge. Birthday reminders are created automatically.
-
-**Family Management:** Assign family roles (Dad, Mom, Child, etc.) and upload profile pictures per family member.
-
-**API Tokens:** Admins can create named Bearer / X-API-Key tokens for external integrations; tokens are SHA-256-hashed at rest, support optional expiry and revocation. OpenAPI 3.0 specification available at `/api/v1/openapi.json`.
-
-**Zero Build Step:** Pure ES modules, no bundler, no transpiler, no framework. Ships what you write.
-
-**Privacy First:** SQLCipher AES-256 encrypted database, fully self-hosted, zero telemetry
-
-**Liquid Glass UI:** Translucent surfaces with backdrop blur, module-tinted glass overlays, spring animations - inspired by Apple's Liquid Glass, built in pure CSS
-
-**PWA Native Feel:** Installable on any device, works offline, dark mode, responsive from phone to desktop
-
-**Multilingual:** German, English, Spanish, French, Italian, Swedish, Greek, Russian, Turkish, Chinese, Japanese, Arabic, Hindi, and Portuguese UI with automatic locale detection
+- **Liquid Glass UI** — translucent surfaces, backdrop blur, module-tinted overlays, spring animations — inspired by Apple's Liquid Glass, built in pure CSS
+- **PWA** — installable on any device, works offline, dark mode, responsive from phone to desktop
+- **Privacy First** — SQLCipher AES-256 encrypted database, fully self-hosted, zero telemetry
+- **Zero Build Step** — pure ES modules, no bundler, no transpiler, no framework
+- **Multilingual** — 14 languages with automatic locale detection (de, en, es, fr, it, sv, el, ru, tr, zh, ja, ar, hi, pt)
 
 ## Quick Start
 
-**Option A — Web Installer (recommended):**
+**Option A — Web Installer (recommended)**
 
 ```bash
 git clone https://github.com/ulsklyc/oikos.git && cd oikos
 node tools/installer/install-server.js
 ```
 
-Then open **http://localhost:8090** in your browser. The wizard configures your `.env`, starts Docker, and creates your admin account — no manual steps needed. Requires Node.js 18+ on the host.
+Open **http://localhost:8090** in your browser. The wizard configures your `.env`, starts Docker, and creates your admin account. Requires Node.js 18+ on the host.
 
-**Option B — pre-built image (no clone required):**
+**Option B — Pre-built image (no clone required)**
 
 ```bash
 curl -O https://raw.githubusercontent.com/ulsklyc/oikos/main/docker-compose.yml
 curl -O https://raw.githubusercontent.com/ulsklyc/oikos/main/.env.example
-cp .env.example .env     # edit .env — set SESSION_SECRET and DB_ENCRYPTION_KEY
+cp .env.example .env          # set SESSION_SECRET and DB_ENCRYPTION_KEY
 docker compose up -d
 docker compose exec oikos node setup.js
 ```
 
-**Option C — build from source:**
+**Option C — Build from source**
 
 ```bash
 git clone https://github.com/ulsklyc/oikos.git && cd oikos
-cp .env.example .env     # edit .env — set SESSION_SECRET and DB_ENCRYPTION_KEY
+cp .env.example .env          # set SESSION_SECRET and DB_ENCRYPTION_KEY
 docker compose up -d --build
 docker compose exec oikos node setup.js
 ```
 
-Then open `http://localhost:3000` and log in with the admin credentials you set in the previous step. Add family members from Settings.
+Open `http://localhost:3000` and sign in with the admin credentials you created above.
 
-> **New to Docker?** The **[Installation Guide](docs/installation.md)** walks you through every step: From installing Docker to HTTPS setup, backups, and troubleshooting.
+> **New to Docker?** The **[Installation Guide](docs/installation.md)** covers Docker setup, HTTPS, backups, and troubleshooting step by step.
 
 ## Tech Stack
 
