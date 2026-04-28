@@ -8,7 +8,7 @@ import { api } from '/api.js';
 import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js';
 import { openModal as openSharedModal, closeModal, wireBlurValidation, validateAll, btnSuccess, btnError, promptModal } from '/components/modal.js';
 import { stagger, vibrate } from '/utils/ux.js';
-import { t, formatDate, formatTime } from '/i18n.js';
+import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { refresh as refreshReminders } from '/reminders.js';
 
@@ -346,8 +346,8 @@ function renderModalContent({ task = null, users = [], reminder = null } = {}) {
       <div class="modal-grid modal-grid--2" style="margin-top:var(--space-4)">
         <div class="form-group">
           <label class="label" for="task-due-date">${t('tasks.dueDateLabel')}</label>
-          <input class="input" type="date" id="task-due-date" name="due_date"
-                 value="${task?.due_date ?? ''}">
+          <input class="input js-date-input" type="text" id="task-due-date" name="due_date"
+                 value="${formatDateInput(task?.due_date)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
         <div class="form-group">
           <label class="label" for="task-due-time">${t('tasks.dueTimeLabel')}</label>
@@ -463,7 +463,7 @@ function renderReminderSection(reminder = null) {
       <div id="reminder-fields" class="reminder-fields" ${hasReminder ? '' : 'style="display:none"'}>
         <div class="form-group" style="margin:0">
           <label class="label" for="reminder-date">${t('reminders.dateLabel')}</label>
-          <input class="input" type="date" id="reminder-date" value="${remindDate}">
+          <input class="input js-date-input" type="text" id="reminder-date" value="${formatDateInput(remindDate)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
         <div class="form-group" style="margin:0">
           <label class="label" for="reminder-time">${t('reminders.timeLabel')}</label>
@@ -496,6 +496,12 @@ function openTaskModal({ task = null, users = [], reminder = null } = {}, contai
       toggle?.addEventListener('change', () => {
         fields.style.display = toggle.checked ? '' : 'none';
       });
+      panel.querySelectorAll('.js-date-input').forEach((input) => {
+        input.addEventListener('blur', () => {
+          const parsed = parseDateInput(input.value);
+          if (parsed) input.value = formatDateInput(parsed);
+        });
+      });
 
       // Form-Events
       panel.querySelector('#task-form')
@@ -527,13 +533,25 @@ async function handleFormSubmit(e, container) {
 
   const originalLabel = taskId ? t('common.save') : t('common.create');
 
+  const dueDateRaw = form.due_date?.value || '';
+  const dueDate = parseDateInput(dueDateRaw);
   const rrule = getRRuleValues(document, 'task');
+  const reminderToggle = form.querySelector('#reminder-toggle');
+  const reminderDateRaw = form.querySelector('#reminder-date')?.value || '';
+  const reminderDate = parseDateInput(reminderDateRaw);
+  if (!isDateInputValid(dueDateRaw) || !rrule.valid_until || (reminderToggle?.checked && !isDateInputValid(reminderDateRaw))) {
+    errorEl.textContent = t('calendar.invalidDate');
+    errorEl.hidden = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalLabel;
+    return;
+  }
   const body = {
     title:           form.title.value.trim(),
     description:     form.description.value.trim() || null,
     priority:        form.priority.value,
     category:        form.category.value,
-    due_date:        form.due_date?.value || null,
+    due_date:        dueDate || null,
     due_time:        form.due_time?.value || null,
     assigned_to:     form.assigned_to.value ? Number(form.assigned_to.value) : null,
     is_recurring:    rrule.is_recurring ? 1 : 0,
@@ -554,8 +572,6 @@ async function handleFormSubmit(e, container) {
 
     // Erinnerung speichern oder löschen
     if (savedTaskId) {
-      const reminderToggle = form.querySelector('#reminder-toggle');
-      const reminderDate   = form.querySelector('#reminder-date')?.value;
       const reminderTime   = form.querySelector('#reminder-time')?.value || '08:00';
 
       if (reminderToggle?.checked && reminderDate) {

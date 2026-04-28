@@ -349,7 +349,9 @@
     "ics": {
       "reset": "إعادة التعيين للأصل",
       "resetToast": "تم إعادة تعيين التغييرات."
-    }
+    },
+    "iconLabel": "Icon",
+    "invalidDate": "Use a valid date in the selected date format."
   },
   "notes": {
     "title": "لوحة الملاحظات",
@@ -856,7 +858,17 @@
     "notificationEnable": "تفعيل الإشعارات",
     "notificationEnabled": "الإشعارات نشطة",
     "notificationDenied": "الإشعارات محظورة",
-    "notificationHint": "احصل على إشعارات حتى عندما يكون التطبيق مفتوحًا."
+    "notificationHint": "احصل على إشعارات حتى عندما يكون التطبيق مفتوحًا.",
+    "offset2days": "2 days before",
+    "offset1week": "1 week before",
+    "offset2weeks": "2 weeks before",
+    "offsetCustom": "Custom...",
+    "customAmountLabel": "Amount",
+    "customUnitLabel": "Unit",
+    "customMinutes": "Minutes",
+    "customHours": "Hours",
+    "customDays": "Days",
+    "customWeeks": "Weeks"
   },
   "onboarding": {
     "step1Title": "Welcome to Oikos",

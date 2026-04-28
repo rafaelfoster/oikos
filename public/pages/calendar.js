@@ -8,7 +8,7 @@ import { api } from '/api.js';
 import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js';
 import { openModal as openSharedModal, closeModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
-import { t, formatTime } from '/i18n.js';
+import { t, formatDate as formatPreferredDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
 import { esc, fmtLocation } from '/utils/html.js';
 import { refresh as refreshReminders } from '/reminders.js';
 
@@ -58,6 +58,29 @@ const EVENT_COLOR_NAMES = () => ({
   '#8E8E93': t('calendar.colorGray'),
   '#30B0C7': t('calendar.colorCyan'),
 });
+
+const EVENT_ICONS = [
+  { value: 'calendar', label: 'Calendar' },
+  { value: 'tooth', label: 'Dentist' },
+  { value: 'stethoscope', label: 'Doctor' },
+  { value: 'heart-pulse', label: 'Health' },
+  { value: 'briefcase', label: 'Work' },
+  { value: 'plane', label: 'Travel' },
+  { value: 'utensils', label: 'Meal' },
+  { value: 'cake', label: 'Birthday' },
+  { value: 'car', label: 'Car' },
+  { value: 'graduation-cap', label: 'School' },
+  { value: 'dumbbell', label: 'Sports' },
+  { value: 'home', label: 'Home' },
+  { value: 'shopping-bag', label: 'Shopping' },
+  { value: 'music', label: 'Music' },
+  { value: 'party-popper', label: 'Party' },
+  { value: 'paw-print', label: 'Pet' },
+  { value: 'scissors', label: 'Haircut' },
+  { value: 'book-open', label: 'Reading' },
+  { value: 'users', label: 'Family' },
+  { value: 'bell', label: 'Reminder' },
+];
 
 const HOUR_HEIGHT = 56; // px pro Stunde in Wochen-/Tagesansicht
 
@@ -136,14 +159,12 @@ function getMondayOf(dateStr) {
 }
 
 function formatDate(dateStr, { long = false, weekday = false } = {}) {
-  const d   = new Date(dateStr + 'T00:00:00');
-  const day = d.getDate();
-  const mon = MONTH_NAMES()[d.getMonth()];
   if (weekday) {
+    const d = new Date(dateStr + 'T00:00:00');
     const wd = long ? DAY_NAMES_LONG()[d.getDay()] : DAY_NAMES_SHORT()[d.getDay()];
-    return `${wd}, ${day}. ${mon}`;
+    return `${wd}, ${formatPreferredDate(dateStr)}`;
   }
-  return `${day}. ${mon} ${d.getFullYear()}`;
+  return formatPreferredDate(dateStr);
 }
 
 function formatDateTime(datetimeStr) {
@@ -152,6 +173,27 @@ function formatDateTime(datetimeStr) {
   const hasTime = datetimeStr.length > 10;
   const time    = hasTime ? formatTime(datetimeStr) : '';
   return time ? `${formatDate(date)} ${time} ${t('calendar.timeSuffix')}`.trimEnd() : formatDate(date);
+}
+
+function eventIconName(icon) {
+  return EVENT_ICONS.some((item) => item.value === icon) ? icon : 'calendar';
+}
+
+function eventIconHtml(icon, className = 'event-icon') {
+  return `<i class="${className}" data-lucide="${eventIconName(icon)}" aria-hidden="true"></i>`;
+}
+
+function bindDateInputs(root) {
+  root.querySelectorAll('.js-date-input').forEach((input) => {
+    input.addEventListener('blur', () => {
+      const parsed = parseDateInput(input.value);
+      if (parsed) input.value = formatDateInput(parsed);
+    });
+  });
+}
+
+function readDateInput(root, selector) {
+  return parseDateInput(root.querySelector(selector)?.value || '');
 }
 
 function getMonthRange(dateStr) {
@@ -358,6 +400,7 @@ function renderView() {
   if (state.view === 'week')   renderWeekView(body);
   if (state.view === 'day')    renderDayView(body);
   if (state.view === 'agenda') renderAgendaView(body);
+  if (window.lucide) lucide.createIcons();
 }
 
 // --------------------------------------------------------
@@ -432,7 +475,7 @@ function renderMonthDay(date, inMonth) {
          data-id="${ev.id}"
          style="background-color:${esc(bg)};${fg ? `color:${fg};` : ''}"
          title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}"
-    >${esc(ev.title)}</div>
+    >${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>
   `;
   }).join('');
 
@@ -481,7 +524,7 @@ function renderWeekView(container) {
             ${alldayEvs[i].map((ev) => `
               <div class="allday-event" data-id="${ev.id}"
                    style="${ev.cal_color || ev.color ? `background-color:${esc(ev.cal_color || ev.color)};` : ''}${getContrastColor(ev.cal_color || ev.color) ? `color:${getContrastColor(ev.cal_color || ev.color)};` : ''}"
-                   title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${esc(ev.title)}</div>
+                   title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>
             `).join('')}
           </div>
         `).join('')}
@@ -553,7 +596,7 @@ function renderWeekEvent(ev) {
   return `
     <div class="week-event" data-id="${ev.id}"
          style="top:${top}px;height:${height}px;${ev.cal_color || ev.color ? `background-color:${esc(ev.cal_color || ev.color)};` : ''}${getContrastColor(ev.cal_color || ev.color) ? `color:${getContrastColor(ev.cal_color || ev.color)};` : ''}">
-      <div class="week-event__title">${esc(ev.title)}</div>
+      <div class="week-event__title">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>
       <div class="week-event__time">${formatTime(ev.start_datetime)}${ev.end_datetime ? '–' + formatTime(ev.end_datetime) : ''}</div>
     </div>
   `;
@@ -593,7 +636,7 @@ function renderDayView(container) {
           ${allday.map((ev) => `
             <div class="allday-event" data-id="${ev.id}"
                  style="${ev.cal_color || ev.color ? `background-color:${esc(ev.cal_color || ev.color)};` : ''}${getContrastColor(ev.cal_color || ev.color) ? `color:${getContrastColor(ev.cal_color || ev.color)};` : ''}"
-                 title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${esc(ev.title)}</div>`).join('')}
+                 title="${esc(ev.title)}${ev.cal_name ? ' · ' + ev.cal_name : ''}">${eventIconHtml(ev.icon, 'event-icon event-icon--compact')}<span>${esc(ev.title)}</span></div>`).join('')}
         </div>
       </div>` : ''}
       <div class="day-view__scroll" id="day-scroll">
@@ -689,7 +732,7 @@ function renderAgendaEvent(ev) {
     <div class="agenda-event" data-id="${ev.id}">
       <div class="agenda-event__color" style="background-color:${esc(displayColor)};"></div>
       <div class="agenda-event__body">
-        <div class="agenda-event__title">${esc(ev.title)}${(ev.recurrence_rule || ev.is_recurring_instance) ? ' <i data-lucide="repeat" style="width:12px;height:12px;display:inline;vertical-align:middle;opacity:0.5" aria-hidden="true"></i>' : ''}</div>
+        <div class="agenda-event__title">${eventIconHtml(ev.icon)}<span>${esc(ev.title)}</span>${(ev.recurrence_rule || ev.is_recurring_instance) ? ' <i data-lucide="repeat" style="width:12px;height:12px;display:inline;vertical-align:middle;opacity:0.5" aria-hidden="true"></i>' : ''}</div>
         <div class="agenda-event__meta">
           <span>${timeStr}</span>
           ${ev.location ? `<span>📍 ${esc(fmtLocation(ev.location))}</span>` : ''}
@@ -724,7 +767,7 @@ function showEventPopup(ev, anchor) {
   const displayColor = ev.cal_color || ev.color;
   popup.innerHTML = `
     <div class="event-popup__color-bar" style="background-color:${esc(displayColor)};"></div>
-    <div class="event-popup__title">${esc(ev.title)}</div>
+    <div class="event-popup__title">${eventIconHtml(ev.icon)}<span>${esc(ev.title)}</span></div>
     <div class="event-popup__meta">
       ${ev.cal_name ? `<div><span class="event-cal-label" style="--cal-color:${esc(displayColor)}">${esc(ev.cal_name)}</span></div>` : ''}
       <div>${timeStr}</div>
@@ -811,20 +854,53 @@ const REMINDER_OFFSETS = () => [
   { value: '15',   label: t('reminders.offset15min')  },
   { value: '60',   label: t('reminders.offset1hour')  },
   { value: '1440', label: t('reminders.offset1day')   },
+  { value: '2880', label: t('reminders.offset2days')  },
+  { value: '10080', label: t('reminders.offset1week') },
+  { value: '20160', label: t('reminders.offset2weeks') },
+  { value: 'custom', label: t('reminders.offsetCustom') },
 ];
 
 function reminderOffsetFromEvent(event, reminder) {
   if (!reminder || !event?.start_datetime) return '';
   const remindMs = new Date(reminder.remind_at).getTime();
-  const startMs  = new Date(event.start_datetime).getTime();
+  const startMs  = new Date(reminderStartValue(event.start_datetime)).getTime();
   const diffMin  = Math.round((startMs - remindMs) / 60000);
-  const opts = [0, 15, 60, 1440];
+  const opts = [0, 15, 60, 1440, 2880, 10080, 20160];
   const match = opts.find((o) => o === diffMin);
-  return match !== undefined ? String(match) : '';
+  return match !== undefined ? String(match) : 'custom';
+}
+
+function customReminderFromEvent(event, reminder) {
+  const fallback = { amount: 1, unit: 'days' };
+  if (!reminder || !event?.start_datetime) return fallback;
+  const diffMin = Math.max(0, Math.round(
+    (new Date(reminderStartValue(event.start_datetime)).getTime() - new Date(reminder.remind_at).getTime()) / 60000
+  ));
+  if (diffMin % 10080 === 0 && diffMin >= 10080) return { amount: diffMin / 10080, unit: 'weeks' };
+  if (diffMin % 1440 === 0 && diffMin >= 1440) return { amount: diffMin / 1440, unit: 'days' };
+  if (diffMin % 60 === 0 && diffMin >= 60) return { amount: diffMin / 60, unit: 'hours' };
+  return { amount: Math.max(diffMin, 1), unit: 'minutes' };
+}
+
+function customReminderMinutes(amount, unit) {
+  const value = Math.max(parseInt(amount, 10) || 1, 1);
+  if (unit === 'weeks') return value * 10080;
+  if (unit === 'days') return value * 1440;
+  if (unit === 'hours') return value * 60;
+  return value;
+}
+
+function reminderStartValue(startDatetime) {
+  return startDatetime?.includes('T') ? startDatetime : `${startDatetime}T09:00`;
+}
+
+function toLocalDateTimeString(date) {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function renderCalendarReminderSection(reminder = null, event = null) {
   const currentOffset = event ? reminderOffsetFromEvent(event, reminder) : '';
+  const custom = customReminderFromEvent(event, reminder);
   return `
     <div class="reminder-section">
       <div class="form-group" style="margin:0">
@@ -834,6 +910,21 @@ function renderCalendarReminderSection(reminder = null, event = null) {
             `<option value="${o.value}" ${currentOffset === o.value ? 'selected' : ''}>${esc(o.label)}</option>`
           ).join('')}
         </select>
+      </div>
+      <div class="modal-grid modal-grid--2 reminder-custom" id="modal-reminder-custom" ${currentOffset === 'custom' ? '' : 'hidden'}>
+        <div class="form-group" style="margin:0">
+          <label class="form-label" for="modal-reminder-custom-amount">${t('reminders.customAmountLabel')}</label>
+          <input class="form-input" type="number" id="modal-reminder-custom-amount" min="1" max="999" value="${custom.amount}">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label" for="modal-reminder-custom-unit">${t('reminders.customUnitLabel')}</label>
+          <select class="form-input" id="modal-reminder-custom-unit">
+            <option value="minutes" ${custom.unit === 'minutes' ? 'selected' : ''}>${t('reminders.customMinutes')}</option>
+            <option value="hours" ${custom.unit === 'hours' ? 'selected' : ''}>${t('reminders.customHours')}</option>
+            <option value="days" ${custom.unit === 'days' ? 'selected' : ''}>${t('reminders.customDays')}</option>
+            <option value="weeks" ${custom.unit === 'weeks' ? 'selected' : ''}>${t('reminders.customWeeks')}</option>
+          </select>
+        </div>
       </div>
     </div>`;
 }
@@ -898,6 +989,14 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
       });
       if (isEdit && event?.all_day) { timeFields.style.display = 'none'; alldayFields.style.display = ''; }
 
+      bindDateInputs(panel);
+
+      const reminderOffset = panel.querySelector('#modal-reminder-offset');
+      const reminderCustom = panel.querySelector('#modal-reminder-custom');
+      reminderOffset?.addEventListener('change', () => {
+        if (reminderCustom) reminderCustom.hidden = reminderOffset.value !== 'custom';
+      });
+
       panel.querySelector('#modal-cancel').addEventListener('click', closeModal);
 
       panel.querySelector('#modal-delete')?.addEventListener('click', async () => {
@@ -906,6 +1005,7 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
       });
 
       panel.querySelector('#modal-save').addEventListener('click', () => saveEvent(panel, mode, event?.id, reminder));
+      if (window.lucide) lucide.createIcons();
     },
   });
 }
@@ -920,6 +1020,10 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
   const endDate   = isEdit && event.end_datetime ? localDate(event.end_datetime) : startDate;
   const endTime   = isEdit && event.end_datetime && event.end_datetime.length > 10
     ? localTime(event.end_datetime) : '10:00';
+  const selectedIcon = eventIconName(isEdit ? event.icon : 'calendar');
+  const iconOpts = EVENT_ICONS.map((icon) =>
+    `<option value="${icon.value}" ${selectedIcon === icon.value ? 'selected' : ''}>${esc(icon.label)}</option>`
+  ).join('');
 
   const userOpts = [
     `<option value="">${t('calendar.assignedNobody')}</option>`,
@@ -929,10 +1033,16 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
   ].join('');
 
   return `
-    <div class="form-group">
-      <label class="form-label" for="modal-title">${t('calendar.titleLabel')}</label>
-      <input type="text" class="form-input" id="modal-title"
-             placeholder="${t('calendar.titlePlaceholder')}" value="${esc(isEdit ? event.title : '')}">
+    <div class="modal-grid modal-grid--event-title">
+      <div class="form-group">
+        <label class="form-label" for="modal-title">${t('calendar.titleLabel')}</label>
+        <input type="text" class="form-input" id="modal-title"
+               placeholder="${t('calendar.titlePlaceholder')}" value="${esc(isEdit ? event.title : '')}">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="modal-icon">${t('calendar.iconLabel')}</label>
+        <select class="form-input" id="modal-icon">${iconOpts}</select>
+      </div>
     </div>
 
     <div class="form-group">
@@ -947,7 +1057,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
       <div class="modal-grid modal-grid--2">
         <div class="form-group">
           <label class="form-label" for="modal-start-date">${t('calendar.startDateLabel')}</label>
-          <input type="date" class="form-input" id="modal-start-date" value="${startDate}">
+          <input type="text" class="form-input js-date-input" id="modal-start-date" value="${formatDateInput(startDate)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
         <div class="form-group">
           <label class="form-label" for="modal-start-time">${t('calendar.startTimeLabel')}</label>
@@ -957,7 +1067,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
       <div class="modal-grid modal-grid--2">
         <div class="form-group">
           <label class="form-label" for="modal-end-date">${t('calendar.endDateLabel')}</label>
-          <input type="date" class="form-input" id="modal-end-date" value="${endDate}">
+          <input type="text" class="form-input js-date-input" id="modal-end-date" value="${formatDateInput(endDate)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
         <div class="form-group">
           <label class="form-label" for="modal-end-time">${t('calendar.endTimeLabel')}</label>
@@ -970,11 +1080,11 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
       <div class="modal-grid modal-grid--2">
         <div class="form-group">
           <label class="form-label" for="modal-allday-start">${t('calendar.fromLabel')}</label>
-          <input type="date" class="form-input" id="modal-allday-start" value="${startDate}">
+          <input type="text" class="form-input js-date-input" id="modal-allday-start" value="${formatDateInput(startDate)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
         <div class="form-group">
           <label class="form-label" for="modal-allday-end">${t('calendar.toLabel')}</label>
-          <input type="date" class="form-input" id="modal-allday-end" value="${endDate}">
+          <input type="text" class="form-input js-date-input" id="modal-allday-end" value="${formatDateInput(endDate)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
       </div>
     </div>
@@ -1035,6 +1145,7 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null) {
 
   const allday  = overlay.querySelector('#modal-allday').checked;
   const color   = overlay.querySelector('.color-swatch--active')?.dataset.color || EVENT_COLORS[0];
+  const icon    = eventIconName(overlay.querySelector('#modal-icon')?.value);
   const location    = overlay.querySelector('#modal-location').value.trim() || null;
   const assigned_to = overlay.querySelector('#modal-assigned').value || null;
   const description = overlay.querySelector('#modal-description').value.trim() || null;
@@ -1042,18 +1153,27 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null) {
   let start_datetime, end_datetime;
 
   if (allday) {
-    start_datetime = overlay.querySelector('#modal-allday-start')?.value
-                   || overlay.querySelector('#modal-start-date').value;
-    end_datetime   = overlay.querySelector('#modal-allday-end')?.value
-                   || overlay.querySelector('#modal-end-date').value;
+    start_datetime = readDateInput(overlay, '#modal-allday-start')
+                   || readDateInput(overlay, '#modal-start-date');
+    end_datetime   = readDateInput(overlay, '#modal-allday-end')
+                   || readDateInput(overlay, '#modal-end-date');
     end_datetime   = end_datetime || null;
   } else {
-    const sd = overlay.querySelector('#modal-start-date').value;
+    const sd = readDateInput(overlay, '#modal-start-date');
     const st = overlay.querySelector('#modal-start-time').value;
-    const ed = overlay.querySelector('#modal-end-date').value;
+    const ed = readDateInput(overlay, '#modal-end-date');
     const et = overlay.querySelector('#modal-end-time').value;
     start_datetime = st ? `${sd}T${st}` : sd;
-    end_datetime   = et ? `${ed}T${et}` : (ed || null);
+    end_datetime   = ed ? (et ? `${ed}T${et}` : ed) : null;
+  }
+
+  const visibleDateFields = allday
+    ? ['#modal-allday-start', '#modal-allday-end']
+    : ['#modal-start-date', '#modal-end-date'];
+  const hasInvalidDate = visibleDateFields.some((selector) => !isDateInputValid(overlay.querySelector(selector)?.value));
+  if (!start_datetime || hasInvalidDate) {
+    window.oikos?.showToast(t('calendar.invalidDate'), 'error');
+    return;
   }
 
   saveBtn.disabled    = true;
@@ -1061,10 +1181,16 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null) {
 
   try {
     const rrule = getRRuleValues(overlay, 'event');
+    if (!rrule.valid_until) {
+      window.oikos?.showToast(t('calendar.invalidDate'), 'error');
+      saveBtn.disabled    = false;
+      saveBtn.textContent = mode === 'edit' ? t('common.save') : t('common.create');
+      return;
+    }
     const body = {
       title, description, start_datetime, end_datetime,
       all_day: allday ? 1 : 0,
-      location, color, assigned_to: assigned_to ? parseInt(assigned_to, 10) : null,
+      location, color, icon, assigned_to: assigned_to ? parseInt(assigned_to, 10) : null,
       recurrence_rule: rrule.recurrence_rule,
     };
 
@@ -1086,9 +1212,14 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null) {
 
       if (offsetVal !== '' && offsetVal !== undefined) {
         // Remind-Zeitpunkt = start_datetime - offset (in Minuten)
-        const startMs  = new Date(start_datetime).getTime();
-        const offsetMs = parseInt(offsetVal, 10) * 60000;
-        const remindAt = new Date(startMs - offsetMs).toISOString().slice(0, 16);
+        const startMs  = new Date(reminderStartValue(start_datetime)).getTime();
+        const offsetMinutes = offsetVal === 'custom'
+          ? customReminderMinutes(
+              overlay.querySelector('#modal-reminder-custom-amount')?.value,
+              overlay.querySelector('#modal-reminder-custom-unit')?.value
+            )
+          : parseInt(offsetVal, 10);
+        const remindAt = toLocalDateTimeString(new Date(startMs - offsetMinutes * 60000));
         await api.post('/reminders', { entity_type: 'event', entity_id: savedEventId, remind_at: remindAt });
         refreshReminders();
       } else {
@@ -1136,4 +1267,3 @@ async function deleteEvent(id) {
     }
   }, 5000);
 }
-

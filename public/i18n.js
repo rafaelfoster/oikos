@@ -89,6 +89,10 @@ function getDateFormatPreference() {
   return ['mdy', 'dmy', 'ymd'].includes(stored) ? stored : DEFAULT_DATE_FORMAT;
 }
 
+export function getDateFormat() {
+  return getDateFormatPreference();
+}
+
 function formatDateParts(date, useUtc = false) {
   const d = date instanceof Date ? date : new Date(date);
   if (isNaN(d.getTime())) return '';
@@ -119,6 +123,52 @@ export function formatDate(date) {
     return formatDateParts(new Date(`${date}T00:00:00Z`), true);
   }
   return formatDateParts(date);
+}
+
+export function dateInputPlaceholder() {
+  switch (getDateFormatPreference()) {
+    case 'dmy': return 'DD/MM/YYYY';
+    case 'ymd': return 'YYYY-MM-DD';
+    default: return 'MM/DD/YYYY';
+  }
+}
+
+export function formatDateInput(date) {
+  if (!date) return '';
+  return formatDate(date);
+}
+
+export function parseDateInput(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+
+  const isoMatch = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (isoMatch) return isValidDateParts(isoMatch[1], isoMatch[2], isoMatch[3]) ? raw : '';
+
+  const slashMatch = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (!slashMatch) return '';
+
+  const [, first, second, year] = slashMatch;
+  const [month, day] = getDateFormatPreference() === 'dmy'
+    ? [second, first]
+    : [first, second];
+
+  if (!isValidDateParts(year, month, day)) return '';
+  return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+}
+
+export function isDateInputValid(value) {
+  const raw = String(value || '').trim();
+  return !raw || !!parseDateInput(raw);
+}
+
+function isValidDateParts(year, month, day) {
+  const y = Number(year);
+  const m = Number(month);
+  const d = Number(day);
+  if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) return false;
+  const date = new Date(Date.UTC(y, m - 1, d));
+  return date.getUTCFullYear() === y && date.getUTCMonth() === m - 1 && date.getUTCDate() === d;
 }
 
 /** Uhrzeit locale-aware formatieren */

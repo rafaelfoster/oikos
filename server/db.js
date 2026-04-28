@@ -734,6 +734,13 @@ const MIGRATIONS = [
       ALTER TABLE users ADD COLUMN avatar_data TEXT;
     `,
   },
+  {
+    version: 21,
+    description: 'Calendar event icons',
+    up: `
+      ALTER TABLE calendar_events ADD COLUMN icon TEXT NOT NULL DEFAULT 'calendar';
+    `,
+  },
 ];
 
 /**

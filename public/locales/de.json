@@ -366,7 +366,9 @@
     "ics": {
       "reset": "Auf Original zurücksetzen",
       "resetToast": "Änderungen zurückgesetzt."
-    }
+    },
+    "iconLabel": "Icon",
+    "invalidDate": "Bitte ein gültiges Datum im ausgewählten Format verwenden."
   },
   "notes": {
     "title": "Notizen",
@@ -823,7 +825,17 @@
     "notificationDenied": "Benachrichtigungen blockiert",
     "notificationHint": "Erhalte Benachrichtigungen auch wenn die App geöffnet ist.",
     "pendingBadgeTitle": "{{count}} fällige Erinnerung",
-    "pendingBadgeTitlePlural": "{{count}} fällige Erinnerungen"
+    "pendingBadgeTitlePlural": "{{count}} fällige Erinnerungen",
+    "offset2days": "2 Tage vorher",
+    "offset1week": "1 Woche vorher",
+    "offset2weeks": "2 Wochen vorher",
+    "offsetCustom": "Benutzerdefiniert...",
+    "customAmountLabel": "Anzahl",
+    "customUnitLabel": "Einheit",
+    "customMinutes": "Minuten",
+    "customHours": "Stunden",
+    "customDays": "Tage",
+    "customWeeks": "Wochen"
   },
   "birthdays": {
     "title": "Geburtstage",
@@ -893,24 +905,24 @@
     "banner": "Offline – Verbindung wird wiederhergestellt…"
   },
   "emptyHint": {
-    "tasks":    "Tippe auf + um deine erste Aufgabe zu erstellen. Wische eine Karte nach links zum Löschen.",
+    "tasks": "Tippe auf + um deine erste Aufgabe zu erstellen. Wische eine Karte nach links zum Löschen.",
     "calendar": "Verbinde Google Kalender unter Einstellungen → Integrationen für automatische Synchronisation.",
     "shopping": "Füge Artikel hinzu und wische zum Abhaken oder Löschen.",
-    "notes":    "Tippe auf + für eine neue Notiz. Notizen werden im Volltext durchsucht.",
+    "notes": "Tippe auf + für eine neue Notiz. Notizen werden im Volltext durchsucht.",
     "contacts": "Lege wichtige Kontakte an — Arzt, Schule, Notfall — für Schnellzugriff.",
-    "budget":   "Erstelle Kategorien und trage Einnahmen und Ausgaben ein.",
-    "meals":    "Plane Mahlzeiten für die Woche und verknüpfe Rezepte.",
+    "budget": "Erstelle Kategorien und trage Einnahmen und Ausgaben ein.",
+    "meals": "Plane Mahlzeiten für die Woche und verknüpfe Rezepte.",
     "birthdays": "Trage Geburtstage ein — du erhältst eine Erinnerung rechtzeitig.",
-    "recipes":  "Lege Rezepte an und verknüpfe sie mit deiner Mahlzeitenplanung."
+    "recipes": "Lege Rezepte an und verknüpfe sie mit deiner Mahlzeitenplanung."
   },
   "shortcuts": {
-    "search":  "Suche öffnen",
-    "new":     "Neuen Eintrag erstellen",
-    "help":    "Tastenkombinationen",
-    "goDash":  "Dashboard",
+    "search": "Suche öffnen",
+    "new": "Neuen Eintrag erstellen",
+    "help": "Tastenkombinationen",
+    "goDash": "Dashboard",
     "goTasks": "Aufgaben",
-    "goCal":   "Kalender",
-    "goShop":  "Einkaufsliste",
+    "goCal": "Kalender",
+    "goShop": "Einkaufsliste",
     "goNotes": "Notizen"
   }
 }

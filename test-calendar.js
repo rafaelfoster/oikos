@@ -92,6 +92,11 @@ test('Termin abrufen (mit assigned_name via JOIN)', () => {
   assert(ev.assigned_color === '#34C759');
 });
 
+test('Termin-Icon hat Default-Wert', () => {
+  const ev = db.prepare('SELECT icon FROM calendar_events WHERE id = ?').get(ev1);
+  assert(ev.icon === 'calendar', `icon: ${ev.icon}`);
+});
+
 test('Termin aktualisieren (Titel + Farbe)', () => {
   db.prepare(`UPDATE calendar_events SET title = 'Zahnarzt Dr. Müller', color = '#007AFF' WHERE id = ?`).run(ev1);
   const ev = db.prepare('SELECT title, color FROM calendar_events WHERE id = ?').get(ev1);

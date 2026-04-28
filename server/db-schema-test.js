@@ -89,6 +89,7 @@ const MIGRATIONS_SQL = {
       all_day              INTEGER NOT NULL DEFAULT 0,
       location             TEXT,
       color                TEXT    NOT NULL DEFAULT '#007AFF',
+      icon                 TEXT    NOT NULL DEFAULT 'calendar',
       assigned_to          INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_by           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       external_calendar_id TEXT,
@@ -266,6 +267,7 @@ const MIGRATIONS_SQL = {
       all_day              INTEGER NOT NULL DEFAULT 0,
       location             TEXT,
       color                TEXT    NOT NULL DEFAULT '#007AFF',
+      icon                 TEXT    NOT NULL DEFAULT 'calendar',
       assigned_to          INTEGER REFERENCES users(id) ON DELETE SET NULL,
       created_by           INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       external_calendar_id TEXT,
@@ -321,6 +323,9 @@ const MIGRATIONS_SQL = {
 
     ALTER TABLE meals ADD COLUMN recipe_id INTEGER REFERENCES recipes(id) ON DELETE SET NULL;
     CREATE INDEX IF NOT EXISTS idx_meals_recipe_id ON meals(recipe_id);
+  `,
+  14: `
+    ALTER TABLE calendar_events ADD COLUMN icon TEXT NOT NULL DEFAULT 'calendar';
   `,
 };
 

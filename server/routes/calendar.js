@@ -21,6 +21,12 @@ const router         = express.Router();
 
 const VALID_SOURCES  = ['local', 'google', 'apple', 'ics'];
 const ICS_COLOR_RE   = /^#[0-9a-fA-F]{6}$/;
+const VALID_EVENT_ICONS = new Set([
+  'calendar', 'tooth', 'stethoscope', 'heart-pulse', 'briefcase', 'plane',
+  'utensils', 'cake', 'car', 'graduation-cap', 'dumbbell', 'home',
+  'shopping-bag', 'music', 'party-popper', 'paw-print', 'scissors',
+  'book-open', 'users', 'bell',
+]);
 
 function getUserId(req) {
   const candidates = [req.authUserId, req.user?.id, req.session?.userId];
@@ -33,6 +39,11 @@ function getUserId(req) {
 
 function isAdminUser(req) {
   return req.authRole === 'admin' || req.session?.isAdmin === true || req.session?.role === 'admin';
+}
+
+function eventIcon(value) {
+  const icon = typeof value === 'string' && value.trim() ? value.trim() : 'calendar';
+  return VALID_EVENT_ICONS.has(icon) ? icon : null;
 }
 
 // --------------------------------------------------------
@@ -531,7 +542,7 @@ router.get('/:id', (req, res) => {
 // POST /api/v1/calendar
 // Neuen Termin anlegen.
 // Body: { title, description?, start_datetime, end_datetime?,
-//         all_day?, location?, color?, assigned_to?,
+//         all_day?, location?, color?, icon?, assigned_to?,
 //         recurrence_rule? }
 // Response: { data: Event }
 // --------------------------------------------------------
@@ -553,10 +564,12 @@ router.post('/', (req, res) => {
     const vStart = datetime(req.body.start_datetime, 'Startdatum', true);
     const vEnd   = datetime(req.body.end_datetime, 'Enddatum');
     const vColor = color(req.body.color || '#007AFF', 'Farbe');
+    const vIcon  = eventIcon(req.body.icon);
     const vLoc   = str(req.body.location, 'Ort', { max: MAX_TITLE, required: false });
     const vRrule = rrule(req.body.recurrence_rule, 'Wiederholung');
     const errors = collectErrors([vTitle, vDesc, vStart, vEnd, vColor, vLoc, vRrule]);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+    if (!vIcon) return res.status(400).json({ error: 'icon: invalid calendar event icon.', code: 400 });
 
     const { all_day = 0, assigned_to = null } = req.body;
 
@@ -568,13 +581,13 @@ router.post('/', (req, res) => {
     const result = db.get().prepare(`
       INSERT INTO calendar_events
         (title, description, start_datetime, end_datetime, all_day,
-         location, color, assigned_to, created_by, recurrence_rule)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         location, color, icon, assigned_to, created_by, recurrence_rule)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       vTitle.value, vDesc.value,
       vStart.value, vEnd.value,
       all_day ? 1 : 0, vLoc.value,
-      vColor.value, assigned_to || null,
+      vColor.value, vIcon, assigned_to || null,
       userId, vRrule.value
     );
 
@@ -618,6 +631,8 @@ router.put('/:id', (req, res) => {
     if (req.body.recurrence_rule !== undefined) checks.push(rrule(req.body.recurrence_rule, 'Wiederholung'));
     const errors = collectErrors(checks);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+    const vIcon = req.body.icon !== undefined ? eventIcon(req.body.icon) : event.icon;
+    if (!vIcon) return res.status(400).json({ error: 'icon: invalid calendar event icon.', code: 400 });
 
     const {
       title, description, start_datetime, end_datetime,
@@ -635,6 +650,7 @@ router.put('/:id', (req, res) => {
           all_day         = COALESCE(?, all_day),
           location        = ?,
           color           = COALESCE(?, color),
+          icon            = COALESCE(?, icon),
           assigned_to     = ?,
           recurrence_rule = ?,
           user_modified   = ?
@@ -647,6 +663,7 @@ router.put('/:id', (req, res) => {
       all_day !== undefined ? (all_day ? 1 : 0) : null,
       location !== undefined ? (location || null) : event.location,
       colorVal ?? null,
+      req.body.icon !== undefined ? vIcon : null,
       assigned_to !== undefined ? (assigned_to || null) : event.assigned_to,
       recurrence_rule !== undefined ? (recurrence_rule || null) : event.recurrence_rule,
       userModified,

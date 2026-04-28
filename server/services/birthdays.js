@@ -65,6 +65,7 @@ function syncBirthdayCalendarEvent(database, birthday) {
     all_day: 1,
     location: null,
     color: BIRTHDAY_COLOR,
+    icon: 'cake',
     assigned_to: null,
     recurrence_rule: BIRTHDAY_RRULE,
     created_by: birthday.created_by,
@@ -76,7 +77,7 @@ function syncBirthdayCalendarEvent(database, birthday) {
       database.prepare(`
         UPDATE calendar_events
         SET title = ?, description = ?, start_datetime = ?, end_datetime = ?, all_day = ?,
-            location = ?, color = ?, assigned_to = ?, recurrence_rule = ?, created_by = ?,
+            location = ?, color = ?, icon = ?, assigned_to = ?, recurrence_rule = ?, created_by = ?,
             external_source = 'local'
         WHERE id = ?
       `).run(
@@ -87,6 +88,7 @@ function syncBirthdayCalendarEvent(database, birthday) {
         payload.all_day,
         payload.location,
         payload.color,
+        payload.icon,
         payload.assigned_to,
         payload.recurrence_rule,
         payload.created_by,
@@ -99,8 +101,8 @@ function syncBirthdayCalendarEvent(database, birthday) {
   const result = database.prepare(`
     INSERT INTO calendar_events
       (title, description, start_datetime, end_datetime, all_day, location, color,
-       assigned_to, created_by, recurrence_rule, external_source)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'local')
+       icon, assigned_to, created_by, recurrence_rule, external_source)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'local')
   `).run(
     payload.title,
     payload.description,
@@ -109,6 +111,7 @@ function syncBirthdayCalendarEvent(database, birthday) {
     payload.all_day,
     payload.location,
     payload.color,
+    payload.icon,
     payload.assigned_to,
     payload.created_by,
     payload.recurrence_rule,
