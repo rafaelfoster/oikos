@@ -583,7 +583,8 @@
   transform: scale(0.98);
 }
 
-.event-icon-picker__trigger i {
+.event-icon-picker__trigger i,
+.event-icon-picker__trigger svg {
   width: 22px;
   height: 22px;
 }
@@ -629,7 +630,8 @@
   background: var(--color-accent-light);
 }
 
-.event-icon-picker__option i {
+.event-icon-picker__option i,
+.event-icon-picker__option svg {
   width: 20px;
   height: 20px;
 }

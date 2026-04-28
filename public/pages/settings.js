@@ -6,7 +6,7 @@
 
 import { api, auth } from '/api.js';
 import { openModal, closeModal, confirmModal } from '/components/modal.js';
-import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
+import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, getDateFormat } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import '/components/oikos-locale-picker.js';
 
@@ -56,8 +56,30 @@ function buildFamilyRoleOptions(selected = 'other') {
   `).join('');
 }
 
+function maskDateInputValue(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+  if (!digits) return '';
+
+  if (getDateFormat() === 'ymd') {
+    return [
+      digits.slice(0, 4),
+      digits.slice(4, 6),
+      digits.slice(6, 8),
+    ].filter(Boolean).join('-');
+  }
+
+  return [
+    digits.slice(0, 2),
+    digits.slice(2, 4),
+    digits.slice(4, 8),
+  ].filter(Boolean).join('/');
+}
+
 function bindSettingsDateInputs(root) {
   root.querySelectorAll('.js-date-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      input.value = maskDateInputValue(input.value);
+    });
     input.addEventListener('blur', () => {
       const parsed = parseDateInput(input.value);
       if (parsed) input.value = formatDateInput(parsed);
@@ -196,9 +218,15 @@ export async function render(container, { user }) {
       ? (appleStatus.lastSync ? t('settings.configuredLastSync', { date: formatDateTime(appleStatus.lastSync) }) : t('settings.configured'))
       : t('settings.notConnected');
 
+  const allowedTabs = [
+    'general', 'meals', 'budget', 'shopping', 'calendar',
+    ...(user?.role === 'admin' ? ['family'] : []),
+    'account',
+  ];
+  const storedTab = sessionStorage.getItem(SETTINGS_TAB_KEY) ?? 'general';
   const activeTab = (syncOk || syncErr)
     ? 'calendar'
-    : (sessionStorage.getItem(SETTINGS_TAB_KEY) ?? 'general');
+    : (allowedTabs.includes(storedTab) ? storedTab : 'general');
 
   const panelHidden = (id) => id === activeTab ? '' : ' hidden';
   const btnClass    = (id) => `settings-tab-btn${id === activeTab ? ' settings-tab-btn--active' : ''}`;
@@ -219,6 +247,7 @@ export async function render(container, { user }) {
         <button class="${btnClass('budget')}"   role="tab" data-tab="budget"   aria-selected="${btnAria('budget')}">${t('settings.tabBudget')}</button>
         <button class="${btnClass('shopping')}" role="tab" data-tab="shopping" aria-selected="${btnAria('shopping')}">${t('settings.tabShopping')}</button>
         <button class="${btnClass('calendar')}" role="tab" data-tab="calendar" aria-selected="${btnAria('calendar')}">${t('settings.tabCalendar')}</button>
+        ${user?.role === 'admin' ? `<button class="${btnClass('family')}" role="tab" data-tab="family" aria-selected="${btnAria('family')}">${t('settings.tabFamily')}</button>` : ''}
         <button class="${btnClass('account')}"  role="tab" data-tab="account"  aria-selected="${btnAria('account')}">${t('settings.tabAccount')}</button>
       </nav>
 
@@ -476,6 +505,74 @@ export async function render(container, { user }) {
         </section>
       </div>
 
+      ${user?.role === 'admin' ? `
+      <!-- Panel: Family Management -->
+      <div class="settings-tab-panel" data-panel="family" role="tabpanel"${panelHidden('family')}>
+        <section class="settings-section">
+          <h2 class="settings-section__title">${t('settings.sectionFamily')}</h2>
+          <div class="settings-card" id="members-card">
+            <ul class="settings-members" id="members-list">
+              ${users.map(memberHtml).join('')}
+            </ul>
+            <button class="btn btn--primary settings-add-btn" id="add-member-btn">${t('settings.addMember')}</button>
+          </div>
+
+          <div class="settings-card settings-card--hidden" id="add-member-form-card">
+            <h3 class="settings-card__title">${t('settings.newMemberTitle')}</h3>
+            <form id="add-member-form" class="settings-form">
+              <div class="form-group">
+                <label class="form-label" for="new-username">${t('settings.usernameLabel')}</label>
+                <input class="form-input" type="text" id="new-username" required autocomplete="off" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-display-name">${t('settings.displayNameLabel')}</label>
+                <input class="form-input" type="text" id="new-display-name" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-member-password">${t('settings.memberPasswordLabel')}</label>
+                <input class="form-input" type="password" id="new-member-password" minlength="8" required autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-avatar-color">${t('settings.colorLabel')}</label>
+                <input class="form-input form-input--color" type="color" id="new-avatar-color" value="#007AFF" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-family-role">${t('settings.familyRoleLabel')}</label>
+                <select class="form-input" id="new-family-role">
+                  ${buildFamilyRoleOptions()}
+                </select>
+              </div>
+              <div class="modal-grid modal-grid--2">
+                <div class="form-group">
+                  <label class="form-label" for="new-member-phone">${t('settings.memberPhoneLabel')}</label>
+                  <input class="form-input" type="tel" id="new-member-phone" autocomplete="tel" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="new-member-email">${t('settings.memberEmailLabel')}</label>
+                  <input class="form-input" type="email" id="new-member-email" autocomplete="email" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-member-birth-date">${t('settings.memberBirthDateLabel')}</label>
+                <input class="form-input js-date-input" type="text" id="new-member-birth-date" placeholder="${dateInputPlaceholder()}" inputmode="numeric" />
+                <p class="form-hint">${t('settings.memberContactBirthdayHint')}</p>
+              </div>
+              <label class="toggle-row">
+                <input type="checkbox" id="new-system-admin" />
+                <span>${t('settings.systemAdminLabel')}</span>
+              </label>
+              <p class="form-hint">${t('settings.systemAdminHint')}</p>
+              <div id="member-error" class="form-error" hidden></div>
+              <div class="settings-form-actions">
+                <button type="submit" class="btn btn--primary">${t('settings.createMember')}</button>
+                <button type="button" class="btn btn--secondary" id="cancel-add-member">${t('settings.cancelAddMember')}</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+      ` : ''}
+
       <!-- Panel: Konto -->
       <div class="settings-tab-panel" data-panel="account" role="tabpanel"${panelHidden('account')}>
         <section class="settings-section">
@@ -557,69 +654,6 @@ export async function render(container, { user }) {
               </div>
               <div id="api-token-error" class="form-error" hidden></div>
               <button type="submit" class="btn btn--primary">${t('settings.apiTokenCreate')}</button>
-            </form>
-          </div>
-        </section>
-
-        <section class="settings-section">
-          <h2 class="settings-section__title">${t('settings.sectionFamily')}</h2>
-          <div class="settings-card" id="members-card">
-            <ul class="settings-members" id="members-list">
-              ${users.map(memberHtml).join('')}
-            </ul>
-            <button class="btn btn--primary settings-add-btn" id="add-member-btn">${t('settings.addMember')}</button>
-          </div>
-
-          <div class="settings-card settings-card--hidden" id="add-member-form-card">
-            <h3 class="settings-card__title">${t('settings.newMemberTitle')}</h3>
-            <form id="add-member-form" class="settings-form">
-              <div class="form-group">
-                <label class="form-label" for="new-username">${t('settings.usernameLabel')}</label>
-                <input class="form-input" type="text" id="new-username" required autocomplete="off" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-display-name">${t('settings.displayNameLabel')}</label>
-                <input class="form-input" type="text" id="new-display-name" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-member-password">${t('settings.memberPasswordLabel')}</label>
-                <input class="form-input" type="password" id="new-member-password" minlength="8" required autocomplete="new-password" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-avatar-color">${t('settings.colorLabel')}</label>
-                <input class="form-input form-input--color" type="color" id="new-avatar-color" value="#007AFF" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-family-role">${t('settings.familyRoleLabel')}</label>
-                <select class="form-input" id="new-family-role">
-                  ${buildFamilyRoleOptions()}
-                </select>
-              </div>
-              <div class="modal-grid modal-grid--2">
-                <div class="form-group">
-                  <label class="form-label" for="new-member-phone">${t('settings.memberPhoneLabel')}</label>
-                  <input class="form-input" type="tel" id="new-member-phone" autocomplete="tel" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="new-member-email">${t('settings.memberEmailLabel')}</label>
-                  <input class="form-input" type="email" id="new-member-email" autocomplete="email" />
-                </div>
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-member-birth-date">${t('settings.memberBirthDateLabel')}</label>
-                <input class="form-input js-date-input" type="text" id="new-member-birth-date" placeholder="${dateInputPlaceholder()}" inputmode="numeric" />
-                <p class="form-hint">${t('settings.memberContactBirthdayHint')}</p>
-              </div>
-              <label class="toggle-row">
-                <input type="checkbox" id="new-system-admin" />
-                <span>${t('settings.systemAdminLabel')}</span>
-              </label>
-              <p class="form-hint">${t('settings.systemAdminHint')}</p>
-              <div id="member-error" class="form-error" hidden></div>
-              <div class="settings-form-actions">
-                <button type="submit" class="btn btn--primary">${t('settings.createMember')}</button>
-                <button type="button" class="btn btn--secondary" id="cancel-add-member">${t('settings.cancelAddMember')}</button>
-              </div>
             </form>
           </div>
         </section>

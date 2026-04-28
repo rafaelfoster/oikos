@@ -346,6 +346,9 @@ const MIGRATIONS_SQL = {
       SELECT 1 FROM contacts WHERE contacts.family_user_id = users.id
     );
   `,
+  17: `
+    UPDATE calendar_events SET icon = 'tooth' WHERE icon = 'drill';
+  `,
 };
 
 export { MIGRATIONS_SQL };

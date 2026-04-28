@@ -60,12 +60,12 @@ const EVENT_COLOR_NAMES = () => ({
 });
 
 const EVENT_ICON_ALIASES = {
-  tooth: 'drill',
+  drill: 'tooth',
 };
 
 const EVENT_ICONS = [
   { value: 'calendar', label: 'Calendar' },
-  { value: 'drill', label: 'Dentist' },
+  { value: 'tooth', label: 'Dentist' },
   { value: 'alarm-clock', label: 'Alarm' },
   { value: 'clock', label: 'Time' },
   { value: 'bell', label: 'Reminder' },
@@ -168,6 +168,8 @@ const EVENT_ICONS = [
   { value: 'cloud-sun', label: 'Weather' },
 ];
 
+const CUSTOM_EVENT_ICONS = new Set(['tooth']);
+
 const HOUR_HEIGHT = 56; // px pro Stunde in Wochen-/Tagesansicht
 
 /**
@@ -266,8 +268,48 @@ function eventIconName(icon) {
   return EVENT_ICONS.some((item) => item.value === normalized) ? normalized : 'calendar';
 }
 
+function customEventIconHtml(icon, className) {
+  if (icon !== 'tooth') return '';
+  return `<svg class="${className} event-icon--custom" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M8.5 3.5c1.2 0 2.1.5 3.5.5s2.3-.5 3.5-.5c2.4 0 4 1.8 4 4.4 0 2.2-1 4.2-1.7 5.7-.7 1.6-.8 3.1-1.1 4.7-.3 1.7-1.1 3.2-2.4 3.2-1.1 0-1.5-1.1-1.8-2.7-.2-1.2-.4-2.1-.5-2.1s-.3.9-.5 2.1c-.3 1.6-.7 2.7-1.8 2.7-1.3 0-2.1-1.5-2.4-3.2-.3-1.6-.4-3.1-1.1-4.7C5.5 12.1 4.5 10.1 4.5 7.9c0-2.6 1.6-4.4 4-4.4Z"/>
+    <path d="M10 6.2c.7.3 1.3.5 2 .5s1.3-.2 2-.5"/>
+  </svg>`;
+}
+
 function eventIconHtml(icon, className = 'event-icon') {
-  return `<i class="${className}" data-lucide="${eventIconName(icon)}" aria-hidden="true"></i>`;
+  const name = eventIconName(icon);
+  if (CUSTOM_EVENT_ICONS.has(name)) return customEventIconHtml(name, className);
+  return `<i class="${className}" data-lucide="${name}" aria-hidden="true"></i>`;
+}
+
+function eventIconElement(icon, className = 'event-icon') {
+  const name = eventIconName(icon);
+  if (name === 'tooth') {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('class', `${className} event-icon--custom`);
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('fill', 'none');
+    svg.setAttribute('stroke', 'currentColor');
+    svg.setAttribute('stroke-width', '2');
+    svg.setAttribute('stroke-linecap', 'round');
+    svg.setAttribute('stroke-linejoin', 'round');
+    svg.setAttribute('aria-hidden', 'true');
+
+    const outline = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    outline.setAttribute('d', 'M8.5 3.5c1.2 0 2.1.5 3.5.5s2.3-.5 3.5-.5c2.4 0 4 1.8 4 4.4 0 2.2-1 4.2-1.7 5.7-.7 1.6-.8 3.1-1.1 4.7-.3 1.7-1.1 3.2-2.4 3.2-1.1 0-1.5-1.1-1.8-2.7-.2-1.2-.4-2.1-.5-2.1s-.3.9-.5 2.1c-.3 1.6-.7 2.7-1.8 2.7-1.3 0-2.1-1.5-2.4-3.2-.3-1.6-.4-3.1-1.1-4.7C5.5 12.1 4.5 10.1 4.5 7.9c0-2.6 1.6-4.4 4-4.4Z');
+
+    const ridge = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    ridge.setAttribute('d', 'M10 6.2c.7.3 1.3.5 2 .5s1.3-.2 2-.5');
+
+    svg.append(outline, ridge);
+    return svg;
+  }
+
+  const el = document.createElement('i');
+  el.className = className;
+  el.dataset.lucide = name;
+  el.setAttribute('aria-hidden', 'true');
+  return el;
 }
 
 function bindDateInputs(root) {
@@ -1086,8 +1128,7 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
         if (iconInput) iconInput.value = nextIcon;
         if (iconTrigger) {
           iconTrigger.dataset.icon = nextIcon;
-          const iconEl = iconTrigger.querySelector('[data-lucide]');
-          iconEl?.setAttribute('data-lucide', nextIcon);
+          iconTrigger.replaceChildren(eventIconElement(nextIcon, 'event-icon-picker__trigger-icon'));
         }
         iconGrid?.querySelectorAll('.event-icon-picker__option').forEach((btn) => {
           const active = btn.dataset.icon === nextIcon;
@@ -1158,7 +1199,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
              aria-checked="${selectedIcon === icon.value ? 'true' : 'false'}"
              aria-label="${esc(icon.label)}"
              title="${esc(icon.label)}">
-       <i data-lucide="${icon.value}" aria-hidden="true"></i>
+       ${eventIconHtml(icon.value, 'event-icon-picker__option-icon')}
      </button>`
   ).join('');
 
@@ -1181,7 +1222,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
                 aria-haspopup="true"
                 aria-expanded="false"
                 aria-label="${t('calendar.iconLabel')}">
-          <i data-lucide="${selectedIcon}" aria-hidden="true"></i>
+          ${eventIconHtml(selectedIcon, 'event-icon-picker__trigger-icon')}
         </button>
       </div>
       <div class="form-group event-title-picker__title">

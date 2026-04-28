@@ -22,7 +22,7 @@ const router         = express.Router();
 const VALID_SOURCES  = ['local', 'google', 'apple', 'ics'];
 const ICS_COLOR_RE   = /^#[0-9a-fA-F]{6}$/;
 const VALID_EVENT_ICONS = new Set([
-  'calendar', 'drill', 'alarm-clock', 'clock', 'bell', 'map-pin', 'home',
+  'calendar', 'tooth', 'drill', 'alarm-clock', 'clock', 'bell', 'map-pin', 'home',
   'house', 'building', 'hospital', 'stethoscope', 'syringe', 'pill',
   'tablets', 'bandage', 'ambulance', 'heart-pulse', 'activity', 'cross',
   'scissors', 'shower-head', 'dumbbell', 'trophy', 'car', 'bus', 'train',
@@ -55,7 +55,7 @@ function isAdminUser(req) {
 
 function eventIcon(value) {
   const raw = typeof value === 'string' && value.trim() ? value.trim() : 'calendar';
-  const icon = raw === 'tooth' ? 'drill' : raw;
+  const icon = raw === 'drill' ? 'tooth' : raw;
   return VALID_EVENT_ICONS.has(icon) ? icon : null;
 }
 
