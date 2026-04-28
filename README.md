@@ -40,6 +40,10 @@
 
 <p align="center"><sub>Toggle GitHub light/dark mode to see both themes.</sub></p>
 
+Oikos is a self-hosted web app for families who want to organize their everyday life in one place — without cloud accounts, subscriptions, or data leaving the house. It runs as a Docker container on any home server or NAS, is accessible from every device in the household, and can be installed as a PWA on phones and tablets.
+
+The goal is a single, private place for everything that keeps a household running: shared tasks, grocery lists, meal plans, a family calendar, budgets, and more. Each module is independent — use what fits, ignore what doesn't.
+
 ## Features
 
 | Module | Description |
