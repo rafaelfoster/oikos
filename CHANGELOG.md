@@ -7,15 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.30.1] - 2026-04-28
+
+### Fixed
+- i18n/el: corrected typo `Διδαγραφή` → `Διαγραφή` in `recipes.deleteConfirm` (fix was missing from v0.30.0 release build)
+
 ## [0.30.0] - 2026-04-28
 
 ### Added
 - i18n: recipe strings translated in 13 locales (ar, el, es, fr, hi, it, ja, pt, ru, sv, tr, zh, uk) — contributed by @baragoon
 - i18n: `emptyHint.recipes` added to all updated locales; Ukrainian locale additionally gains full `emptyHint` translations for all modules
 - i18n: `nav.recipes` translated in all 13 locales
-
-### Fixed
-- i18n/el: corrected typo `Διδαγραφή` → `Διαγραφή` in `recipes.deleteConfirm`
 
 ## [0.29.3] - 2026-04-28
 
