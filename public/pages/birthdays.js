@@ -1,7 +1,7 @@
 import { api } from '/api.js';
 import { openModal as openSharedModal, closeModal, confirmModal } from '/components/modal.js';
 import { stagger, deleteWithUndo } from '/utils/ux.js';
-import { t, formatDate } from '/i18n.js';
+import { t, formatDate, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
 import { esc } from '/utils/html.js';
 
 let state = {
@@ -282,7 +282,7 @@ function openBirthdayModal({ mode, birthday = null }) {
         </div>
         <div class="form-group">
           <label class="form-label" for="bd-birth-date">${t('birthdays.birthDateLabel')}</label>
-          <input class="form-input" id="bd-birth-date" type="date" value="${esc(birthday?.birth_date || '')}">
+          <input class="form-input js-date-input" id="bd-birth-date" type="text" value="${esc(formatDateInput(birthday?.birth_date))}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
         </div>
         <div class="form-group">
           <label class="form-label" for="bd-photo">${t('birthdays.photoLabel')}</label>
@@ -315,6 +315,12 @@ function openBirthdayModal({ mode, birthday = null }) {
         preview.insertAdjacentHTML('beforeend', birthdayPreviewHtml(nameInput.value.trim(), photoData));
       };
       nameInput.addEventListener('input', renderPreview);
+      panel.querySelectorAll('.js-date-input').forEach((input) => {
+        input.addEventListener('blur', () => {
+          const parsed = parseDateInput(input.value);
+          if (parsed) input.value = formatDateInput(parsed);
+        });
+      });
       panel.querySelector('#bd-photo').addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
@@ -337,14 +343,16 @@ function openBirthdayModal({ mode, birthday = null }) {
       });
       panel.querySelector('#bd-save').addEventListener('click', async () => {
         const saveBtn = panel.querySelector('#bd-save');
+        const birthDateRaw = panel.querySelector('#bd-birth-date').value;
+        const birthDate = parseDateInput(birthDateRaw);
         const body = {
           name: panel.querySelector('#bd-name').value.trim(),
-          birth_date: panel.querySelector('#bd-birth-date').value,
+          birth_date: birthDate,
           notes: panel.querySelector('#bd-notes').value.trim(),
           photo_data: photoData,
         };
 
-        if (!body.name || !body.birth_date) {
+        if (!body.name || !body.birth_date || !isDateInputValid(birthDateRaw)) {
           window.oikos?.showToast(t('birthdays.requiredFields'), 'warning');
           return;
         }

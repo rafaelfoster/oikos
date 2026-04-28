@@ -7,7 +7,7 @@
 import { api } from '/api.js';
 import { openModal as openSharedModal, closeModal as closeSharedModal, selectModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
-import { t, formatDate } from '/i18n.js';
+import { t, formatDate, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { DEFAULT_CATEGORY_NAME, categoryLabel } from '/utils/shopping-categories.js';
 
@@ -680,6 +680,12 @@ function openMealModal(opts) {
         recipeSelect.value = String(presetRecipeId);
         applyRecipe(presetRecipeId);
       }
+      panel.querySelectorAll('.js-date-input').forEach((input) => {
+        input.addEventListener('blur', () => {
+          const parsed = parseDateInput(input.value);
+          if (parsed) input.value = formatDateInput(parsed);
+        });
+      });
 
       addIngBtn.addEventListener('click', () => {
         const tmp  = document.createElement('div');
@@ -750,7 +756,7 @@ function buildModalContent({ mode, date, mealType, meal }) {
     <div class="modal-grid modal-grid--2">
       <div class="form-group">
         <label class="form-label" for="modal-date">${t('meals.dateLabel')}</label>
-        <input type="date" class="form-input" id="modal-date" value="${date}">
+        <input type="text" class="form-input js-date-input" id="modal-date" value="${formatDateInput(date)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
       </div>
       <div class="form-group">
         <label class="form-label" for="modal-type">${t('meals.mealTypeLabel')}</label>
@@ -850,12 +856,18 @@ function closeModal({ force = false } = {}) {
 
 async function saveModal(overlay) {
   const saveBtn   = overlay.querySelector('#modal-save');
-  const date      = overlay.querySelector('#modal-date').value;
+  const dateRaw   = overlay.querySelector('#modal-date').value;
+  const date      = parseDateInput(dateRaw);
   const meal_type = overlay.querySelector('#modal-type').value;
   const title     = overlay.querySelector('#modal-title').value.trim();
   const notes     = overlay.querySelector('#modal-notes').value.trim() || null;
   const recipe_url = overlay.querySelector('#modal-recipe-url').value.trim() || null;
   const recipe_id = overlay.querySelector('#modal-recipe-id')?.value || null;
+
+  if (!date || !isDateInputValid(dateRaw)) {
+    window.oikos?.showToast(t('calendar.invalidDate'), 'error');
+    return;
+  }
 
   if (!title) {
     window.oikos?.showToast(t('meals.titleRequired'), 'error');
@@ -979,4 +991,3 @@ async function transferMeal(mealId) {
 // --------------------------------------------------------
 // Hilfsfunktion
 // --------------------------------------------------------
-

@@ -349,7 +349,9 @@
     "ics": {
       "reset": "Restaurar original",
       "resetToast": "Alterações restauradas."
-    }
+    },
+    "iconLabel": "Ícone",
+    "invalidDate": "Use uma data válida no formato selecionado."
   },
   "notes": {
     "title": "Quadro de notas",
@@ -857,7 +859,17 @@
     "notificationEnable": "Ativar notificações",
     "notificationEnabled": "Notificações ativas",
     "notificationDenied": "Notificações bloqueadas",
-    "notificationHint": "Receba notificações mesmo quando a aplicação está aberta."
+    "notificationHint": "Receba notificações mesmo quando a aplicação está aberta.",
+    "offset2days": "2 dias antes",
+    "offset1week": "1 semana antes",
+    "offset2weeks": "2 semanas antes",
+    "offsetCustom": "Personalizado...",
+    "customAmountLabel": "Número",
+    "customUnitLabel": "Unidade",
+    "customMinutes": "Minutos",
+    "customHours": "Horas",
+    "customDays": "Dias",
+    "customWeeks": "Semanas"
   },
   "onboarding": {
     "step1Title": "Welcome to Oikos",

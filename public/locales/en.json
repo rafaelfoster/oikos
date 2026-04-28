@@ -349,7 +349,9 @@
     "ics": {
       "reset": "Reset to original",
       "resetToast": "Changes reset."
-    }
+    },
+    "iconLabel": "Icon",
+    "invalidDate": "Use a valid date in the selected date format."
   },
   "notes": {
     "title": "Board",
@@ -798,7 +800,17 @@
     "notificationDenied": "Notifications blocked",
     "notificationHint": "Receive notifications while the app is open.",
     "pendingBadgeTitle": "{{count}} reminder due",
-    "pendingBadgeTitlePlural": "{{count}} reminders due"
+    "pendingBadgeTitlePlural": "{{count}} reminders due",
+    "offset2days": "2 days before",
+    "offset1week": "1 week before",
+    "offset2weeks": "2 weeks before",
+    "offsetCustom": "Custom...",
+    "customAmountLabel": "Number",
+    "customUnitLabel": "Unit",
+    "customMinutes": "Minutes",
+    "customHours": "Hours",
+    "customDays": "Days",
+    "customWeeks": "Weeks"
   },
   "birthdays": {
     "title": "Birthdays",

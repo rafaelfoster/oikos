@@ -8,7 +8,7 @@
 import { api } from '/api.js';
 import { openModal as openSharedModal, closeModal } from '/components/modal.js';
 import { stagger, vibrate } from '/utils/ux.js';
-import { t, formatDate, getLocale } from '/i18n.js';
+import { t, formatDate, getLocale, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
 import { esc } from '/utils/html.js';
 
 // --------------------------------------------------------
@@ -494,8 +494,8 @@ function openBudgetModal({ mode, entry = null }) {
 
     <div class="form-group">
       <label class="form-label" for="bm-date">${t('budget.dateLabel')}</label>
-      <input type="date" class="form-input" id="bm-date"
-             value="${isEdit ? entry.date : today}">
+      <input type="text" class="form-input js-date-input" id="bm-date"
+             value="${formatDateInput(isEdit ? entry.date : today)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
     </div>
 
     <div class="form-group">
@@ -604,6 +604,12 @@ function openBudgetModal({ mode, entry = null }) {
       panel.querySelector('#bm-category').addEventListener('change', () => updateSubcategoryOptions());
       panel.querySelector('#bm-add-category').addEventListener('click', addCategory);
       panel.querySelector('#bm-add-subcategory').addEventListener('click', addSubcategory);
+      panel.querySelectorAll('.js-date-input').forEach((input) => {
+        input.addEventListener('blur', () => {
+          const parsed = parseDateInput(input.value);
+          if (parsed) input.value = formatDateInput(parsed);
+        });
+      });
 
       panel.querySelector('#bm-cancel').addEventListener('click', closeModal);
 
@@ -618,12 +624,13 @@ function openBudgetModal({ mode, entry = null }) {
         const absVal     = parseFloat(panel.querySelector('#bm-amount').value);
         const category   = panel.querySelector('#bm-category').value;
         const subcategory = currentType === 'expense' ? panel.querySelector('#bm-subcategory').value : '';
-        const date       = panel.querySelector('#bm-date').value;
+        const dateRaw    = panel.querySelector('#bm-date').value;
+        const date       = parseDateInput(dateRaw);
         const recurring  = panel.querySelector('#bm-recurring').checked ? 1 : 0;
 
         if (!title)           { window.oikos?.showToast(t('common.titleRequired'), 'error'); return; }
         if (isNaN(absVal) || absVal <= 0) { window.oikos?.showToast(t('budget.validAmountRequired'), 'error'); return; }
-        if (!date)            { window.oikos?.showToast(t('budget.dateRequired'), 'error'); return; }
+        if (!date || !isDateInputValid(dateRaw)) { window.oikos?.showToast(t('calendar.invalidDate'), 'error'); return; }
 
         const amount = currentType === 'expense' ? -absVal : absVal;
 
