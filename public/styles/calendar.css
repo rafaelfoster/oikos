@@ -544,12 +544,102 @@
   text-overflow: ellipsis;
 }
 
-.modal-grid--event-title {
-  grid-template-columns: minmax(0, 1fr) 160px;
+.event-title-picker {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.event-icon-picker {
+  position: relative;
+}
+
+.event-title-picker__title {
+  min-width: 0;
+}
+
+.event-icon-picker__trigger {
+  width: 52px;
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.event-icon-picker__trigger:hover,
+.event-icon-picker__trigger:focus-visible {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.event-icon-picker__trigger:active {
+  transform: scale(0.98);
+}
+
+.event-icon-picker__trigger i {
+  width: 22px;
+  height: 22px;
+}
+
+.event-icon-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: var(--space-2);
+  margin: calc(var(--space-2) * -1) 0 var(--space-4) 0;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+}
+
+.event-icon-picker__grid[hidden] {
+  display: none !important;
+}
+
+.event-icon-picker__option {
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.event-icon-picker__option:hover,
+.event-icon-picker__option:focus-visible {
+  color: var(--color-text-primary);
+  border-color: var(--color-border);
+  transform: translateY(-1px);
+}
+
+.event-icon-picker__option--active {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.event-icon-picker__option i {
+  width: 20px;
+  height: 20px;
 }
 
 .reminder-custom {
   margin-top: var(--space-3);
+}
+
+.reminder-custom[hidden] {
+  display: none !important;
 }
 
 .agenda-event__meta {
@@ -706,7 +796,7 @@
 }
 
 @media (max-width: 640px) {
-  .modal-grid--event-title {
+  .event-title-picker {
     grid-template-columns: 1fr;
   }
 }

@@ -991,6 +991,48 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
 
       bindDateInputs(panel);
 
+      const iconInput = panel.querySelector('#modal-icon');
+      const iconTrigger = panel.querySelector('#modal-icon-trigger');
+      const iconGrid = panel.querySelector('#modal-icon-grid');
+      const selectIcon = (icon) => {
+        const nextIcon = eventIconName(icon);
+        if (iconInput) iconInput.value = nextIcon;
+        if (iconTrigger) {
+          iconTrigger.dataset.icon = nextIcon;
+          const iconEl = iconTrigger.querySelector('[data-lucide]');
+          iconEl?.setAttribute('data-lucide', nextIcon);
+        }
+        iconGrid?.querySelectorAll('.event-icon-picker__option').forEach((btn) => {
+          const active = btn.dataset.icon === nextIcon;
+          btn.classList.toggle('event-icon-picker__option--active', active);
+          btn.setAttribute('aria-checked', active ? 'true' : 'false');
+        });
+        if (window.lucide) lucide.createIcons();
+      };
+
+      iconTrigger?.addEventListener('click', () => {
+        if (!iconGrid) return;
+        iconGrid.hidden = !iconGrid.hidden;
+        iconTrigger.setAttribute('aria-expanded', iconGrid.hidden ? 'false' : 'true');
+      });
+      iconGrid?.addEventListener('click', (e) => {
+        const btn = e.target.closest('.event-icon-picker__option');
+        if (!btn) return;
+        selectIcon(btn.dataset.icon);
+        iconGrid.hidden = true;
+        iconTrigger?.setAttribute('aria-expanded', 'false');
+        iconTrigger?.focus();
+      });
+      document.addEventListener('click', function closeIconPicker(e) {
+        if (!panel.isConnected) {
+          document.removeEventListener('click', closeIconPicker);
+          return;
+        }
+        if (iconGrid?.hidden || iconGrid?.contains(e.target) || iconTrigger?.contains(e.target)) return;
+        iconGrid.hidden = true;
+        iconTrigger?.setAttribute('aria-expanded', 'false');
+      });
+
       const reminderOffset = panel.querySelector('#modal-reminder-offset');
       const reminderCustom = panel.querySelector('#modal-reminder-custom');
       reminderOffset?.addEventListener('change', () => {
@@ -1021,8 +1063,16 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
   const endTime   = isEdit && event.end_datetime && event.end_datetime.length > 10
     ? localTime(event.end_datetime) : '10:00';
   const selectedIcon = eventIconName(isEdit ? event.icon : 'calendar');
-  const iconOpts = EVENT_ICONS.map((icon) =>
-    `<option value="${icon.value}" ${selectedIcon === icon.value ? 'selected' : ''}>${esc(icon.label)}</option>`
+  const iconButtons = EVENT_ICONS.map((icon) =>
+    `<button type="button"
+             class="event-icon-picker__option ${selectedIcon === icon.value ? 'event-icon-picker__option--active' : ''}"
+             data-icon="${icon.value}"
+             role="radio"
+             aria-checked="${selectedIcon === icon.value ? 'true' : 'false'}"
+             aria-label="${esc(icon.label)}"
+             title="${esc(icon.label)}">
+       <i data-lucide="${icon.value}" aria-hidden="true"></i>
+     </button>`
   ).join('');
 
   const userOpts = [
@@ -1033,16 +1083,28 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
   ].join('');
 
   return `
-    <div class="modal-grid modal-grid--event-title">
-      <div class="form-group">
+    <div class="event-title-picker">
+      <div class="form-group event-icon-picker">
+        <label class="form-label" for="modal-icon-trigger">${t('calendar.iconLabel')}</label>
+        <input type="hidden" id="modal-icon" value="${selectedIcon}">
+        <button type="button"
+                class="event-icon-picker__trigger"
+                id="modal-icon-trigger"
+                data-icon="${selectedIcon}"
+                aria-haspopup="true"
+                aria-expanded="false"
+                aria-label="${t('calendar.iconLabel')}">
+          <i data-lucide="${selectedIcon}" aria-hidden="true"></i>
+        </button>
+      </div>
+      <div class="form-group event-title-picker__title">
         <label class="form-label" for="modal-title">${t('calendar.titleLabel')}</label>
         <input type="text" class="form-input" id="modal-title"
                placeholder="${t('calendar.titlePlaceholder')}" value="${esc(isEdit ? event.title : '')}">
       </div>
-      <div class="form-group">
-        <label class="form-label" for="modal-icon">${t('calendar.iconLabel')}</label>
-        <select class="form-input" id="modal-icon">${iconOpts}</select>
-      </div>
+    </div>
+    <div class="event-icon-picker__grid" id="modal-icon-grid" role="radiogroup" aria-label="${t('calendar.iconLabel')}" hidden>
+      ${iconButtons}
     </div>
 
     <div class="form-group">

@@ -805,7 +805,7 @@
     "offset1week": "1 week before",
     "offset2weeks": "2 weeks before",
     "offsetCustom": "Custom...",
-    "customAmountLabel": "Amount",
+    "customAmountLabel": "Number",
     "customUnitLabel": "Unit",
     "customMinutes": "Minutes",
     "customHours": "Hours",
