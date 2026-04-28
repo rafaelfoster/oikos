@@ -327,6 +327,9 @@ const MIGRATIONS_SQL = {
   14: `
     ALTER TABLE calendar_events ADD COLUMN icon TEXT NOT NULL DEFAULT 'calendar';
   `,
+  15: `
+    UPDATE calendar_events SET icon = 'drill' WHERE icon = 'tooth';
+  `,
 };
 
 export { MIGRATIONS_SQL };
