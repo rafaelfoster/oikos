@@ -275,22 +275,29 @@ function openBirthdayModal({ mode, birthday = null }) {
     title: isEdit ? t('birthdays.editTitle') : t('birthdays.newTitle'),
     content: `
       <div class="birthday-modal">
-        <div class="birthday-preview" id="birthday-preview">${birthdayPreviewHtml(birthday?.name || '', photoData)}</div>
-        <div class="form-group">
-          <label class="form-label" for="bd-name">${t('birthdays.nameLabel')}</label>
-          <input class="form-input" id="bd-name" type="text" value="${esc(birthday?.name || '')}" autocomplete="name">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="bd-birth-date">${t('birthdays.birthDateLabel')}</label>
-          <input class="form-input" id="bd-birth-date" type="date" value="${esc(birthday?.birth_date || '')}">
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="bd-photo">${t('birthdays.photoLabel')}</label>
-          <input class="form-input" id="bd-photo" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
-          <div class="form-help">${t('birthdays.photoOptional')}</div>
-          <div class="birthday-modal__photo-actions">
-            <button type="button" class="btn btn--secondary" id="bd-remove-photo">${t('birthdays.removePhoto')}</button>
+        <div class="birthday-modal__identity">
+          <button type="button" class="birthday-avatar-editor" id="birthday-preview" aria-label="${t('birthdays.photoLabel')}">
+            ${birthdayPreviewHtml(birthday?.name || '', photoData)}
+          </button>
+          <div class="birthday-modal__fields">
+            <div class="form-group">
+              <label class="form-label" for="bd-name">${t('birthdays.nameLabel')}</label>
+              <input class="form-input" id="bd-name" type="text" value="${esc(birthday?.name || '')}" autocomplete="name">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="bd-birth-date">${t('birthdays.birthDateLabel')}</label>
+              <input class="form-input" id="bd-birth-date" type="date" value="${esc(birthday?.birth_date || '')}">
+            </div>
           </div>
+        </div>
+        <input class="sr-only" id="bd-photo" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+        <div class="birthday-modal__photo-actions">
+          <button type="button" class="birthday-modal__photo-action" id="bd-photo-edit" aria-label="${t('birthdays.photoLabel')}" title="${t('birthdays.photoLabel')}">
+            <i data-lucide="pencil" aria-hidden="true"></i>
+          </button>
+          <button type="button" class="birthday-modal__photo-action birthday-modal__photo-action--danger" id="bd-remove-photo" aria-label="${t('birthdays.removePhoto')}" title="${t('birthdays.removePhoto')}">
+            <i data-lucide="trash-2" aria-hidden="true"></i>
+          </button>
         </div>
         <div class="form-group">
           <label class="form-label" for="bd-notes">${t('birthdays.notesLabel')}</label>
@@ -310,18 +317,15 @@ function openBirthdayModal({ mode, birthday = null }) {
     onSave(panel) {
       const nameInput = panel.querySelector('#bd-name');
       const preview = panel.querySelector('#birthday-preview');
+      const fileInput = panel.querySelector('#bd-photo');
+      const photoEdit = panel.querySelector('#bd-photo-edit');
       const renderPreview = () => {
-        preview.replaceChildren();
-        preview.insertAdjacentHTML('beforeend', birthdayPreviewHtml(nameInput.value.trim(), photoData));
+        preview.innerHTML = birthdayPreviewHtml(nameInput.value.trim(), photoData);
       };
       nameInput.addEventListener('input', renderPreview);
-      panel.querySelectorAll('.js-date-input').forEach((input) => {
-        input.addEventListener('blur', () => {
-          const parsed = parseDateInput(input.value);
-          if (parsed) input.value = formatDateInput(parsed);
-        });
-      });
-      panel.querySelector('#bd-photo').addEventListener('change', async (e) => {
+      preview.addEventListener('click', () => fileInput?.click());
+      photoEdit?.addEventListener('click', () => fileInput?.click());
+      fileInput?.addEventListener('change', async (e) => {
         const file = e.target.files?.[0];
         if (!file) return;
         try {
@@ -333,7 +337,7 @@ function openBirthdayModal({ mode, birthday = null }) {
       });
       panel.querySelector('#bd-remove-photo').addEventListener('click', () => {
         photoData = null;
-        panel.querySelector('#bd-photo').value = '';
+        if (fileInput) fileInput.value = '';
         renderPreview();
       });
       panel.querySelector('#bd-cancel').addEventListener('click', closeModal);

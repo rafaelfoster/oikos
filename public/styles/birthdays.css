@@ -287,6 +287,21 @@
   background: color-mix(in srgb, var(--module-accent) 16%, white);
 }
 
+.birthday-avatar-editor {
+  width: 84px;
+  height: 84px;
+  margin: 0 auto var(--space-3);
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--module-accent) 16%, white);
+  cursor: pointer;
+}
+
 .birthday-preview__image {
   width: 100%;
   height: 100%;
@@ -300,12 +315,58 @@
 }
 
 .birthday-modal__photo-actions {
-  margin-top: var(--space-2);
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  margin-top: calc(var(--space-1) * -1);
+  margin-bottom: var(--space-2);
+}
+
+.birthday-modal__photo-action {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+}
+
+.birthday-modal__photo-action svg {
+  width: 14px;
+  height: 14px;
+}
+
+.birthday-modal__photo-action--danger {
+  color: var(--color-danger);
+}
+
+.birthday-modal__identity {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.birthday-modal__fields {
+  flex: 1;
+  min-width: 0;
 }
 
 .birthday-modal__hint {
   color: var(--color-text-secondary);
   font-size: var(--text-sm);
+}
+
+@media (max-width: 640px) {
+  .birthday-modal__identity {
+    flex-direction: column;
+  }
+
+  .birthday-modal__photo-actions {
+    justify-content: flex-start;
+  }
 }
 
 @media (max-width: 960px) {
