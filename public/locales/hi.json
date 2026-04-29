@@ -47,7 +47,9 @@
     "quickActions": "त्वरित क्रियाएं",
     "recipes": "रेसिपी",
     "more": "और",
-    "documents": "दस्तावेज़"
+    "documents": "दस्तावेज़",
+    "kitchen": "रसोई",
+    "search": "खोज"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -969,5 +971,8 @@
     "dropzoneTitle": "फ़ाइल यहाँ छोड़ें या चुनने के लिए क्लिक करें",
     "dropzoneHint": "फ़ाइल को इस क्षेत्र में खींचें या फ़ाइल पिकर का उपयोग करें।",
     "selectedFileLabel": "चयनित: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "रसोई"
   }
 }

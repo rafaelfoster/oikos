@@ -47,7 +47,9 @@
     "quickActions": "Быстрые действия",
     "recipes": "Рецепты",
     "more": "Ещё",
-    "documents": "Документы"
+    "documents": "Документы",
+    "kitchen": "Кухня",
+    "search": "Поиск"
   },
   "dashboard": {
     "title": "Обзор",
@@ -969,5 +971,8 @@
     "dropzoneTitle": "Перетащите файл сюда или нажмите для выбора",
     "dropzoneHint": "Перетащите файл в эту область или используйте выбор файла.",
     "selectedFileLabel": "Выбрано: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "Кухня"
   }
 }

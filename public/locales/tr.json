@@ -47,7 +47,9 @@
     "quickActions": "Hızlı işlemler",
     "recipes": "Tarifler",
     "more": "Daha Fazla",
-    "documents": "Belgeler"
+    "documents": "Belgeler",
+    "kitchen": "Mutfak",
+    "search": "Ara"
   },
   "dashboard": {
     "title": "Genel Bakış",
@@ -969,5 +971,8 @@
     "dropzoneTitle": "Dosyayı buraya bırakın veya seçmek için tıklayın",
     "dropzoneHint": "Bir dosyayı bu alana sürükleyin veya dosya seçiciyi kullanın.",
     "selectedFileLabel": "Seçildi: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "Mutfak"
   }
 }

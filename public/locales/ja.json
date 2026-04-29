@@ -47,7 +47,9 @@
     "quickActions": "クイックアクション",
     "recipes": "レシピ",
     "more": "もっと見る",
-    "documents": "書類"
+    "documents": "書類",
+    "kitchen": "キッチン",
+    "search": "検索"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -969,5 +971,8 @@
     "dropzoneTitle": "ここにファイルをドロップ、またはクリックして選択",
     "dropzoneHint": "この領域にファイルをドラッグするか、ファイル選択を使用します。",
     "selectedFileLabel": "選択済み: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "キッチン"
   }
 }
