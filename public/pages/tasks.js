@@ -30,6 +30,7 @@ const STATUSES = () => [
   { value: 'open',        label: t('tasks.statusOpen')       },
   { value: 'in_progress', label: t('tasks.statusInProgress') },
   { value: 'done',        label: t('tasks.statusDone')       },
+  { value: 'archived',    label: t('tasks.statusArchived')   },
 ];
 
 const CATEGORIES = [
@@ -376,7 +377,7 @@ function renderModalContent({ task = null, users = [], reminder = null } = {}) {
 
       ${renderRRuleFields('task', task?.recurrence_rule)}
 
-      ${renderReminderSection(reminder)}
+      ${renderReminderSection(task, reminder)}
 
       <div id="task-form-error" class="login-error" hidden></div>
 
@@ -446,10 +447,36 @@ async function loadReminderForTask(taskId) {
   }
 }
 
-function renderReminderSection(reminder = null) {
-  const hasReminder  = !!reminder;
-  const remindDate   = hasReminder ? reminder.remind_at.slice(0, 10) : '';
-  const remindTime   = hasReminder ? reminder.remind_at.slice(11, 16) : '';
+function parseOffsetMsFromReminder(task, reminder) {
+  if (!task?.due_date || !reminder?.remind_at) return null;
+  const due = task.due_time ? new Date(`${task.due_date}T${task.due_time}`) : new Date(`${task.due_date}T23:59:59`);
+  const remind = new Date(reminder.remind_at);
+  if (Number.isNaN(due.getTime()) || Number.isNaN(remind.getTime())) return null;
+  return due.getTime() - remind.getTime();
+}
+
+function resolveReminderPreset(task, reminder) {
+  const offset = parseOffsetMsFromReminder(task, reminder);
+  if (offset === null) return { preset: 'offset_15m', amount: '15', unit: 'minutes' };
+  const map = new Map([
+    [0, 'offset_at_time'],
+    [15 * 60 * 1000, 'offset_15m'],
+    [60 * 60 * 1000, 'offset_1h'],
+    [24 * 60 * 60 * 1000, 'offset_1d'],
+    [2 * 24 * 60 * 60 * 1000, 'offset_2d'],
+    [7 * 24 * 60 * 60 * 1000, 'offset_1w'],
+    [14 * 24 * 60 * 60 * 1000, 'offset_2w'],
+  ]);
+  if (map.has(offset)) return { preset: map.get(offset), amount: '1', unit: 'days' };
+  const minutes = Math.round(offset / 60000);
+  if (minutes > 0) return { preset: 'offset_custom', amount: String(minutes), unit: 'minutes' };
+  return { preset: 'offset_at_time', amount: '1', unit: 'days' };
+}
+
+function renderReminderSection(task = null, reminder = null) {
+  const hasReminder = !!reminder;
+  const resolved = resolveReminderPreset(task, reminder);
+  const showCustom = hasReminder && resolved.preset === 'offset_custom';
 
   return `
     <div class="reminder-section">
@@ -462,12 +489,33 @@ function renderReminderSection(reminder = null) {
       </div>
       <div id="reminder-fields" class="reminder-fields" ${hasReminder ? '' : 'style="display:none"'}>
         <div class="form-group" style="margin:0">
-          <label class="label" for="reminder-date">${t('reminders.dateLabel')}</label>
-          <input class="input js-date-input" type="text" id="reminder-date" value="${formatDateInput(remindDate)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
+          <label class="label" for="reminder-offset">${t('reminders.offsetLabel')}</label>
+          <select class="input" id="reminder-offset">
+            <option value="offset_none">${t('reminders.offsetNone')}</option>
+            <option value="offset_at_time" ${resolved.preset === 'offset_at_time' ? 'selected' : ''}>${t('reminders.offsetAtTime')}</option>
+            <option value="offset_15m" ${resolved.preset === 'offset_15m' ? 'selected' : ''}>${t('reminders.offset15min')}</option>
+            <option value="offset_1h" ${resolved.preset === 'offset_1h' ? 'selected' : ''}>${t('reminders.offset1hour')}</option>
+            <option value="offset_1d" ${resolved.preset === 'offset_1d' ? 'selected' : ''}>${t('reminders.offset1day')}</option>
+            <option value="offset_2d" ${resolved.preset === 'offset_2d' ? 'selected' : ''}>${t('reminders.offset2days')}</option>
+            <option value="offset_1w" ${resolved.preset === 'offset_1w' ? 'selected' : ''}>${t('reminders.offset1week')}</option>
+            <option value="offset_2w" ${resolved.preset === 'offset_2w' ? 'selected' : ''}>${t('reminders.offset2weeks')}</option>
+            <option value="offset_custom" ${resolved.preset === 'offset_custom' ? 'selected' : ''}>${t('reminders.offsetCustom')}</option>
+          </select>
         </div>
-        <div class="form-group" style="margin:0">
-          <label class="label" for="reminder-time">${t('reminders.timeLabel')}</label>
-          <input class="input" type="time" id="reminder-time" value="${remindTime || '08:00'}">
+        <div class="modal-grid modal-grid--2" id="reminder-custom-fields" style="${showCustom ? '' : 'display:none'};margin-top:var(--space-3)">
+          <div class="form-group" style="margin:0">
+            <label class="label" for="reminder-custom-amount">${t('reminders.customAmountLabel')}</label>
+            <input class="input" type="number" min="1" step="1" id="reminder-custom-amount" value="${resolved.amount}">
+          </div>
+          <div class="form-group" style="margin:0">
+            <label class="label" for="reminder-custom-unit">${t('reminders.customUnitLabel')}</label>
+            <select class="input" id="reminder-custom-unit">
+              <option value="minutes" ${resolved.unit === 'minutes' ? 'selected' : ''}>${t('reminders.customMinutes')}</option>
+              <option value="hours" ${resolved.unit === 'hours' ? 'selected' : ''}>${t('reminders.customHours')}</option>
+              <option value="days" ${resolved.unit === 'days' ? 'selected' : ''}>${t('reminders.customDays')}</option>
+              <option value="weeks" ${resolved.unit === 'weeks' ? 'selected' : ''}>${t('reminders.customWeeks')}</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>`;
@@ -493,8 +541,14 @@ function openTaskModal({ task = null, users = [], reminder = null } = {}, contai
       // Reminder-Toggle: Felder ein-/ausblenden
       const toggle = panel.querySelector('#reminder-toggle');
       const fields = panel.querySelector('#reminder-fields');
+      const offset = panel.querySelector('#reminder-offset');
+      const customFields = panel.querySelector('#reminder-custom-fields');
       toggle?.addEventListener('change', () => {
         fields.style.display = toggle.checked ? '' : 'none';
+      });
+      offset?.addEventListener('change', () => {
+        if (!customFields) return;
+        customFields.style.display = offset.value === 'offset_custom' ? '' : 'none';
       });
       panel.querySelectorAll('.js-date-input').forEach((input) => {
         input.addEventListener('blur', () => {
@@ -537,9 +591,7 @@ async function handleFormSubmit(e, container) {
   const dueDate = parseDateInput(dueDateRaw);
   const rrule = getRRuleValues(document, 'task');
   const reminderToggle = form.querySelector('#reminder-toggle');
-  const reminderDateRaw = form.querySelector('#reminder-date')?.value || '';
-  const reminderDate = parseDateInput(reminderDateRaw);
-  if (!isDateInputValid(dueDateRaw) || !rrule.valid_until || (reminderToggle?.checked && !isDateInputValid(reminderDateRaw))) {
+  if (!isDateInputValid(dueDateRaw) || !rrule.valid_until) {
     errorEl.textContent = t('calendar.invalidDate');
     errorEl.hidden = false;
     submitBtn.disabled = false;
@@ -572,10 +624,27 @@ async function handleFormSubmit(e, container) {
 
     // Erinnerung speichern oder löschen
     if (savedTaskId) {
-      const reminderTime   = form.querySelector('#reminder-time')?.value || '08:00';
-
-      if (reminderToggle?.checked && reminderDate) {
-        const remindAt = `${reminderDate}T${reminderTime}`;
+      if (reminderToggle?.checked) {
+        if (!dueDate) throw new Error(t('tasks.reminderNeedsDueDate'));
+        const dueDateTime = body.due_time ? new Date(`${dueDate}T${body.due_time}`) : new Date(`${dueDate}T23:59:59`);
+        const offsetPreset = form.querySelector('#reminder-offset')?.value || 'offset_none';
+        if (offsetPreset === 'offset_none') throw new Error(t('tasks.reminderNeedsDueDate'));
+        let offsetMs = 0;
+        if (offsetPreset === 'offset_15m') offsetMs = 15 * 60 * 1000;
+        else if (offsetPreset === 'offset_1h') offsetMs = 60 * 60 * 1000;
+        else if (offsetPreset === 'offset_1d') offsetMs = 24 * 60 * 60 * 1000;
+        else if (offsetPreset === 'offset_2d') offsetMs = 2 * 24 * 60 * 60 * 1000;
+        else if (offsetPreset === 'offset_1w') offsetMs = 7 * 24 * 60 * 60 * 1000;
+        else if (offsetPreset === 'offset_2w') offsetMs = 14 * 24 * 60 * 60 * 1000;
+        else if (offsetPreset === 'offset_custom') {
+          const customAmount = Number(form.querySelector('#reminder-custom-amount')?.value || 0);
+          const customUnit = form.querySelector('#reminder-custom-unit')?.value || 'days';
+          if (!Number.isFinite(customAmount) || customAmount <= 0) throw new Error(t('common.invalidInput'));
+          const unitFactor = customUnit === 'minutes' ? 60000 : customUnit === 'hours' ? 3600000 : customUnit === 'days' ? 86400000 : 604800000;
+          offsetMs = customAmount * unitFactor;
+        }
+        const remindAtDate = new Date(dueDateTime.getTime() - offsetMs);
+        const remindAt = remindAtDate.toISOString().slice(0, 19);
         await api.post('/reminders', { entity_type: 'task', entity_id: savedTaskId, remind_at: remindAt });
         refreshReminders();
       } else if (!reminderToggle?.checked) {
@@ -643,6 +712,7 @@ const KANBAN_COLS = () => [
   { status: 'open',        label: t('tasks.kanbanOpen'),       colorVar: '--color-text-secondary' },
   { status: 'in_progress', label: t('tasks.kanbanInProgress'), colorVar: '--color-warning'        },
   { status: 'done',        label: t('tasks.kanbanDone'),       colorVar: '--color-success'        },
+  { status: 'archived',    label: t('tasks.kanbanArchived'),   colorVar: '--color-text-tertiary'  },
 ];
 
 function kanbanNextStatus(status) {

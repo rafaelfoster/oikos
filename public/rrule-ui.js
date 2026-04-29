@@ -106,6 +106,11 @@ export function renderRRuleFields(prefix, existingRule) {
               <span class="rrule-interval-unit" id="${prefix}-rrule-unit">${unitLabel(parsed.freq, parsed.interval)}</span>
             </div>
           </div>
+          <div class="form-group rrule-until-field" style="margin-bottom:0">
+            <label class="label form-label" for="${prefix}-rrule-until">${t('rrule.labelUntil')}</label>
+            <input class="input form-input js-date-input" type="text" id="${prefix}-rrule-until"
+                   value="${formatDateInput(parsed.until)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
+          </div>
         </div>
 
         <div class="rrule-weekdays" id="${prefix}-rrule-weekdays" ${parsed.freq === 'WEEKLY' ? '' : 'hidden'}>
@@ -113,11 +118,6 @@ export function renderRRuleFields(prefix, existingRule) {
           <div class="rrule-day-grid">${dayBtns}</div>
         </div>
 
-        <div class="form-group" style="margin-top:var(--space-3)">
-          <label class="label form-label" for="${prefix}-rrule-until">${t('rrule.labelUntil')}</label>
-          <input class="input form-input js-date-input" type="text" id="${prefix}-rrule-until"
-                 value="${formatDateInput(parsed.until)}" placeholder="${dateInputPlaceholder()}" inputmode="numeric">
-        </div>
       </div>
     </div>
   `;

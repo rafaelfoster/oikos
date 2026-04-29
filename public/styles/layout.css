@@ -1688,6 +1688,7 @@
   display: flex;
   align-items: flex-end;
   gap: var(--space-3);
+  flex-wrap: wrap;
 }
 
 .rrule-interval-wrap {
@@ -1700,6 +1701,11 @@
   font-size: var(--text-sm);
   color: var(--color-text-secondary);
   white-space: nowrap;
+}
+
+.rrule-until-field {
+  flex: 1;
+  min-width: 220px;
 }
 
 .rrule-day-grid {

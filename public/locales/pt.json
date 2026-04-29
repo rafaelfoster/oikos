@@ -131,6 +131,7 @@
     "statusOpen": "Aberto",
     "statusInProgress": "Em andamento",
     "statusDone": "Concluído",
+    "statusArchived": "Arquivado",
     "categoryHousehold": "Casa",
     "categorySchool": "Escola",
     "categoryShopping": "Compras",
@@ -167,6 +168,7 @@
     "kanbanOpen": "Aberto",
     "kanbanInProgress": "Em andamento",
     "kanbanDone": "Concluído",
+    "kanbanArchived": "Arquivado",
     "kanbanMoveToInProgress": "Mover para em andamento",
     "kanbanMoveToDone": "Marcar como concluído",
     "kanbanMoveToOpen": "Reabrir",
@@ -179,7 +181,8 @@
     "filterGroupPriority": "Prioridade",
     "filterGroupStatus": "Estado",
     "swipedDoneToast": "Marcado como concluído.",
-    "swipedOpenToast": "Marcado como aberto."
+    "swipedOpenToast": "Marcado como aberto.",
+    "reminderNeedsDueDate": "Defina uma data de vencimento para habilitar lembretes da tarefa."
   },
   "shopping": {
     "title": "Compras",
