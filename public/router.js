@@ -478,20 +478,6 @@ function renderAppShell(container) {
   const bottomItems = document.createElement('div');
   bottomItems.className = 'nav-bottom__items';
   navItems().slice(0, PRIMARY_NAV).forEach((item) => bottomItems.appendChild(navItemEl(item)));
-  const searchNavBtn = document.createElement('button');
-  searchNavBtn.className = 'nav-item nav-item--search';
-  searchNavBtn.id = 'search-nav-btn';
-  searchNavBtn.setAttribute('aria-label', t('search.title'));
-  const searchNavIcon = document.createElement('i');
-  searchNavIcon.dataset.lucide = 'search';
-  searchNavIcon.className = 'nav-item__icon';
-  searchNavIcon.setAttribute('aria-hidden', 'true');
-  const searchNavLabel = document.createElement('span');
-  searchNavLabel.className = 'nav-item__label';
-  searchNavLabel.textContent = t('search.title');
-  searchNavBtn.appendChild(searchNavIcon);
-  searchNavBtn.appendChild(searchNavLabel);
-  bottomItems.appendChild(searchNavBtn);
   const moreBtn = document.createElement('button');
   moreBtn.className = 'nav-item nav-item--more';
   moreBtn.id = 'more-btn';
@@ -520,19 +506,20 @@ function renderAppShell(container) {
   moreSheet.setAttribute('role', 'dialog');
   moreSheet.setAttribute('aria-label', t('nav.more'));
   moreSheet.setAttribute('aria-hidden', 'true');
-  const searchBtn = document.createElement('button');
-  searchBtn.className = 'more-item';
-  searchBtn.id = 'search-btn';
-  const searchIcon = document.createElement('i');
-  searchIcon.dataset.lucide = 'search';
-  searchIcon.className = 'more-item__icon';
-  searchIcon.setAttribute('aria-hidden', 'true');
-  const searchLabel = document.createElement('span');
-  searchLabel.className = 'more-item__label';
-  searchLabel.textContent = t('search.title');
-  searchBtn.appendChild(searchIcon);
-  searchBtn.appendChild(searchLabel);
-  moreSheet.appendChild(searchBtn);
+  const searchTrigger = document.createElement('button');
+  searchTrigger.className = 'more-sheet__search-trigger';
+  searchTrigger.id = 'search-btn';
+  searchTrigger.setAttribute('aria-label', t('search.title'));
+  const searchTriggerIcon = document.createElement('i');
+  searchTriggerIcon.dataset.lucide = 'search';
+  searchTriggerIcon.className = 'more-sheet__search-trigger-icon';
+  searchTriggerIcon.setAttribute('aria-hidden', 'true');
+  const searchTriggerText = document.createElement('span');
+  searchTriggerText.className = 'more-sheet__search-trigger-placeholder';
+  searchTriggerText.textContent = t('search.placeholder');
+  searchTrigger.appendChild(searchTriggerIcon);
+  searchTrigger.appendChild(searchTriggerText);
+  moreSheet.appendChild(searchTrigger);
   navItems().slice(PRIMARY_NAV).forEach((item) => moreSheet.appendChild(moreItemEl(item)));
 
   const searchOverlay = document.createElement('div');
@@ -763,9 +750,8 @@ function initMoreSheet(container) {
  * Initialisiert die Suchfunktion (Overlay + API-Calls).
  */
 function initSearch(container) {
-  const searchBtn    = container.querySelector('#search-btn');
-  const searchNavBtn = container.querySelector('#search-nav-btn');
-  const searchClose  = container.querySelector('#search-close');
+  const searchBtn   = container.querySelector('#search-btn');
+  const searchClose = container.querySelector('#search-close');
   const overlay      = container.querySelector('#search-overlay');
   const input        = container.querySelector('#search-input');
   const results      = container.querySelector('#search-results');
@@ -812,7 +798,6 @@ function initSearch(container) {
   }
 
   searchBtn.addEventListener('click', openSearch);
-  if (searchNavBtn) searchNavBtn.addEventListener('click', openSearch);
   searchClose.addEventListener('click', closeSearch);
 
   document.addEventListener('keydown', (e) => {
@@ -1137,34 +1122,14 @@ window.addEventListener('locale-changed', () => {
   if (bottomItems) {
     const moreBtn = bottomItems.querySelector('#more-btn');
     const newItems = navItems().slice(0, PRIMARY_NAV).map(navItemEl);
-    // Such-Button neu erstellen (wird durch replaceChildren entfernt)
-    const newSearchBtn = document.createElement('button');
-    newSearchBtn.className = 'nav-item nav-item--search';
-    newSearchBtn.id = 'search-nav-btn';
-    newSearchBtn.setAttribute('aria-label', t('search.title'));
-    const newSearchIcon = document.createElement('i');
-    newSearchIcon.dataset.lucide = 'search';
-    newSearchIcon.className = 'nav-item__icon';
-    newSearchIcon.setAttribute('aria-hidden', 'true');
-    const newSearchLbl = document.createElement('span');
-    newSearchLbl.className = 'nav-item__label';
-    newSearchLbl.textContent = t('search.title');
-    newSearchBtn.appendChild(newSearchIcon);
-    newSearchBtn.appendChild(newSearchLbl);
-    bottomItems.replaceChildren(...newItems, newSearchBtn, moreBtn);
-    // Event-Listener auf neuen Such-Button
-    if (newSearchBtn) {
-      newSearchBtn.addEventListener('click', () => {
-        if (window._openSearch) window._openSearch();
-      });
-    }
+    bottomItems.replaceChildren(...newItems, moreBtn);
   }
   if (moreSheet) {
-    const searchBtn = moreSheet.querySelector('#search-btn');
-    const searchLbl = searchBtn?.querySelector('.more-item__label');
-    if (searchLbl) searchLbl.textContent = t('search.title');
+    const searchTrig = moreSheet.querySelector('#search-btn');
+    const searchTrigPlaceholder = searchTrig?.querySelector('.more-sheet__search-trigger-placeholder');
+    if (searchTrigPlaceholder) searchTrigPlaceholder.textContent = t('search.placeholder');
     const newMoreItems = navItems().slice(PRIMARY_NAV).map(moreItemEl);
-    moreSheet.replaceChildren(searchBtn, ...newMoreItems);
+    moreSheet.replaceChildren(searchTrig, ...newMoreItems);
   }
 
   document.querySelectorAll('[data-route]').forEach((el) => {

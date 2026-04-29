@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.1] - 2026-04-29
+
+### Changed
+- Navigation: removed the dedicated Search button from the bottom bar; the bottom bar now shows three primary module links plus the More button
+- Navigation: the More sheet now opens with a full-width pill-shaped search trigger at the top, replacing the grid-cell search item
+- Search: the search overlay input field is now positioned at the bottom of the screen (thumb zone) instead of the top
+
 ## [0.33.0] - 2026-04-29
 
 ### Added
