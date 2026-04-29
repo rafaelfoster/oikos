@@ -10,6 +10,7 @@ import { stagger } from '/utils/ux.js';
 import { t, formatDate, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { DEFAULT_CATEGORY_NAME, categoryLabel } from '/utils/shopping-categories.js';
+import { renderKitchenTabsBar } from '/utils/kitchen-tabs.js';
 
 // --------------------------------------------------------
 // Konstanten
@@ -163,6 +164,7 @@ export async function render(container, { user }) {
   `;
 
   if (window.lucide) lucide.createIcons();
+  renderKitchenTabsBar(container, '/meals');
 
   const today  = new Date().toISOString().slice(0, 10);
   const monday = getMondayOf(today);

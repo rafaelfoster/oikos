@@ -47,7 +47,9 @@
     "quickActions": "Quick actions",
     "recipes": "Recipes",
     "more": "More",
-    "documents": "Documents"
+    "documents": "Documents",
+    "kitchen": "Kitchen",
+    "search": "Search"
   },
   "dashboard": {
     "title": "Overview",
@@ -931,7 +933,8 @@
     "goTasks": "Tasks",
     "goCal": "Calendar",
     "goShop": "Shopping list",
-    "goNotes": "Notes"
+    "goNotes": "Notes",
+    "goKitchen": "Kitchen"
   },
   "emptyHint": {
     "tasks": "Tap + to create your first task. Swipe a card left to delete.",

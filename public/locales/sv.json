@@ -47,7 +47,9 @@
     "quickActions": "Snabba åtgärder",
     "recipes": "Recept",
     "more": "Mer",
-    "documents": "Dokument"
+    "documents": "Dokument",
+    "kitchen": "Kök",
+    "search": "Sök"
   },
   "dashboard": {
     "title": "Översikt",
@@ -985,5 +987,8 @@
     "dropzoneTitle": "Släpp filen här eller klicka för att välja",
     "dropzoneHint": "Dra en fil till området eller använd filväljaren.",
     "selectedFileLabel": "Vald: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "Kök"
   }
 }

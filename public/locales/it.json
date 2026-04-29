@@ -47,7 +47,9 @@
     "quickActions": "Azioni rapide",
     "recipes": "Ricette",
     "more": "Altro",
-    "documents": "Documenti"
+    "documents": "Documenti",
+    "kitchen": "Cucina",
+    "search": "Cerca"
   },
   "dashboard": {
     "title": "Panoramica",
@@ -985,5 +987,8 @@
     "dropzoneTitle": "Rilascia il file qui o fai clic per scegliere",
     "dropzoneHint": "Trascina un file in quest’area oppure usa il selettore.",
     "selectedFileLabel": "Selezionato: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "Cucina"
   }
 }

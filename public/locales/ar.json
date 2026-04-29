@@ -47,7 +47,9 @@
     "quickActions": "الإجراءات السريعة",
     "recipes": "الوصفات",
     "more": "المزيد",
-    "documents": "المستندات"
+    "documents": "المستندات",
+    "kitchen": "المطبخ",
+    "search": "بحث"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -985,5 +987,8 @@
     "dropzoneTitle": "أفلت الملف هنا أو انقر للاختيار",
     "dropzoneHint": "اسحب ملفًا إلى هذه المنطقة أو استخدم محدد الملفات.",
     "selectedFileLabel": "المحدد: {{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "المطبخ"
   }
 }

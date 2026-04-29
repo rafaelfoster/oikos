@@ -47,7 +47,9 @@
     "quickActions": "快捷操作",
     "recipes": "食谱",
     "more": "更多",
-    "documents": "文档"
+    "documents": "文档",
+    "kitchen": "厨房",
+    "search": "搜索"
   },
   "dashboard": {
     "title": "概览",
@@ -985,5 +987,8 @@
     "dropzoneTitle": "将文件拖到此处或点击选择",
     "dropzoneHint": "将文件拖入此区域，或使用文件选择器。",
     "selectedFileLabel": "已选择：{{name}}"
+  },
+  "shortcuts": {
+    "goKitchen": "厨房"
   }
 }

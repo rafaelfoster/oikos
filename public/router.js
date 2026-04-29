@@ -8,6 +8,7 @@ import { api, auth } from '/api.js';
 import { initI18n, getLocale, t } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { init as initReminders, stop as stopReminders } from '/reminders.js';
+import { isKitchenRoute, getLastKitchenRoute } from '/utils/kitchen-tabs.js';
 
 // --------------------------------------------------------
 // Routen-Definitionen
@@ -128,10 +129,10 @@ let _pendingLoginRedirect = false;
 // Router
 // --------------------------------------------------------
 
-const ROUTE_ORDER = ['/', '/tasks', '/calendar', '/birthdays', '/meals', '/recipes', '/shopping',
-                     '/notes', '/contacts', '/budget', '/documents', '/settings'];
+const ROUTE_ORDER = ['/', '/calendar', '/tasks', '/meals', '/recipes', '/shopping',
+                     '/birthdays', '/notes', '/contacts', '/budget', '/documents', '/settings'];
 
-const PRIMARY_NAV = 3;
+const PRIMARY_NAV = 2;
 
 const DEFAULT_APP_NAME = 'Oikos';
 const APP_NAME_STORAGE_KEY = 'oikos-app-name';
@@ -478,20 +479,42 @@ function renderAppShell(container) {
   const bottomItems = document.createElement('div');
   bottomItems.className = 'nav-bottom__items';
   navItems().slice(0, PRIMARY_NAV).forEach((item) => bottomItems.appendChild(navItemEl(item)));
+
+  const kitchenBtn = document.createElement('button');
+  kitchenBtn.className = 'nav-item nav-item--kitchen';
+  kitchenBtn.id = 'kitchen-btn';
+  kitchenBtn.type = 'button';
+  kitchenBtn.setAttribute('aria-label', t('nav.kitchen'));
+  kitchenBtn.setAttribute('title', t('nav.kitchen'));
+  const kitchenBtnIcon = document.createElement('i');
+  kitchenBtnIcon.dataset.lucide = 'utensils';
+  kitchenBtnIcon.className = 'nav-item__icon';
+  kitchenBtnIcon.setAttribute('aria-hidden', 'true');
+  const kitchenBtnLabel = document.createElement('span');
+  kitchenBtnLabel.className = 'nav-item__label';
+  kitchenBtnLabel.textContent = t('nav.kitchen');
+  kitchenBtn.appendChild(kitchenBtnIcon);
+  kitchenBtn.appendChild(kitchenBtnLabel);
+  kitchenBtn.addEventListener('click', () => navigate(getLastKitchenRoute()));
+  bottomItems.appendChild(kitchenBtn);
+
   const searchNavBtn = document.createElement('button');
   searchNavBtn.className = 'nav-item nav-item--search';
-  searchNavBtn.id = 'search-nav-btn';
-  searchNavBtn.setAttribute('aria-label', t('search.title'));
+  searchNavBtn.id = 'search-btn';
+  searchNavBtn.type = 'button';
+  searchNavBtn.setAttribute('aria-label', t('nav.search'));
+  searchNavBtn.setAttribute('title', t('nav.search'));
   const searchNavIcon = document.createElement('i');
   searchNavIcon.dataset.lucide = 'search';
   searchNavIcon.className = 'nav-item__icon';
   searchNavIcon.setAttribute('aria-hidden', 'true');
   const searchNavLabel = document.createElement('span');
   searchNavLabel.className = 'nav-item__label';
-  searchNavLabel.textContent = t('search.title');
+  searchNavLabel.textContent = t('nav.search');
   searchNavBtn.appendChild(searchNavIcon);
   searchNavBtn.appendChild(searchNavLabel);
   bottomItems.appendChild(searchNavBtn);
+
   const moreBtn = document.createElement('button');
   moreBtn.className = 'nav-item nav-item--more';
   moreBtn.id = 'more-btn';
@@ -520,20 +543,11 @@ function renderAppShell(container) {
   moreSheet.setAttribute('role', 'dialog');
   moreSheet.setAttribute('aria-label', t('nav.more'));
   moreSheet.setAttribute('aria-hidden', 'true');
-  const searchBtn = document.createElement('button');
-  searchBtn.className = 'more-item';
-  searchBtn.id = 'search-btn';
-  const searchIcon = document.createElement('i');
-  searchIcon.dataset.lucide = 'search';
-  searchIcon.className = 'more-item__icon';
-  searchIcon.setAttribute('aria-hidden', 'true');
-  const searchLabel = document.createElement('span');
-  searchLabel.className = 'more-item__label';
-  searchLabel.textContent = t('search.title');
-  searchBtn.appendChild(searchIcon);
-  searchBtn.appendChild(searchLabel);
-  moreSheet.appendChild(searchBtn);
-  navItems().slice(PRIMARY_NAV).forEach((item) => moreSheet.appendChild(moreItemEl(item)));
+  const dragHandle = document.createElement('div');
+  dragHandle.className = 'more-sheet__handle';
+  dragHandle.setAttribute('aria-hidden', 'true');
+  moreSheet.insertAdjacentElement('afterbegin', dragHandle);
+  navItems().filter((i) => !i.sidebarOnly).slice(PRIMARY_NAV).forEach((item) => moreSheet.appendChild(moreItemEl(item)));
 
   const searchOverlay = document.createElement('div');
   searchOverlay.className = 'search-overlay';
@@ -601,7 +615,11 @@ const SHORTCUTS = [
   { key: 'g t', description: () => t('shortcuts.goTasks'), action: () => navigate('/tasks') },
   { key: 'g c', description: () => t('shortcuts.goCal'),   action: () => navigate('/calendar') },
   { key: 'g s', description: () => t('shortcuts.goShop'),  action: () => navigate('/shopping') },
-  { key: 'g n', description: () => t('shortcuts.goNotes'), action: () => navigate('/notes') },
+  { key: 'g n', description: () => t('shortcuts.goNotes'),   action: () => navigate('/notes')              },
+  { key: 'g k',   description: () => t('shortcuts.goKitchen'), action: () => navigate(getLastKitchenRoute()) },
+  { key: 'g k m', description: () => t('shortcuts.goKitchen'), action: () => navigate('/meals')             },
+  { key: 'g k r', description: () => t('shortcuts.goKitchen'), action: () => navigate('/recipes')           },
+  { key: 'g k s', description: () => t('shortcuts.goKitchen'), action: () => navigate('/shopping')          },
 ];
 
 let _pendingKey = null;
@@ -616,8 +634,32 @@ function initKeyboardShortcuts() {
 
     const key = e.key.toLowerCase();
 
+    // 3-Tasten-Chord: g k {m|r|s}
+    if (_pendingKey === 'g k') {
+      clearTimeout(_pendingTimer);
+      _pendingKey = null;
+      const chord3 = `g k ${key}`;
+      const s3 = SHORTCUTS.find((s) => s.key === chord3);
+      if (s3) { e.preventDefault(); s3.action(); return; }
+      // Kein 3-Chord-Match → g k selbst ausführen
+      const gk = SHORTCUTS.find((s) => s.key === 'g k');
+      if (gk) { e.preventDefault(); gk.action(); }
+      return;
+    }
+
+    // 2-Tasten-Chord: g {d|t|c|s|n|k}
     if (_pendingKey === 'g' && key !== 'g') {
       clearTimeout(_pendingTimer);
+      if (key === 'k') {
+        // k ist Präfix für 3-Chord — auf dritten Tastendruck warten
+        _pendingKey = 'g k';
+        _pendingTimer = setTimeout(() => {
+          _pendingKey = null;
+          const gk = SHORTCUTS.find((s) => s.key === 'g k');
+          if (gk) gk.action();
+        }, 1000);
+        return;
+      }
       _pendingKey = null;
       const combo = `g ${key}`;
       const shortcut = SHORTCUTS.find((s) => s.key === combo);
@@ -752,6 +794,14 @@ function initMoreSheet(container) {
 
   backdrop.addEventListener('click', closeSheet);
 
+  let _touchStartY = 0;
+  sheet.addEventListener('touchstart', (e) => {
+    _touchStartY = e.touches[0].clientY;
+  }, { passive: true });
+  sheet.addEventListener('touchend', (e) => {
+    if (e.changedTouches[0].clientY - _touchStartY > 60) closeSheet();
+  }, { passive: true });
+
   sheet.querySelectorAll('[data-route]').forEach((el) => {
     el.addEventListener('click', () => closeSheet());
   });
@@ -763,9 +813,8 @@ function initMoreSheet(container) {
  * Initialisiert die Suchfunktion (Overlay + API-Calls).
  */
 function initSearch(container) {
-  const searchBtn    = container.querySelector('#search-btn');
-  const searchNavBtn = container.querySelector('#search-nav-btn');
-  const searchClose  = container.querySelector('#search-close');
+  const searchBtn   = container.querySelector('#search-btn');
+  const searchClose = container.querySelector('#search-close');
   const overlay      = container.querySelector('#search-overlay');
   const input        = container.querySelector('#search-input');
   const results      = container.querySelector('#search-results');
@@ -812,7 +861,6 @@ function initSearch(container) {
   }
 
   searchBtn.addEventListener('click', openSearch);
-  if (searchNavBtn) searchNavBtn.addEventListener('click', openSearch);
   searchClose.addEventListener('click', closeSearch);
 
   document.addEventListener('keydown', (e) => {
@@ -888,17 +936,19 @@ function renderSearchResults(container, data, onClose) {
 function navItems() {
   return [
     { path: '/',          label: t('nav.dashboard'), icon: 'layout-dashboard' },
-    { path: '/tasks',     label: t('nav.tasks'),     icon: 'check-square'     },
     { path: '/calendar',  label: t('nav.calendar'),  icon: 'calendar'         },
-    { path: '/shopping',  label: t('nav.shopping'),  icon: 'shopping-cart'    },
-    { path: '/meals',     label: t('nav.meals'),     icon: 'utensils'         },
-    { path: '/recipes',   label: t('nav.recipes'),   icon: 'book-text'        },
+    // More-Sheet Items:
+    { path: '/tasks',     label: t('nav.tasks'),     icon: 'check-square'     },
     { path: '/birthdays', label: t('nav.birthdays'), icon: 'cake'             },
     { path: '/notes',     label: t('nav.notes'),     icon: 'sticky-note'      },
     { path: '/contacts',  label: t('nav.contacts'),  icon: 'book-user'        },
     { path: '/budget',    label: t('nav.budget'),    icon: 'wallet'           },
     { path: '/documents', label: t('nav.documents'), icon: 'folder-lock'      },
     { path: '/settings',  label: t('nav.settings'),  icon: 'settings'         },
+    // Sidebar only (Küche-Gruppe):
+    { path: '/meals',     label: t('nav.meals'),     icon: 'utensils',      sidebarOnly: true },
+    { path: '/recipes',   label: t('nav.recipes'),   icon: 'book-text',     sidebarOnly: true },
+    { path: '/shopping',  label: t('nav.shopping'),  icon: 'shopping-cart', sidebarOnly: true },
   ];
 }
 
@@ -951,9 +1001,16 @@ function updateNav(path) {
     }
   });
 
+  const kitchenNavBtn = document.querySelector('#kitchen-btn');
+  if (kitchenNavBtn) {
+    const isKitchen = isKitchenRoute(path);
+    kitchenNavBtn.classList.toggle('nav-item--active', isKitchen);
+    kitchenNavBtn.toggleAttribute('aria-current', isKitchen);
+  }
+
   const moreBtn = document.querySelector('#more-btn');
   if (moreBtn) {
-    const secondaryItems = navItems().slice(PRIMARY_NAV);
+    const secondaryItems = navItems().filter((i) => !i.sidebarOnly).slice(PRIMARY_NAV);
     const activeSecondary = secondaryItems.find((n) => n.path === path);
     const inMoreSheet = !!activeSecondary;
 
@@ -1135,36 +1192,18 @@ window.addEventListener('locale-changed', () => {
     navSidebarItems.replaceChildren(...navItems().map(navItemEl));
   }
   if (bottomItems) {
-    const moreBtn = bottomItems.querySelector('#more-btn');
+    const kitchenBtnEl = bottomItems.querySelector('#kitchen-btn');
+    const searchBtnEl  = bottomItems.querySelector('#search-btn');
+    const moreBtn      = bottomItems.querySelector('#more-btn');
+    if (kitchenBtnEl) kitchenBtnEl.querySelector('.nav-item__label').textContent = t('nav.kitchen');
+    if (searchBtnEl)  searchBtnEl.querySelector('.nav-item__label').textContent  = t('nav.search');
     const newItems = navItems().slice(0, PRIMARY_NAV).map(navItemEl);
-    // Such-Button neu erstellen (wird durch replaceChildren entfernt)
-    const newSearchBtn = document.createElement('button');
-    newSearchBtn.className = 'nav-item nav-item--search';
-    newSearchBtn.id = 'search-nav-btn';
-    newSearchBtn.setAttribute('aria-label', t('search.title'));
-    const newSearchIcon = document.createElement('i');
-    newSearchIcon.dataset.lucide = 'search';
-    newSearchIcon.className = 'nav-item__icon';
-    newSearchIcon.setAttribute('aria-hidden', 'true');
-    const newSearchLbl = document.createElement('span');
-    newSearchLbl.className = 'nav-item__label';
-    newSearchLbl.textContent = t('search.title');
-    newSearchBtn.appendChild(newSearchIcon);
-    newSearchBtn.appendChild(newSearchLbl);
-    bottomItems.replaceChildren(...newItems, newSearchBtn, moreBtn);
-    // Event-Listener auf neuen Such-Button
-    if (newSearchBtn) {
-      newSearchBtn.addEventListener('click', () => {
-        if (window._openSearch) window._openSearch();
-      });
-    }
+    bottomItems.replaceChildren(...newItems, kitchenBtnEl, searchBtnEl, moreBtn);
   }
   if (moreSheet) {
-    const searchBtn = moreSheet.querySelector('#search-btn');
-    const searchLbl = searchBtn?.querySelector('.more-item__label');
-    if (searchLbl) searchLbl.textContent = t('search.title');
-    const newMoreItems = navItems().slice(PRIMARY_NAV).map(moreItemEl);
-    moreSheet.replaceChildren(searchBtn, ...newMoreItems);
+    const handle = moreSheet.querySelector('.more-sheet__handle');
+    const newMoreItems = navItems().filter((i) => !i.sidebarOnly).slice(PRIMARY_NAV).map(moreItemEl);
+    moreSheet.replaceChildren(handle, ...newMoreItems);
   }
 
   document.querySelectorAll('[data-route]').forEach((el) => {

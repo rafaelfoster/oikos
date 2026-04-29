@@ -47,7 +47,9 @@
     "quickActions": "Schnellaktionen",
     "more": "Mehr",
     "recipes": "Rezepte",
-    "documents": "Dokumente"
+    "documents": "Dokumente",
+    "kitchen": "Küche",
+    "search": "Suche"
   },
   "search": {
     "title": "Suche",
@@ -961,7 +963,8 @@
     "goTasks": "Aufgaben",
     "goCal": "Kalender",
     "goShop": "Einkaufsliste",
-    "goNotes": "Notizen"
+    "goNotes": "Notizen",
+    "goKitchen": "Küche"
   },
   "documents": {
     "title": "Dokumente",
