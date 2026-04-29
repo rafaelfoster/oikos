@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.1] - 2026-04-29
+
+### Fixed
+- i18n: complete documents and tasks translations for all 15 locales — gridView, listView, viewToggle, file labels, action labels, toast messages, status labels, and the five new tasks keys (statusArchived, archiveButton, archivedToast, kanbanArchived, reminderNeedsDueDate) were untranslated in all non-English locales (#103)
+
 ## [0.32.0] - 2026-04-29
 
 ### Added
