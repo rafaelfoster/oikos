@@ -468,13 +468,17 @@ Admins can also download a backup from **Settings → Backup Management**.
 
 ### Restore
 
-Admins can restore a backup from **Settings → Backup Management**. For operational restores via Docker Compose, stop the running app, mount the backup into a temporary container that uses the same Docker volume, and run the restore helper:
+Admins can restore a backup from **Settings → Backup Management**. For operational restores via Docker Compose, stop the running app, mount the backup into a temporary container that uses the same Docker volume, and replace the database file:
 
 ```bash
-docker compose stop oikos
-docker compose run --rm -v "$PWD/oikos-backup-20260401.db:/tmp/oikos-restore.db:ro" oikos node scripts/restore-backup.js /tmp/oikos-restore.db
-docker compose up -d
+SERVICE=oikos
+BACKUP="$PWD/oikos-backup-20260401.db"
+docker compose stop "$SERVICE"
+docker compose run --rm -v "$BACKUP:/tmp/oikos-restore.db:ro" --entrypoint sh "$SERVICE" -c 'set -eu; target="${DB_PATH:-/data/oikos.db}"; stamp=$(date -u +%Y%m%dT%H%M%SZ); if [ -f "$target" ]; then cp "$target" "$target.pre-restore-$stamp"; fi; rm -f "$target-wal" "$target-shm"; cp /tmp/oikos-restore.db "$target"; chown node:node "$target" 2>/dev/null || true'
+docker compose up -d "$SERVICE"
 ```
+
+If your Compose service is renamed, set `SERVICE` to that name, for example `SERVICE=familyplanner`.
 
 For a local CLI restore outside Docker, set the same environment variables used by the app and run:
 

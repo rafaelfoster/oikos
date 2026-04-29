@@ -13,10 +13,10 @@
  *   → bypassCacheUntil (in-memory + Cache API für SW-Restart-Robustheit)
  */
 
-const SHELL_CACHE   = 'oikos-shell-v71';
-const PAGES_CACHE   = 'oikos-pages-v66';
-const LOCALES_CACHE = 'oikos-locales-v15';
-const ASSETS_CACHE  = 'oikos-assets-v66';
+const SHELL_CACHE   = 'oikos-shell-v72';
+const PAGES_CACHE   = 'oikos-pages-v67';
+const LOCALES_CACHE = 'oikos-locales-v16';
+const ASSETS_CACHE  = 'oikos-assets-v67';
 const BYPASS_CACHE  = 'oikos-bypass-flag';
 const ALL_CACHES    = [SHELL_CACHE, PAGES_CACHE, LOCALES_CACHE, ASSETS_CACHE];
 

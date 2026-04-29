@@ -767,7 +767,7 @@
     "backupRestoring": "Γίνεται επαναφορά...",
     "backupRestoredToast": "Η βάση επαναφέρθηκε. Επαναφόρτωση...",
     "backupCliTitle": "Επαναφορά CLI / Docker Compose",
-    "backupCliHint": "Για λειτουργική επαναφορά, προσαρτήστε το αντίγραφο στο container και εκτελέστε τον βοηθό.",
+    "backupCliHint": "For operational restores, stop the app, mount the backup in a temporary container and replace the database file.",
     "backupCliBackupHint": "Μπορείτε επίσης να δημιουργήσετε αντίγραφο απευθείας με Docker Compose:"
   },
   "login": {

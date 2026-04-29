@@ -767,7 +767,7 @@
     "backupRestoring": "पुनर्स्थापित हो रहा है...",
     "backupRestoredToast": "डेटाबेस पुनर्स्थापित हुआ। फिर से लोड हो रहा है...",
     "backupCliTitle": "CLI / Docker Compose पुनर्स्थापना",
-    "backupCliHint": "ऑपरेशनल पुनर्स्थापना के लिए, बैकअप को कंटेनर में माउंट करें और restore helper चलाएँ।",
+    "backupCliHint": "For operational restores, stop the app, mount the backup in a temporary container and replace the database file.",
     "backupCliBackupHint": "आप Docker Compose से सीधे बैकअप भी बना सकते हैं:"
   },
   "login": {

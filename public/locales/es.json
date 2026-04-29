@@ -767,7 +767,7 @@
     "backupRestoring": "Restaurando...",
     "backupRestoredToast": "Base de datos restaurada. Recargando...",
     "backupCliTitle": "Restauración por CLI / Docker Compose",
-    "backupCliHint": "Para restauraciones operativas, monta la copia en el contenedor y ejecuta el asistente de restauración.",
+    "backupCliHint": "For operational restores, stop the app, mount the backup in a temporary container and replace the database file.",
     "backupCliBackupHint": "También puedes crear una copia directamente con Docker Compose:"
   },
   "login": {

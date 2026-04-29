@@ -767,7 +767,7 @@
     "backupRestoring": "Geri yükleniyor...",
     "backupRestoredToast": "Veritabanı geri yüklendi. Yeniden yükleniyor...",
     "backupCliTitle": "CLI / Docker Compose geri yükleme",
-    "backupCliHint": "Operasyonel geri yüklemeler için yedeği konteynere bağlayın ve geri yükleme yardımcısını çalıştırın.",
+    "backupCliHint": "For operational restores, stop the app, mount the backup in a temporary container and replace the database file.",
     "backupCliBackupHint": "Docker Compose ile doğrudan yedek de oluşturabilirsiniz:"
   },
   "login": {

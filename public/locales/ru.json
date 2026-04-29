@@ -767,7 +767,7 @@
     "backupRestoring": "Восстановление...",
     "backupRestoredToast": "База данных восстановлена. Перезагрузка...",
     "backupCliTitle": "Восстановление CLI / Docker Compose",
-    "backupCliHint": "Для операционного восстановления подключите копию к контейнеру и запустите помощник восстановления.",
+    "backupCliHint": "For operational restores, stop the app, mount the backup in a temporary container and replace the database file.",
     "backupCliBackupHint": "Также можно создать копию напрямую через Docker Compose:"
   },
   "login": {

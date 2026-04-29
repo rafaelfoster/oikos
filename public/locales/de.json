@@ -792,7 +792,7 @@
     "backupRestoring": "Wird wiederhergestellt...",
     "backupRestoredToast": "Datenbank wiederhergestellt. Seite wird neu geladen...",
     "backupCliTitle": "CLI / Docker-Compose-Wiederherstellung",
-    "backupCliHint": "Kopiere für operative Wiederherstellungen das Backup in den Container und starte den Restore-Helfer.",
+    "backupCliHint": "Für operative Wiederherstellungen die App stoppen, das Backup in einen temporären Container einbinden und die Datenbankdatei ersetzen.",
     "backupCliBackupHint": "Du kannst auch direkt über Docker Compose ein Backup erstellen:"
   },
   "login": {

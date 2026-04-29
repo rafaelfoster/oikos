@@ -760,9 +760,11 @@ export async function render(container, { user }) {
           <div class="settings-card">
             <h3 class="settings-card__title">${t('settings.backupCliTitle')}</h3>
             <p class="form-hint">${t('settings.backupCliHint')}</p>
-            <pre class="settings-code-block"><code>docker compose stop oikos
-docker compose run --rm -v "$PWD/oikos-backup.db:/tmp/oikos-restore.db:ro" oikos node scripts/restore-backup.js /tmp/oikos-restore.db
-docker compose up -d</code></pre>
+            <pre class="settings-code-block"><code>SERVICE=oikos
+BACKUP="$PWD/oikos-backup.db"
+docker compose stop "$SERVICE"
+docker compose run --rm -v "$BACKUP:/tmp/oikos-restore.db:ro" --entrypoint sh "$SERVICE" -c 'set -eu; target="\${DB_PATH:-/data/oikos.db}"; stamp=$(date -u +%Y%m%dT%H%M%SZ); if [ -f "$target" ]; then cp "$target" "$target.pre-restore-$stamp"; fi; rm -f "$target-wal" "$target-shm"; cp /tmp/oikos-restore.db "$target"; chown node:node "$target" 2&gt;/dev/null || true'
+docker compose up -d "$SERVICE"</code></pre>
             <p class="form-hint">${t('settings.backupCliBackupHint')}</p>
             <pre class="settings-code-block"><code>docker compose exec oikos node -e "import('./server/db.js').then(async db =&gt; { await db.backupToFile('/data/oikos-backup.db'); process.exit(0); })"
 docker cp oikos:/data/oikos-backup.db ./oikos-backup.db</code></pre>

@@ -767,7 +767,7 @@
     "backupRestoring": "正在恢复...",
     "backupRestoredToast": "数据库已恢复。正在重新加载...",
     "backupCliTitle": "CLI / Docker Compose 恢复",
-    "backupCliHint": "对于运维恢复，请将备份挂载到容器并运行恢复助手。",
+    "backupCliHint": "For operational restores, stop the app, mount the backup in a temporary container and replace the database file.",
     "backupCliBackupHint": "也可以直接通过 Docker Compose 创建备份："
   },
   "login": {
