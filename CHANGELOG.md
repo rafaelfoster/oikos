@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.35.0] - 2026-04-29
+
+### Added
+- Settings: new admin-only "Backup Management" tab with database download and restore via file upload (drag-and-drop supported)
+- API: admin-only endpoints `GET /api/v1/backup/database`, `POST /api/v1/backup/restore`, `GET /api/v1/backup/status`
+- Database: `backupToFile()` and `restoreFromFile()` helpers with validation against Oikos schema and automatic pre-restore rollback copy
+- CLI: `scripts/restore-backup.js` for operational restores outside Docker
+- Docs: updated installation guide with Docker Compose backup/restore commands
+- i18n: backup management keys added to all 15 locale files
+
 ## [0.34.1] - 2026-04-29
 
 ### Fixed
