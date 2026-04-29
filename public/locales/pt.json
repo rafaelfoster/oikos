@@ -923,7 +923,7 @@
     "fileLabel": "Arquivo",
     "fileHint": "PDF, imagens, texto e arquivos Office ate 5 MB.",
     "visibilityLabel": "Visibilidade",
-    "statusLabel": "Status",
+    "statusLabel": "Estado",
     "allowedMembersLabel": "Membros permitidos",
     "uploadAction": "Enviar",
     "downloadAction": "Baixar",
