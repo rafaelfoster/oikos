@@ -350,19 +350,11 @@ async function renderPage(route, previousPath = null) {
 
     // Richtung bestimmen (previousPath ist der alte Pfad vor der Navigation)
     const direction = getDirection(previousPath, route.path);
-    const outClass  = direction === 'right' ? 'page-transition--out-left' : 'page-transition--out-right';
     const inClass   = direction === 'right' ? 'page-transition--in-right' : 'page-transition--in-left';
 
     // Performance: backdrop-filter während Übergang deaktivieren (Android-Optimierung).
     // glass.css setzt alle backdrop-filter im app-content auf none solange diese Klasse aktiv ist.
     document.documentElement.classList.add('navigating');
-
-    // Alte Seite kurz ausfaden, falls vorhanden
-    const oldPage = content.querySelector('.page-transition');
-    if (oldPage) {
-      oldPage.classList.add(outClass);
-      await new Promise(r => setTimeout(r, 120));
-    }
 
     // Alter Inhalt ist jetzt weg - altes Stylesheet kann entfernt werden
     const pageWrapper = document.createElement('div');

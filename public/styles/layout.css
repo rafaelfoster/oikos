@@ -80,6 +80,11 @@
   to   { opacity: 0; transform: translateX(20px); }
 }
 
+@keyframes page-crossfade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
 .page-transition--in-right {
   animation: page-slide-in-right 0.2s var(--ease-out);
 }
@@ -95,6 +100,11 @@
   pointer-events: none;
 }
 
+.page-transition--crossfade {
+  animation: page-crossfade-in 0.18s var(--ease-out);
+  opacity: 1;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-transition--in-right,
   .page-transition--in-left {
@@ -104,6 +114,10 @@
   .page-transition--out-left,
   .page-transition--out-right {
     animation: none;
+  }
+  .page-transition--crossfade {
+    animation: none;
+    opacity: 1;
   }
 }
 
