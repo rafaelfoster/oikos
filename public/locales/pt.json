@@ -28,7 +28,8 @@
     "all": "Todos",
     "unknownError": "Erro desconhecido",
     "confirm": "Confirmar",
-    "undo": "Desfazer"
+    "undo": "Desfazer",
+    "reset": "Restaurar original"
   },
   "nav": {
     "dashboard": "Painel",

@@ -28,7 +28,8 @@
     "all": "すべて",
     "unknownError": "不明なエラー",
     "confirm": "確認",
-    "undo": "元に戻す"
+    "undo": "元に戻す",
+    "reset": "元に戻す"
   },
   "nav": {
     "dashboard": "ダッシュボード",

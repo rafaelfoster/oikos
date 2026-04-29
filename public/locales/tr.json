@@ -28,7 +28,8 @@
     "all": "Tümü",
     "unknownError": "Bilinmeyen hata",
     "confirm": "Onayla",
-    "undo": "Geri al"
+    "undo": "Geri al",
+    "reset": "Orijinale sıfırla"
   },
   "nav": {
     "dashboard": "Genel Bakış",

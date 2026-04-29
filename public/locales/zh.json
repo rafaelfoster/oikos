@@ -28,7 +28,8 @@
     "all": "全部",
     "unknownError": "未知错误",
     "confirm": "确认",
-    "undo": "撤销"
+    "undo": "撤销",
+    "reset": "重置为原始"
   },
   "nav": {
     "dashboard": "概览",

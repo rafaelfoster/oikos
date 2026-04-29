@@ -28,7 +28,8 @@
     "all": "Todo",
     "unknownError": "Error desconocido",
     "confirm": "Confirmar",
-    "undo": "Deshacer"
+    "undo": "Deshacer",
+    "reset": "Restaurar original"
   },
   "nav": {
     "dashboard": "Inicio",

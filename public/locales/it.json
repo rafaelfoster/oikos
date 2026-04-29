@@ -28,7 +28,8 @@
     "all": "Tutto",
     "unknownError": "Errore sconosciuto",
     "confirm": "Conferma",
-    "undo": "Annulla"
+    "undo": "Annulla",
+    "reset": "Ripristina originale"
   },
   "nav": {
     "dashboard": "Panoramica",

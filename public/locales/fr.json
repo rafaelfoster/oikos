@@ -28,7 +28,8 @@
     "all": "Tout",
     "unknownError": "Erreur inconnue",
     "confirm": "Confirmer",
-    "undo": "Annuler"
+    "undo": "Annuler",
+    "reset": "Réinitialiser"
   },
   "nav": {
     "dashboard": "Accueil",

@@ -828,6 +828,7 @@ router.patch('/me/profile', requireAuth, csrfMiddleware, (req, res) => {
     const avatarData = req.body.avatar_data !== undefined
       ? normalizeAvatarData(req.body.avatar_data)
       : existing.avatar_data;
+    const memberFields = validateMemberProfileFields(req.body);
 
     if (!displayName) return res.status(400).json({ error: 'Display name is required.', code: 400 });
     if (displayName.length > 128) {
@@ -835,6 +836,9 @@ router.patch('/me/profile', requireAuth, csrfMiddleware, (req, res) => {
     }
     if (avatarData?.error) {
       return res.status(400).json({ error: avatarData.error, code: 400 });
+    }
+    if (memberFields.errors.length) {
+      return res.status(400).json({ error: memberFields.errors.join(' '), code: 400 });
     }
 
     db.transaction(() => {
@@ -845,6 +849,9 @@ router.patch('/me/profile', requireAuth, csrfMiddleware, (req, res) => {
       `).run(displayName, avatarColor || '#007AFF', avatarData ?? null, req.authUserId);
       syncFamilyMemberArtifacts(db.get(), req.authUserId, {
         displayName,
+        phone: memberFields.values.phone,
+        email: memberFields.values.email,
+        birthDate: memberFields.values.birth_date,
         avatarData: avatarData ?? null,
         actorUserId: req.authUserId,
       });

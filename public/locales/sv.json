@@ -28,7 +28,8 @@
     "all": "Alla",
     "unknownError": "Okänt fel",
     "confirm": "Bekräfta",
-    "undo": "Ångra"
+    "undo": "Ångra",
+    "reset": "Återställ till original"
   },
   "nav": {
     "dashboard": "Översikt",

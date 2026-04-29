@@ -28,7 +28,8 @@
     "all": "All",
     "unknownError": "Unknown error",
     "confirm": "Confirm",
-    "undo": "Undo"
+    "undo": "Undo",
+    "reset": "Reset to original"
   },
   "nav": {
     "dashboard": "Overview",

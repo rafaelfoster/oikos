@@ -101,14 +101,17 @@ function avatarHtml(user, className = 'settings-avatar') {
 function avatarEditorHtml(user, prefix) {
   return `
     <div class="settings-avatar-editor">
-      <div class="settings-avatar-preview" id="${prefix}-avatar-preview">
+      <button type="button" class="settings-avatar-button" id="${prefix}-avatar-preview" aria-label="${t('settings.profilePictureLabel')}">
         ${avatarHtml(user, 'settings-avatar settings-avatar--lg')}
-      </div>
-      <div class="settings-avatar-editor__controls">
-        <label class="form-label" for="${prefix}-avatar-file">${t('settings.profilePictureLabel')}</label>
-        <input class="form-input" type="file" id="${prefix}-avatar-file" accept="image/png,image/jpeg,image/webp" />
-        <p class="form-hint">${t('settings.profilePictureHint')}</p>
-        <button type="button" class="btn btn--secondary" id="${prefix}-avatar-remove">${t('settings.profilePictureRemove')}</button>
+      </button>
+      <input class="sr-only" type="file" id="${prefix}-avatar-file" accept="image/png,image/jpeg,image/webp" />
+      <div class="settings-avatar-actions">
+        <button type="button" class="settings-avatar-action" id="${prefix}-avatar-edit" aria-label="${t('settings.profilePictureLabel')}" title="${t('settings.profilePictureLabel')}">
+          <i data-lucide="edit-2" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="settings-avatar-action settings-avatar-action--danger" id="${prefix}-avatar-remove" aria-label="${t('settings.profilePictureRemove')}" title="${t('settings.profilePictureRemove')}">
+          <i data-lucide="trash-2" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   `;
@@ -119,6 +122,17 @@ function setAvatarPreview(container, selector, user) {
   if (!preview) return;
   preview.replaceChildren();
   preview.insertAdjacentHTML('beforeend', avatarHtml(user, 'settings-avatar settings-avatar--lg'));
+}
+
+function bindAvatarPicker(container, prefix) {
+  const fileInput = container.querySelector(`#${prefix}-avatar-file`);
+  const pickers = [
+    container.querySelector(`#${prefix}-avatar-preview`),
+    container.querySelector(`#${prefix}-avatar-edit`),
+  ];
+  pickers.forEach((picker) => {
+    picker?.addEventListener('click', () => fileInput?.click());
+  });
 }
 
 function readImageAsDataUrl(file) {
@@ -168,6 +182,14 @@ function readImageAsDataUrl(file) {
  * @param {{ user: object }} context
  */
 export async function render(container, { user }) {
+  try {
+    const me = await auth.me();
+    if (me?.user && user) Object.assign(user, me.user);
+    else if (me?.user) user = me.user;
+  } catch {
+    // Non-critical: render with the user object provided by the router.
+  }
+
   // URL-Parameter auswerten (z.B. nach OAuth-Callback)
   const params   = new URLSearchParams(location.search);
   const syncOk   = params.get('sync_ok');
@@ -525,17 +547,19 @@ export async function render(container, { user }) {
                 <label class="form-label" for="new-username">${t('settings.usernameLabel')}</label>
                 <input class="form-input" type="text" id="new-username" required autocomplete="off" />
               </div>
-              <div class="form-group">
-                <label class="form-label" for="new-display-name">${t('settings.displayNameLabel')}</label>
-                <input class="form-input" type="text" id="new-display-name" required />
+              <div class="settings-name-color-row">
+                <div class="form-group settings-name-color-row__name">
+                  <label class="form-label" for="new-display-name">${t('settings.displayNameLabel')}</label>
+                  <input class="form-input" type="text" id="new-display-name" required />
+                </div>
+                <div class="form-group settings-color-field">
+                  <label class="form-label" for="new-avatar-color">${t('settings.colorLabel')}</label>
+                  <input class="settings-color-button" type="color" id="new-avatar-color" value="#007AFF" />
+                </div>
               </div>
               <div class="form-group">
                 <label class="form-label" for="new-member-password">${t('settings.memberPasswordLabel')}</label>
                 <input class="form-input" type="password" id="new-member-password" minlength="8" required autocomplete="new-password" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-avatar-color">${t('settings.colorLabel')}</label>
-                <input class="form-input form-input--color" type="color" id="new-avatar-color" value="#007AFF" />
               </div>
               <div class="form-group">
                 <label class="form-label" for="new-family-role">${t('settings.familyRoleLabel')}</label>
@@ -626,14 +650,35 @@ export async function render(container, { user }) {
           <div class="settings-card">
             <h3 class="settings-card__title">${t('settings.profilePictureTitle')}</h3>
             <form id="profile-form" class="settings-form">
-              ${avatarEditorHtml(user, 'profile')}
-              <div class="form-group">
-                <label class="form-label" for="profile-display-name">${t('settings.displayNameLabel')}</label>
-                <input class="form-input" type="text" id="profile-display-name" maxlength="128" value="${esc(user?.display_name || '')}" required />
+              <div class="settings-profile-editor">
+                ${avatarEditorHtml(user, 'profile')}
+                <div class="settings-profile-editor__fields">
+                  <div class="settings-name-color-row">
+                    <div class="form-group settings-name-color-row__name">
+                      <label class="form-label" for="profile-display-name">${t('settings.displayNameLabel')}</label>
+                      <input class="form-input" type="text" id="profile-display-name" maxlength="128" value="${esc(user?.display_name || '')}" required />
+                    </div>
+                    <div class="form-group settings-color-field">
+                      <label class="form-label" for="profile-avatar-color">${t('settings.colorLabel')}</label>
+                      <input class="settings-color-button" type="color" id="profile-avatar-color" value="${esc(user?.avatar_color || '#007AFF')}" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-grid modal-grid--2">
+                <div class="form-group">
+                  <label class="form-label" for="profile-phone">${t('settings.memberPhoneLabel')}</label>
+                  <input class="form-input" type="tel" id="profile-phone" value="${esc(user?.phone || '')}" autocomplete="tel" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="profile-email">${t('settings.memberEmailLabel')}</label>
+                  <input class="form-input" type="email" id="profile-email" value="${esc(user?.email || '')}" autocomplete="email" />
+                </div>
               </div>
               <div class="form-group">
-                <label class="form-label" for="profile-avatar-color">${t('settings.colorLabel')}</label>
-                <input class="form-input form-input--color" type="color" id="profile-avatar-color" value="${esc(user?.avatar_color || '#007AFF')}" />
+                <label class="form-label" for="profile-birth-date">${t('settings.memberBirthDateLabel')}</label>
+                <input class="form-input js-date-input" type="text" id="profile-birth-date" value="${esc(formatDateInput(user?.birth_date))}" placeholder="${dateInputPlaceholder()}" inputmode="numeric" />
+                <p class="form-hint">${t('settings.memberContactBirthdayHint')}</p>
               </div>
               <div id="profile-error" class="form-error" hidden></div>
               <div class="settings-form-actions">
@@ -679,6 +724,7 @@ export async function render(container, { user }) {
   }
 
   bindEvents(container, user, users, categories, icsSubscriptions, apiTokens);
+  if (window.lucide) window.lucide.createIcons();
 }
 
 // --------------------------------------------------------
@@ -791,6 +837,7 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
 
   const profileState = { avatarData: user?.avatar_data ?? null };
   const profileAvatarFile = container.querySelector('#profile-avatar-file');
+  bindAvatarPicker(container, 'profile');
   if (profileAvatarFile) {
     profileAvatarFile.addEventListener('change', async () => {
       const errorEl = container.querySelector('#profile-error');
@@ -828,13 +875,21 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
       e.preventDefault();
       const errorEl = container.querySelector('#profile-error');
       const btn = profileForm.querySelector('[type=submit]');
+      const birthDateRaw = container.querySelector('#profile-birth-date')?.value || '';
       errorEl.hidden = true;
+      if (!isDateInputValid(birthDateRaw)) {
+        showError(errorEl, t('settings.memberBirthDateInvalid'));
+        return;
+      }
       btn.disabled = true;
       try {
         const res = await auth.updateProfile({
           display_name: container.querySelector('#profile-display-name').value.trim(),
           avatar_color: container.querySelector('#profile-avatar-color').value,
           avatar_data: profileState.avatarData,
+          phone: container.querySelector('#profile-phone')?.value.trim() || null,
+          email: container.querySelector('#profile-email')?.value.trim() || null,
+          birth_date: parseDateInput(birthDateRaw) || null,
         });
         Object.assign(user, res.user);
         window.oikos?.showToast(t('settings.profileSavedToast'), 'success');
@@ -1120,18 +1175,24 @@ function openEditMemberModal(member, currentUser, users, container) {
     size: 'md',
     content: `
       <form id="edit-member-form" class="settings-form">
-        ${avatarEditorHtml(member, 'edit-member')}
-        <div class="form-group">
-          <label class="form-label" for="edit-member-username">${t('settings.usernameLabel')}</label>
-          <input class="form-input" type="text" id="edit-member-username" value="${esc(member.username)}" required autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="edit-member-display-name">${t('settings.displayNameLabel')}</label>
-          <input class="form-input" type="text" id="edit-member-display-name" value="${esc(member.display_name)}" required maxlength="128" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="edit-member-avatar-color">${t('settings.colorLabel')}</label>
-          <input class="form-input form-input--color" type="color" id="edit-member-avatar-color" value="${esc(member.avatar_color || '#007AFF')}" />
+        <div class="settings-profile-editor">
+          ${avatarEditorHtml(member, 'edit-member')}
+          <div class="settings-profile-editor__fields">
+            <div class="form-group">
+              <label class="form-label" for="edit-member-username">${t('settings.usernameLabel')}</label>
+              <input class="form-input" type="text" id="edit-member-username" value="${esc(member.username)}" required autocomplete="off" />
+            </div>
+            <div class="settings-name-color-row">
+              <div class="form-group settings-name-color-row__name">
+                <label class="form-label" for="edit-member-display-name">${t('settings.displayNameLabel')}</label>
+                <input class="form-input" type="text" id="edit-member-display-name" value="${esc(member.display_name)}" required maxlength="128" />
+              </div>
+              <div class="form-group settings-color-field">
+                <label class="form-label" for="edit-member-avatar-color">${t('settings.colorLabel')}</label>
+                <input class="settings-color-button" type="color" id="edit-member-avatar-color" value="${esc(member.avatar_color || '#007AFF')}" />
+              </div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label" for="edit-member-family-role">${t('settings.familyRoleLabel')}</label>
@@ -1170,6 +1231,7 @@ function openEditMemberModal(member, currentUser, users, container) {
       const fileInput = panel.querySelector('#edit-member-avatar-file');
       const errorEl = panel.querySelector('#edit-member-error');
       bindSettingsDateInputs(panel);
+      bindAvatarPicker(panel, 'edit-member');
       fileInput?.addEventListener('change', async () => {
         errorEl.hidden = true;
         try {
