@@ -18,7 +18,7 @@
   height: calc(100dvh - var(--safe-area-inset-top) - var(--nav-bottom-height) - var(--safe-area-inset-bottom));
   max-width: var(--content-max-width);
   margin: 0 auto;
-  overflow: hidden;
+  overflow: clip;
 }
 
 @media (min-width: 1024px) {
