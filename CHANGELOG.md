@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.1] - 2026-04-29
+
+### Fixed
+- Settings: birthday date fields (profile, new member, edit member) now use the native date picker on iOS
+- Birthdays: birth date field now uses the native date picker on iOS
+
 ## [0.31.0] - 2026-04-29
 
 ### Added
