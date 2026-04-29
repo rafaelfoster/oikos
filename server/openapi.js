@@ -498,6 +498,103 @@ function buildPaths() {
       put: op({ summary: 'Update budget entry', tag: 'Budget', params: [idParam()], stateChanging: true, requestBody: jsonBody(null) }),
       delete: op({ summary: 'Delete budget entry', tag: 'Budget', params: [idParam()], stateChanging: true }),
     },
+    '/api/v1/documents/meta/options': {
+      get: op({
+        summary: 'Get family document options',
+        tag: 'Documents',
+        description: 'Returns supported categories, visibility modes, statuses, storage providers, file size limit and MIME types.',
+      }),
+    },
+    '/api/v1/documents': {
+      get: op({
+        summary: 'List family documents',
+        tag: 'Documents',
+        params: [
+          {
+            name: 'status',
+            in: 'query',
+            required: false,
+            schema: { type: 'string', enum: ['active', 'archived'], default: 'active' },
+          },
+          {
+            name: 'category',
+            in: 'query',
+            required: false,
+            schema: {
+              type: 'string',
+              enum: ['medical', 'school', 'identity', 'insurance', 'finance', 'home', 'vehicle', 'legal', 'travel', 'pets', 'warranty', 'taxes', 'work', 'other'],
+            },
+          },
+        ],
+      }),
+      post: op({
+        summary: 'Upload family document',
+        tag: 'Documents',
+        stateChanging: true,
+        description: 'Stores a local document with family, restricted, or private visibility. File content is sent as a base64 data URL in `content_data`.',
+        requestBody: jsonBody(null),
+        responses: {
+          201: { description: 'Document created' },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+    },
+    '/api/v1/documents/{id}': {
+      put: op({
+        summary: 'Update family document metadata',
+        tag: 'Documents',
+        params: [idParam()],
+        stateChanging: true,
+        description: 'Updates name, description, category, status, visibility and allowed member IDs. Only the owner or an admin can update a document.',
+        requestBody: jsonBody(null),
+      }),
+      delete: op({
+        summary: 'Delete family document',
+        tag: 'Documents',
+        params: [idParam()],
+        stateChanging: true,
+        description: 'Deletes a document. Only the owner or an admin can delete it.',
+        responses: {
+          204: { description: 'Document deleted' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          404: { description: 'Document not found' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+    },
+    '/api/v1/documents/{id}/archive': {
+      patch: op({
+        summary: 'Archive or restore family document',
+        tag: 'Documents',
+        params: [idParam()],
+        stateChanging: true,
+        description: 'Archives the document by default. Send `{ "archived": false }` to restore it to active status.',
+        requestBody: jsonBody(null),
+      }),
+    },
+    '/api/v1/documents/{id}/download': {
+      get: op({
+        summary: 'Download family document file',
+        tag: 'Documents',
+        params: [idParam()],
+        responses: {
+          200: {
+            description: 'Document file bytes',
+            content: {
+              'application/octet-stream': {
+                schema: { type: 'string', format: 'binary' },
+              },
+            },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          404: { description: 'Document not found' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+    },
     '/api/v1/weather': { get: op({ summary: 'Get weather data', tag: 'Weather' }) },
     '/api/v1/weather/icon/{code}': {
       get: op({ summary: 'Get weather icon asset', tag: 'Weather', params: [{ name: 'code', in: 'path', required: true, schema: { type: 'string' } }] }),
@@ -549,6 +646,7 @@ function buildOpenApiSpec(req, appVersion) {
       { name: 'Contacts' },
       { name: 'Birthdays' },
       { name: 'Budget' },
+      { name: 'Documents' },
       { name: 'Backup' },
       { name: 'Weather' },
       { name: 'Preferences' },
