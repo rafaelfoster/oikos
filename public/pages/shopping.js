@@ -10,6 +10,7 @@ import { t } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { promptModal } from '/components/modal.js';
 import { DEFAULT_CATEGORY_NAME, categoryLabel } from '/utils/shopping-categories.js';
+import { renderKitchenTabsBar } from '/utils/kitchen-tabs.js';
 
 // --------------------------------------------------------
 // Konstanten
@@ -839,6 +840,7 @@ export async function render(container, { user }) {
       </div>
     </div>
   `;
+  renderKitchenTabsBar(container, '/shopping');
 
   try {
     await Promise.all([loadCategories(), loadLists()]);

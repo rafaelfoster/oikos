@@ -7,6 +7,7 @@ import { api } from '/api.js';
 import { t } from '/i18n.js';
 import { openModal as openSharedModal, closeModal as closeSharedModal } from '/components/modal.js';
 import { DEFAULT_CATEGORY_NAME, categoryLabel } from '/utils/shopping-categories.js';
+import { renderKitchenTabsBar } from '/utils/kitchen-tabs.js';
 
 let _container = null;
 
@@ -70,6 +71,7 @@ export async function render(container) {
 
   page.append(header, list, fab);
   container.replaceChildren(page);
+  renderKitchenTabsBar(container, '/recipes');
 
   if (window.lucide) window.lucide.createIcons();
 
