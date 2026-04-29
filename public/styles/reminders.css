@@ -84,13 +84,11 @@
 }
 
 .reminder-fields {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: var(--space-3, 12px);
 }
 
-@media (max-width: 480px) {
-  .reminder-fields {
-    grid-template-columns: 1fr;
-  }
+.reminder-fields .modal-grid {
+  align-items: end;
 }
