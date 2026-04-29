@@ -46,7 +46,8 @@
     "navigation": "नेविगेशन",
     "quickActions": "त्वरित क्रियाएं",
     "recipes": "रेसिपी",
-    "more": "और"
+    "more": "और",
+    "documents": "दस्तावेज़"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "रेसिपी बनाएं और उन्हें अपने भोजन योजनाकार से जोड़ें।"
+  },
+  "documents": {
+    "title": "दस्तावेज़",
+    "addButton": "दस्तावेज़ जोड़ें",
+    "searchPlaceholder": "दस्तावेज़ खोजें...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "सभी श्रेणियाँ",
+    "emptyTitle": "अभी कोई दस्तावेज़ नहीं",
+    "emptyDescription": "परिवार के दस्तावेज़ अपलोड करें और तय करें कि हर फ़ाइल कौन देख सकता है।",
+    "newTitle": "नया दस्तावेज़",
+    "editTitle": "दस्तावेज़ सेटिंग्स",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "पूरा परिवार",
+      "restricted": "चुने हुए सदस्य",
+      "private": "केवल मैं"
+    },
+    "category": {
+      "medical": "चिकित्सा",
+      "school": "स्कूल",
+      "identity": "पहचान",
+      "insurance": "बीमा",
+      "finance": "वित्त",
+      "home": "घर",
+      "vehicle": "वाहन",
+      "legal": "कानूनी",
+      "travel": "यात्रा",
+      "pets": "पालतू",
+      "warranty": "वारंटी",
+      "taxes": "कर",
+      "work": "काम",
+      "other": "अन्य"
+    },
+    "dropzoneTitle": "फ़ाइल यहाँ छोड़ें या चुनने के लिए क्लिक करें",
+    "dropzoneHint": "फ़ाइल को इस क्षेत्र में खींचें या फ़ाइल पिकर का उपयोग करें।",
+    "selectedFileLabel": "चयनित: {{name}}"
   }
 }

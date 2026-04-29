@@ -46,7 +46,8 @@
     "navigation": "Πλοήγηση",
     "quickActions": "Γρήγορες ενέργειες",
     "recipes": "Συνταγές",
-    "more": "Περισσότερα"
+    "more": "Περισσότερα",
+    "documents": "Έγγραφα"
   },
   "dashboard": {
     "title": "Επισκόπηση",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "Δημιουργήστε συνταγές και συνδέστε τις με τον προγραμματισμό γευμάτων."
+  },
+  "documents": {
+    "title": "Έγγραφα",
+    "addButton": "Προσθήκη εγγράφου",
+    "searchPlaceholder": "Αναζήτηση εγγράφων...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "Όλες οι κατηγορίες",
+    "emptyTitle": "Δεν υπάρχουν έγγραφα ακόμα",
+    "emptyDescription": "Ανεβάστε οικογενειακά έγγραφα και ελέγξτε ποιος μπορεί να βλέπει κάθε αρχείο.",
+    "newTitle": "Νέο έγγραφο",
+    "editTitle": "Ρυθμίσεις εγγράφου",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "Όλη η οικογένεια",
+      "restricted": "Επιλεγμένα μέλη",
+      "private": "Μόνο εγώ"
+    },
+    "category": {
+      "medical": "Ιατρικά",
+      "school": "Σχολείο",
+      "identity": "Ταυτότητα",
+      "insurance": "Ασφάλιση",
+      "finance": "Οικονομικά",
+      "home": "Σπίτι",
+      "vehicle": "Όχημα",
+      "legal": "Νομικά",
+      "travel": "Ταξίδια",
+      "pets": "Κατοικίδια",
+      "warranty": "Εγγύηση",
+      "taxes": "Φόροι",
+      "work": "Εργασία",
+      "other": "Άλλο"
+    },
+    "dropzoneTitle": "Αφήστε το αρχείο εδώ ή κάντε κλικ για επιλογή",
+    "dropzoneHint": "Σύρετε ένα αρχείο σε αυτήν την περιοχή ή χρησιμοποιήστε τον επιλογέα αρχείων.",
+    "selectedFileLabel": "Επιλέχθηκε: {{name}}"
   }
 }

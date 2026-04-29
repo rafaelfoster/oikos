@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.0] - 2026-04-29
+
+### Added
+- Documents: new Family Documents module — upload, search, and manage family files (PDF, images, text, Office) with grid/list view, per-document visibility (family, selected members, private), category tagging (medical, school, identity, insurance, finance, home, vehicle, legal, travel, pets, warranty, taxes, work, other), archive/restore, and download actions (#104)
+- Documents: drag-and-drop upload area in the new-document modal (#104)
+- Tasks: archive button on task cards; archived status supported in kanban view and filter (#104)
+- Tasks: inline reminder preset UI — offset from due date/time with 15 min, 1 h, 1 d, 2 d, 1 w, 2 w, or custom offset presets (#104)
+- i18n: Documents and updated Tasks keys translated in all 15 locales
+
+### Fixed
+- Modal: discard-changes confirmation no longer corrupts overlay state when a confirm dialog is triggered from within another modal (#104)
+- RRule: "Until" date field moved inside the recurrence options row for better layout (#104)
+
 ## [0.31.2] - 2026-04-29
 
 ### Added

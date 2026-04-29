@@ -46,7 +46,8 @@
     "navigation": "التنقل",
     "quickActions": "الإجراءات السريعة",
     "recipes": "الوصفات",
-    "more": "المزيد"
+    "more": "المزيد",
+    "documents": "المستندات"
   },
   "dashboard": {
     "title": "لوحة التحكم",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "أنشئ وصفات واربطها بمخطط الوجبات."
+  },
+  "documents": {
+    "title": "المستندات",
+    "addButton": "إضافة مستند",
+    "searchPlaceholder": "البحث في المستندات...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "كل الفئات",
+    "emptyTitle": "لا توجد مستندات بعد",
+    "emptyDescription": "ارفع مستندات العائلة وتحكم في من يمكنه رؤية كل ملف.",
+    "newTitle": "مستند جديد",
+    "editTitle": "إعدادات المستند",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "كل العائلة",
+      "restricted": "أعضاء محددون",
+      "private": "أنا فقط"
+    },
+    "category": {
+      "medical": "طبي",
+      "school": "مدرسة",
+      "identity": "هوية",
+      "insurance": "تأمين",
+      "finance": "مالية",
+      "home": "منزل",
+      "vehicle": "مركبة",
+      "legal": "قانوني",
+      "travel": "سفر",
+      "pets": "حيوانات أليفة",
+      "warranty": "ضمان",
+      "taxes": "ضرائب",
+      "work": "عمل",
+      "other": "أخرى"
+    },
+    "dropzoneTitle": "أفلت الملف هنا أو انقر للاختيار",
+    "dropzoneHint": "اسحب ملفًا إلى هذه المنطقة أو استخدم محدد الملفات.",
+    "selectedFileLabel": "المحدد: {{name}}"
   }
 }

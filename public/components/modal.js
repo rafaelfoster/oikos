@@ -105,7 +105,7 @@ function trapFocus(container) {
 // --------------------------------------------------------
 
 function serializeForm(container) {
-  const inputs = container.querySelectorAll('input, select, textarea');
+  const inputs = container.querySelectorAll('input:not([type="file"]), select, textarea');
   return Array.from(inputs).map((el) => `${el.name || el.id}=${el.value}`).join('&');
 }
 
@@ -327,17 +327,33 @@ export async function closeModal({ force = false } = {}) {
   if (!force) {
     const panel = activeOverlay.querySelector('.modal-panel');
     if (panel && isFormDirty(panel)) {
+      const dirtyOverlay = activeOverlay;
+      const dirtySnapshot = _initialFormSnapshot;
       let confirmed;
       try {
+        activeOverlay = null;
+        _isClosing = false;
         confirmed = await confirmModal(t('modal.unsavedChanges'), {
           danger: false,
           confirmLabel: t('modal.discardChanges'),
         });
       } catch (err) {
+        activeOverlay = dirtyOverlay;
+        _initialFormSnapshot = dirtySnapshot;
         _isClosing = false;
         throw err;
       }
-      if (!confirmed) { _isClosing = false; return; }
+      activeOverlay = dirtyOverlay;
+      _initialFormSnapshot = dirtySnapshot;
+      if (!confirmed) {
+        document.body.style.overflow = 'hidden';
+        if (window.oikos?.setThemeColor) {
+          window.oikos.setThemeColor(OVERLAY_THEME_COLOR, OVERLAY_THEME_COLOR);
+        }
+        _isClosing = false;
+        return;
+      }
+      _isClosing = true;
     }
   }
 

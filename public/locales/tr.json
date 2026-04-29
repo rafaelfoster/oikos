@@ -46,7 +46,8 @@
     "navigation": "Gezinme",
     "quickActions": "Hızlı işlemler",
     "recipes": "Tarifler",
-    "more": "Daha Fazla"
+    "more": "Daha Fazla",
+    "documents": "Belgeler"
   },
   "dashboard": {
     "title": "Genel Bakış",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "Tarifler oluşturun ve yemek planlayıcınıza bağlayın."
+  },
+  "documents": {
+    "title": "Belgeler",
+    "addButton": "Belge ekle",
+    "searchPlaceholder": "Belgelerde ara...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "Tüm kategoriler",
+    "emptyTitle": "Henüz belge yok",
+    "emptyDescription": "Aile belgelerini yükleyin ve her dosyayı kimlerin görebileceğini yönetin.",
+    "newTitle": "Yeni belge",
+    "editTitle": "Belge ayarları",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "Tüm aile",
+      "restricted": "Seçili üyeler",
+      "private": "Sadece ben"
+    },
+    "category": {
+      "medical": "Tıbbi",
+      "school": "Okul",
+      "identity": "Kimlik",
+      "insurance": "Sigorta",
+      "finance": "Finans",
+      "home": "Ev",
+      "vehicle": "Araç",
+      "legal": "Hukuki",
+      "travel": "Seyahat",
+      "pets": "Evcil hayvanlar",
+      "warranty": "Garanti",
+      "taxes": "Vergiler",
+      "work": "İş",
+      "other": "Diğer"
+    },
+    "dropzoneTitle": "Dosyayı buraya bırakın veya seçmek için tıklayın",
+    "dropzoneHint": "Bir dosyayı bu alana sürükleyin veya dosya seçiciyi kullanın.",
+    "selectedFileLabel": "Seçildi: {{name}}"
   }
 }

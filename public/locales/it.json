@@ -46,7 +46,8 @@
     "navigation": "Navigazione",
     "quickActions": "Azioni rapide",
     "recipes": "Ricette",
-    "more": "Altro"
+    "more": "Altro",
+    "documents": "Documenti"
   },
   "dashboard": {
     "title": "Panoramica",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "Crea ricette e collegale al tuo piano pasti."
+  },
+  "documents": {
+    "title": "Documenti",
+    "addButton": "Aggiungi documento",
+    "searchPlaceholder": "Cerca documenti...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "Tutte le categorie",
+    "emptyTitle": "Nessun documento",
+    "emptyDescription": "Carica documenti di famiglia e controlla chi può vedere ogni file.",
+    "newTitle": "Nuovo documento",
+    "editTitle": "Impostazioni documento",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "Tutta la famiglia",
+      "restricted": "Membri selezionati",
+      "private": "Solo io"
+    },
+    "category": {
+      "medical": "Medico",
+      "school": "Scuola",
+      "identity": "Identità",
+      "insurance": "Assicurazione",
+      "finance": "Finanze",
+      "home": "Casa",
+      "vehicle": "Veicolo",
+      "legal": "Legale",
+      "travel": "Viaggi",
+      "pets": "Animali",
+      "warranty": "Garanzia",
+      "taxes": "Tasse",
+      "work": "Lavoro",
+      "other": "Altro"
+    },
+    "dropzoneTitle": "Rilascia il file qui o fai clic per scegliere",
+    "dropzoneHint": "Trascina un file in quest’area oppure usa il selettore.",
+    "selectedFileLabel": "Selezionato: {{name}}"
   }
 }

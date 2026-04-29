@@ -46,7 +46,8 @@
     "navigation": "导航",
     "quickActions": "快捷操作",
     "recipes": "食谱",
-    "more": "更多"
+    "more": "更多",
+    "documents": "文档"
   },
   "dashboard": {
     "title": "概览",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "创建食谱并将其关联到你的膳食计划。"
+  },
+  "documents": {
+    "title": "文档",
+    "addButton": "添加文档",
+    "searchPlaceholder": "搜索文档...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "所有类别",
+    "emptyTitle": "还没有文档",
+    "emptyDescription": "上传家庭文档并控制每个文件的可见成员。",
+    "newTitle": "新文档",
+    "editTitle": "文档设置",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "整个家庭",
+      "restricted": "选定成员",
+      "private": "仅我"
+    },
+    "category": {
+      "medical": "医疗",
+      "school": "学校",
+      "identity": "身份",
+      "insurance": "保险",
+      "finance": "财务",
+      "home": "家庭",
+      "vehicle": "车辆",
+      "legal": "法律",
+      "travel": "旅行",
+      "pets": "宠物",
+      "warranty": "保修",
+      "taxes": "税务",
+      "work": "工作",
+      "other": "其他"
+    },
+    "dropzoneTitle": "将文件拖到此处或点击选择",
+    "dropzoneHint": "将文件拖入此区域，或使用文件选择器。",
+    "selectedFileLabel": "已选择：{{name}}"
   }
 }

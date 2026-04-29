@@ -46,7 +46,8 @@
     "navigation": "Навигация",
     "quickActions": "Быстрые действия",
     "recipes": "Рецепты",
-    "more": "Ещё"
+    "more": "Ещё",
+    "documents": "Документы"
   },
   "dashboard": {
     "title": "Обзор",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "Создавайте рецепты и связывайте их с вашим планом питания."
+  },
+  "documents": {
+    "title": "Документы",
+    "addButton": "Добавить документ",
+    "searchPlaceholder": "Поиск документов...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "Все категории",
+    "emptyTitle": "Документов пока нет",
+    "emptyDescription": "Загружайте семейные документы и управляйте доступом к каждому файлу.",
+    "newTitle": "Новый документ",
+    "editTitle": "Настройки документа",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "Вся семья",
+      "restricted": "Выбранные участники",
+      "private": "Только я"
+    },
+    "category": {
+      "medical": "Медицина",
+      "school": "Школа",
+      "identity": "Удостоверения",
+      "insurance": "Страхование",
+      "finance": "Финансы",
+      "home": "Дом",
+      "vehicle": "Автомобиль",
+      "legal": "Юридическое",
+      "travel": "Путешествия",
+      "pets": "Питомцы",
+      "warranty": "Гарантия",
+      "taxes": "Налоги",
+      "work": "Работа",
+      "other": "Другое"
+    },
+    "dropzoneTitle": "Перетащите файл сюда или нажмите для выбора",
+    "dropzoneHint": "Перетащите файл в эту область или используйте выбор файла.",
+    "selectedFileLabel": "Выбрано: {{name}}"
   }
 }

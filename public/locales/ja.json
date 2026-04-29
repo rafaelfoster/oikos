@@ -46,7 +46,8 @@
     "navigation": "ナビゲーション",
     "quickActions": "クイックアクション",
     "recipes": "レシピ",
-    "more": "もっと見る"
+    "more": "もっと見る",
+    "documents": "書類"
   },
   "dashboard": {
     "title": "ダッシュボード",
@@ -897,5 +898,66 @@
   },
   "emptyHint": {
     "recipes": "レシピを作成して、食事プランに関連付けましょう。"
+  },
+  "documents": {
+    "title": "書類",
+    "addButton": "書類を追加",
+    "searchPlaceholder": "書類を検索...",
+    "gridView": "Grid view",
+    "listView": "List view",
+    "viewToggle": "Document view",
+    "allCategories": "すべてのカテゴリ",
+    "emptyTitle": "書類はまだありません",
+    "emptyDescription": "家族の書類をアップロードし、各ファイルを見られるメンバーを管理できます。",
+    "newTitle": "新しい書類",
+    "editTitle": "書類設定",
+    "nameLabel": "Name",
+    "descriptionLabel": "Description",
+    "categoryLabel": "Category",
+    "fileLabel": "File",
+    "fileHint": "PDF, images, text and Office files up to 5 MB.",
+    "visibilityLabel": "Visibility",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Allowed members",
+    "uploadAction": "Upload",
+    "downloadAction": "Download",
+    "editAction": "Settings",
+    "archiveAction": "Archive",
+    "restoreAction": "Restore",
+    "savedToast": "Document saved.",
+    "uploadedToast": "Document uploaded.",
+    "archivedToast": "Document archived.",
+    "restoredToast": "Document restored.",
+    "deletedToast": "Document deleted.",
+    "deleteConfirm": "Delete document \"{{name}}\"?",
+    "fileRequired": "Select a file to upload.",
+    "fileTooLarge": "File may be at most 5 MB.",
+    "fileReadError": "File could not be read.",
+    "statusActive": "Active",
+    "statusArchived": "Archived",
+    "visibility": {
+      "family": "家族全員",
+      "restricted": "選択したメンバー",
+      "private": "自分のみ"
+    },
+    "category": {
+      "medical": "医療",
+      "school": "学校",
+      "identity": "本人確認",
+      "insurance": "保険",
+      "finance": "金融",
+      "home": "家",
+      "vehicle": "車両",
+      "legal": "法務",
+      "travel": "旅行",
+      "pets": "ペット",
+      "warranty": "保証",
+      "taxes": "税金",
+      "work": "仕事",
+      "other": "その他"
+    },
+    "dropzoneTitle": "ここにファイルをドロップ、またはクリックして選択",
+    "dropzoneHint": "この領域にファイルをドラッグするか、ファイル選択を使用します。",
+    "selectedFileLabel": "選択済み: {{name}}"
   }
 }

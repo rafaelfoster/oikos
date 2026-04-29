@@ -25,6 +25,7 @@ const ROUTES = [
   { path: '/recipes',  page: '/pages/recipes.js',   requiresAuth: true, module: 'recipes'   },
   { path: '/contacts', page: '/pages/contacts.js',  requiresAuth: true, module: 'contacts'  },
   { path: '/budget',   page: '/pages/budget.js',    requiresAuth: true, module: 'budget'    },
+  { path: '/documents', page: '/pages/documents.js', requiresAuth: true, module: 'documents' },
   { path: '/settings', page: '/pages/settings.js',  requiresAuth: true, module: 'settings'  },
 ];
 
@@ -128,7 +129,7 @@ let _pendingLoginRedirect = false;
 // --------------------------------------------------------
 
 const ROUTE_ORDER = ['/', '/tasks', '/calendar', '/birthdays', '/meals', '/recipes', '/shopping',
-                     '/notes', '/contacts', '/budget', '/settings'];
+                     '/notes', '/contacts', '/budget', '/documents', '/settings'];
 
 const PRIMARY_NAV = 4;
 
@@ -181,6 +182,7 @@ function routeTitle(path) {
     '/notes': t('nav.notes'),
     '/contacts': t('nav.contacts'),
     '/budget': t('nav.budget'),
+    '/documents': t('nav.documents'),
     '/settings': t('nav.settings'),
   };
   return map[path] || getAppName();
@@ -886,6 +888,7 @@ function navItems() {
     { path: '/notes',    label: t('nav.notes'),     icon: 'sticky-note'      },
     { path: '/contacts', label: t('nav.contacts'),  icon: 'book-user'        },
     { path: '/budget',   label: t('nav.budget'),    icon: 'wallet'           },
+    { path: '/documents', label: t('nav.documents'), icon: 'folder-lock'     },
     { path: '/settings', label: t('nav.settings'),  icon: 'settings'         },
   ];
 }

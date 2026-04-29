@@ -46,7 +46,8 @@
     "navigation": "Navegação",
     "quickActions": "Ações rápidas",
     "recipes": "Receitas",
-    "more": "Mais"
+    "more": "Mais",
+    "documents": "Documentos"
   },
   "dashboard": {
     "title": "Painel",
@@ -903,5 +904,66 @@
   },
   "emptyHint": {
     "recipes": "Crie receitas e vincule-as ao seu planejador de refeições."
+  },
+  "documents": {
+    "title": "Documentos",
+    "addButton": "Adicionar documento",
+    "searchPlaceholder": "Buscar documentos...",
+    "gridView": "Visualizacao em grade",
+    "listView": "Visualizacao em lista",
+    "viewToggle": "Visualizacao de documentos",
+    "allCategories": "Todas as categorias",
+    "emptyTitle": "Nenhum documento ainda",
+    "emptyDescription": "Envie documentos da familia e controle quem pode ver cada arquivo.",
+    "newTitle": "Novo documento",
+    "editTitle": "Configuracoes do documento",
+    "nameLabel": "Nome",
+    "descriptionLabel": "Descricao",
+    "categoryLabel": "Categoria",
+    "fileLabel": "Arquivo",
+    "fileHint": "PDF, imagens, texto e arquivos Office ate 5 MB.",
+    "visibilityLabel": "Visibilidade",
+    "statusLabel": "Status",
+    "allowedMembersLabel": "Membros permitidos",
+    "uploadAction": "Enviar",
+    "downloadAction": "Baixar",
+    "editAction": "Configuracoes",
+    "archiveAction": "Arquivar",
+    "restoreAction": "Restaurar",
+    "savedToast": "Documento salvo.",
+    "uploadedToast": "Documento enviado.",
+    "archivedToast": "Documento arquivado.",
+    "restoredToast": "Documento restaurado.",
+    "deletedToast": "Documento excluido.",
+    "deleteConfirm": "Excluir documento \"{{name}}\"?",
+    "fileRequired": "Selecione um arquivo para enviar.",
+    "fileTooLarge": "O arquivo pode ter no maximo 5 MB.",
+    "fileReadError": "Nao foi possivel ler o arquivo.",
+    "statusActive": "Ativo",
+    "statusArchived": "Arquivado",
+    "visibility": {
+      "family": "Familia inteira",
+      "restricted": "Membros selecionados",
+      "private": "Somente eu"
+    },
+    "category": {
+      "medical": "Medico",
+      "school": "Escola",
+      "identity": "Identidade",
+      "insurance": "Seguro",
+      "finance": "Financeiro",
+      "home": "Casa",
+      "vehicle": "Veiculo",
+      "legal": "Juridico",
+      "travel": "Viagem",
+      "pets": "Pets",
+      "warranty": "Garantia",
+      "taxes": "Impostos",
+      "work": "Trabalho",
+      "other": "Outros"
+    },
+    "dropzoneTitle": "Solte o arquivo aqui ou clique para escolher",
+    "dropzoneHint": "Arraste um arquivo para esta area, ou use o seletor de arquivos.",
+    "selectedFileLabel": "Selecionado: {{name}}"
   }
 }
