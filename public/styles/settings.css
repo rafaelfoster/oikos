@@ -467,6 +467,108 @@
 }
 
 /* --------------------------------------------------------
+   Backup Management
+   -------------------------------------------------------- */
+
+.settings-backup-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.settings-backup-card__icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.settings-backup-card--danger .settings-backup-card__icon {
+  background: var(--color-warning-light, var(--color-surface-2));
+  color: var(--color-warning, var(--color-text-primary));
+}
+
+.settings-backup-card__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.settings-backup-card__body {
+  min-width: 0;
+}
+
+.settings-backup-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 148px;
+  padding: var(--space-5);
+  border: 1.5px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-2);
+  color: var(--color-text-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.settings-backup-dropzone:hover,
+.settings-backup-dropzone--active {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+  color: var(--color-accent);
+}
+
+.settings-backup-dropzone svg {
+  width: 28px;
+  height: 28px;
+}
+
+.settings-backup-dropzone span {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.settings-backup-dropzone small {
+  font-size: var(--text-sm);
+}
+
+.settings-backup-file {
+  padding: var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.settings-code-block {
+  margin: var(--space-3) 0;
+  padding: var(--space-3);
+  overflow-x: auto;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  line-height: 1.5;
+}
+
+@media (max-width: 560px) {
+  .settings-backup-card {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------
    Theme-Toggle
    -------------------------------------------------------- */
 

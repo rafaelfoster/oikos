@@ -11,6 +11,7 @@
 
 import Database from 'better-sqlite3';
 import path from 'path';
+import fs from 'node:fs/promises';
 import { createLogger } from './logger.js';
 
 const log = createLogger('DB');
@@ -33,13 +34,12 @@ function init() {
   if (db) return db;
   db = new Database(DB_PATH);
 
-  if (DB_KEY) {
-    // Nur wirksam wenn Binary gegen SQLCipher kompiliert ist (Docker)
-    db.pragma(`key="x'${Buffer.from(DB_KEY, 'utf8').toString('hex')}'"`);
+  applyEncryptionKey(db);
 
+  if (DB_KEY) {
     // Sicherstellen dass die Datenbank tatsächlich entschlüsselbar ist
     try {
-      db.prepare('SELECT count(*) FROM sqlite_master').get();
+      assertReadable(db);
     } catch {
       throw new Error('[DB] Wrong encryption key or SQLCipher support is unavailable.');
     }
@@ -54,6 +54,16 @@ function init() {
 
   log.info(`Connected: ${DB_PATH} | Schema v${currentVersion()}`);
   return db;
+}
+
+function applyEncryptionKey(database) {
+  if (!DB_KEY) return;
+  // Nur wirksam wenn Binary gegen SQLCipher kompiliert ist (Docker)
+  database.pragma(`key="x'${Buffer.from(DB_KEY, 'utf8').toString('hex')}'"`);
+}
+
+function assertReadable(database) {
+  database.prepare('SELECT count(*) FROM sqlite_master').get();
 }
 
 // --------------------------------------------------------
@@ -912,6 +922,103 @@ function currentVersion() {
   }
 }
 
+function getPath() {
+  return DB_PATH;
+}
+
+async function backupToFile(destinationPath) {
+  const database = get();
+  await fs.mkdir(path.dirname(destinationPath), { recursive: true });
+
+  if (typeof database.backup === 'function') {
+    await database.backup(destinationPath);
+  } else {
+    database.prepare('VACUUM INTO ?').run(destinationPath);
+  }
+
+  return destinationPath;
+}
+
+function validateBackupFile(sourcePath) {
+  const candidate = new Database(sourcePath, { readonly: true, fileMustExist: true });
+  try {
+    applyEncryptionKey(candidate);
+    assertReadable(candidate);
+    const row = candidate.prepare(`
+      SELECT name
+      FROM sqlite_master
+      WHERE type = 'table' AND name = 'schema_migrations'
+    `).get();
+    if (!row) {
+      throw new Error('Backup file is not a valid Oikos database.');
+    }
+    return candidate.prepare('SELECT MAX(version) AS version FROM schema_migrations').get()?.version ?? 0;
+  } finally {
+    candidate.close();
+  }
+}
+
+async function unlinkIfExists(filePath) {
+  try {
+    await fs.unlink(filePath);
+  } catch (err) {
+    if (err?.code !== 'ENOENT') throw err;
+  }
+}
+
+async function restoreFromFile(sourcePath) {
+  const backupVersion = validateBackupFile(sourcePath);
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+  const rollbackPath = `${DB_PATH}.pre-restore-${timestamp}`;
+  let rollbackCreated = false;
+
+  try {
+    if (db) {
+      try { db.pragma('wal_checkpoint(TRUNCATE)'); } catch { /* best effort */ }
+      db.close();
+      db = null;
+    }
+
+    await fs.mkdir(path.dirname(DB_PATH), { recursive: true });
+    try {
+      await fs.copyFile(DB_PATH, rollbackPath);
+      rollbackCreated = true;
+    } catch (err) {
+      if (err?.code !== 'ENOENT') throw err;
+    }
+
+    await unlinkIfExists(`${DB_PATH}-wal`);
+    await unlinkIfExists(`${DB_PATH}-shm`);
+    await fs.copyFile(sourcePath, DB_PATH);
+
+    init();
+    log.info(`Database restored from backup. Schema v${backupVersion}${rollbackCreated ? ` | rollback: ${rollbackPath}` : ''}`);
+
+    return {
+      schemaVersion: currentVersion(),
+      rollbackPath: rollbackCreated ? rollbackPath : null,
+    };
+  } catch (err) {
+    if (rollbackCreated) {
+      try {
+        if (db) {
+          db.close();
+          db = null;
+        }
+        await unlinkIfExists(`${DB_PATH}-wal`);
+        await unlinkIfExists(`${DB_PATH}-shm`);
+        await fs.copyFile(rollbackPath, DB_PATH);
+        init();
+      } catch (rollbackErr) {
+        log.error('Rollback after failed restore also failed:', rollbackErr);
+      }
+    } else if (!db) {
+      try { init(); } catch { /* preserve original restore error */ }
+    }
+    throw err;
+  }
+}
+
 // --------------------------------------------------------
 // Öffentliche API
 // --------------------------------------------------------
@@ -937,4 +1044,4 @@ function transaction(fn) {
 
 init();   // auto-initialise when module is first imported
 
-export { init, get, transaction, currentVersion };
+export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile };

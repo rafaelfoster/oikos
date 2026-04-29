@@ -31,16 +31,17 @@ async function apiFetch(path, options = {}, _retried = false) {
 
   const method = options.method ?? 'GET';
   const stateChanging = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method);
+  const { headers: optionHeaders = {}, ...fetchOptions } = options;
 
   const response = await fetch(url, {
     credentials: 'same-origin',
     cache: 'no-store',
+    ...fetchOptions,
     headers: {
       'Content-Type': 'application/json',
       ...(stateChanging ? { 'X-CSRF-Token': getCsrfToken() } : {}),
-      ...options.headers,
+      ...optionHeaders,
     },
-    ...options,
   });
 
   if (response.status === 401) {
@@ -113,6 +114,15 @@ const api = {
   post: (path, body) => apiFetch(path, {
     method: 'POST',
     body: JSON.stringify(body),
+  }),
+
+  rawPost: (path, body, headers = {}) => apiFetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/octet-stream',
+      ...headers,
+    },
+    body,
   }),
 
   put: (path, body) => apiFetch(path, {
