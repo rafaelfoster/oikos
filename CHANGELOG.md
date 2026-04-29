@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.32.3] - 2026-04-29
+
+### Added
+- Typography: Plus Jakarta Sans variable font (200–800 weight) self-hosted under `public/fonts/` — consistent branding across all platforms with no CDN dependency at runtime
+- Dashboard: visual hierarchy for primary widgets — Tasks and Calendar always span two columns; Weather and Shopping span two columns at the three-column breakpoint only
+- Dashboard: subtle accent border on primary (wide) widgets using the active module accent colour
+
+### Changed
+- Module toolbars (Tasks, Notes, Calendar, Contacts, Shopping) are now sticky — they remain visible at the top while scrolling long lists
+
+### Fixed
+- Sticky toolbars: changed `overflow: hidden` to `overflow: clip` on Calendar, Notes, Contacts, and Shopping page roots so `position: sticky` works correctly on child toolbar elements
+- Dashboard: explicit `grid-column: span 1` for secondary widgets at the 768 px (two-column) breakpoint to prevent implicit layout jumps
+
 ## [0.32.2] - 2026-04-29
 
 ### Changed
