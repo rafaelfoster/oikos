@@ -59,7 +59,7 @@
   background-color: transparent;
   color: var(--color-text-secondary);
   transition: all var(--transition-fast);
-  min-height: 36px;
+  min-height: var(--target-base);
 }
 
 .list-tab:hover:not(.list-tab--active) {

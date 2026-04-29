@@ -28,7 +28,7 @@
   align-items: center;
   gap: var(--space-1);
   padding: 0 var(--space-3);
-  height: 36px;
+  height: var(--target-base);
   border-radius: var(--radius-full);
   border: none;
   background: transparent;
