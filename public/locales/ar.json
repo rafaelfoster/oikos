@@ -29,7 +29,12 @@
     "unknownError": "خطأ غير معروف",
     "confirm": "تأكيد",
     "undo": "تراجع",
-    "reset": "إعادة التعيين للأصل"
+    "reset": "إعادة التعيين للأصل",
+    "errorOffline": "لا يوجد اتصال بالإنترنت. يرجى التحقق من شبكتك.",
+    "errorForbidden": "تم رفض الوصول. يرجى تسجيل الدخول مرة أخرى.",
+    "errorNotFound": "لم يتم العثور على السجل.",
+    "errorServer": "خطأ في الخادم. يرجى المحاولة لاحقاً.",
+    "errorTimeout": "استغرق الاتصال وقتاً طويلاً. يرجى المحاولة مجدداً."
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -187,7 +192,8 @@
     "archiveButton": "أرشفة المهمة",
     "archivedToast": "تم أرشفة المهمة.",
     "kanbanArchived": "مؤرشف",
-    "reminderNeedsDueDate": "حدّد تاريخ استحقاق لتفعيل تذكيرات المهمة."
+    "reminderNeedsDueDate": "حدّد تاريخ استحقاق لتفعيل تذكيرات المهمة.",
+    "emptyAction": "إنشاء مهمة"
   },
   "shopping": {
     "title": "التسوق",
@@ -227,7 +233,8 @@
     "catDrinks": "مشروبات",
     "catHousehold": "مستلزمات المنزل",
     "catDrugstore": "صيدلية",
-    "catMisc": "متنوع"
+    "catMisc": "متنوع",
+    "emptyAction": "إضافة عنصر"
   },
   "meals": {
     "title": "خطة الوجبات",
@@ -403,7 +410,8 @@
     "formatLink": "رابط",
     "formatCode": "كود",
     "formatQuote": "اقتباس",
-    "formatDivider": "فاصل"
+    "formatDivider": "فاصل",
+    "emptyAction": "إنشاء ملاحظة"
   },
   "contacts": {
     "title": "جهات الاتصال",
@@ -456,7 +464,8 @@
     "categoryInsurance": "تأمين",
     "categoryCraftsman": "حرفي",
     "categoryEmergency": "طوارئ",
-    "categoryOther": "متنوع"
+    "categoryOther": "متنوع",
+    "emptyAction": "إضافة جهة اتصال"
   },
   "budget": {
     "title": "الميزانية",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "إضافة إدخال"
   },
   "settings": {
     "title": "الإعدادات",
@@ -843,7 +853,8 @@
     "titleRequired": "العنوان مطلوب",
     "duplicate": "نسخ",
     "duplicated": "تم نسخ الوصفة.",
-    "copySuffix": "نسخة"
+    "copySuffix": "نسخة",
+    "emptyAction": "إنشاء وصفة"
   },
   "search": {
     "title": "بحث",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "التنقل والوحدات",
+    "step2Body": "في الأسفل يمكنك الوصول مباشرة إلى لوحة التحكم والتقويم. بزر ··· تفتح وحدات أخرى مثل المطبخ والملاحظات وجهات الاتصال.",
+    "step3Title": "ابدأ بسرعة",
+    "step3Body": "بزر + الكبير يمكنك إنشاء إدخالات جديدة في أي مكان. اسحب عناصر القائمة يساراً أو يميناً للإجراءات السريعة.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

@@ -332,6 +332,9 @@ function renderBody() {
   `;
 
   if (window.lucide) lucide.createIcons();
+  _container.querySelector('#empty-cta-budget')?.addEventListener('click', () => {
+    document.querySelector('.page-fab')?.click();
+  });
   stagger(_container.querySelector('#budget-list')?.querySelectorAll('.budget-entry') ?? []);
 
   _container.querySelector('#budget-list')?.addEventListener('click', async (e) => {
@@ -378,6 +381,10 @@ function renderEntries() {
       <div class="empty-state__title">${t('budget.emptyTitle')}</div>
       <div class="empty-state__description">${t('budget.emptyDescription')}</div>
       <p class="empty-state__hint">${t('emptyHint.budget')}</p>
+      <button class="btn btn--primary empty-state__cta" id="empty-cta-budget">
+        <i data-lucide="plus" aria-hidden="true" class="icon-base"></i>
+        ${t('budget.emptyAction')}
+      </button>
     </div>`;
   }
 

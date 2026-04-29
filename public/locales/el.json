@@ -29,7 +29,12 @@
     "unknownError": "Άγνωστο σφάλμα",
     "confirm": "Επιβεβαίωση",
     "undo": "Αναίρεση",
-    "reset": "Επαναφορά στο αρχικό"
+    "reset": "Επαναφορά στο αρχικό",
+    "errorOffline": "Δεν υπάρχει σύνδεση στο διαδίκτυο. Ελέγξτε το δίκτυό σας.",
+    "errorForbidden": "Η πρόσβαση απορρίφθηκε. Παρακαλώ συνδεθείτε ξανά.",
+    "errorNotFound": "Η εγγραφή δεν βρέθηκε.",
+    "errorServer": "Σφάλμα διακομιστή. Δοκιμάστε ξανά αργότερα.",
+    "errorTimeout": "Η σύνδεση διήρκεσε πολύ. Παρακαλώ δοκιμάστε ξανά."
   },
   "nav": {
     "dashboard": "Επισκόπηση",
@@ -187,7 +192,8 @@
     "archiveButton": "Αρχειοθέτηση εργασίας",
     "archivedToast": "Η εργασία αρχειοθετήθηκε.",
     "kanbanArchived": "Αρχειοθετημένο",
-    "reminderNeedsDueDate": "Ορίστε ημερομηνία λήξης για να ενεργοποιήσετε τις υπενθυμίσεις."
+    "reminderNeedsDueDate": "Ορίστε ημερομηνία λήξης για να ενεργοποιήσετε τις υπενθυμίσεις.",
+    "emptyAction": "Δημιουργία εργασίας"
   },
   "shopping": {
     "title": "Αγορές",
@@ -227,7 +233,8 @@
     "catDrinks": "Ποτά",
     "catHousehold": "Οικιακά",
     "catDrugstore": "Φαρμακείο",
-    "catMisc": "Διάφορα"
+    "catMisc": "Διάφορα",
+    "emptyAction": "Προσθήκη στοιχείου"
   },
   "meals": {
     "title": "Πρόγραμμα γευμάτων",
@@ -403,7 +410,8 @@
     "formatLink": "Σύνδεσμος",
     "formatCode": "Κώδικας",
     "formatQuote": "Παράθεση",
-    "formatDivider": "Διαχωριστής"
+    "formatDivider": "Διαχωριστής",
+    "emptyAction": "Δημιουργία σημείωσης"
   },
   "contacts": {
     "title": "Επαφές",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Ασφάλεια",
     "categoryCraftsman": "Τεχνίτης",
     "categoryEmergency": "Έκτακτη ανάγκη",
-    "categoryOther": "Άλλο"
+    "categoryOther": "Άλλο",
+    "emptyAction": "Προσθήκη επαφής"
   },
   "budget": {
     "title": "Προϋπολογισμός",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "Προσθήκη εγγραφής"
   },
   "settings": {
     "title": "Ρυθμίσεις",
@@ -843,7 +853,8 @@
     "titleRequired": "Ο τίτλος είναι υποχρεωτικός",
     "duplicate": "Διπλότυπο",
     "duplicated": "Η συνταγή αντιγράφηκε.",
-    "copySuffix": "αντίγραφο"
+    "copySuffix": "αντίγραφο",
+    "emptyAction": "Δημιουργία συνταγής"
   },
   "search": {
     "title": "Αναζήτηση",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Πλοήγηση & Ενότητες",
+    "step2Body": "Στο κάτω μέρος έχεις άμεση πρόσβαση στον Πίνακα ελέγχου και το Ημερολόγιο. Με το κουμπί ··· ανοίγεις άλλες ενότητες όπως Κουζίνα, Σημειώσεις και Επαφές.",
+    "step3Title": "Ξεκίνα γρήγορα",
+    "step3Body": "Με το κουμπί + δημιουργείς νέες καταχωρήσεις οπουδήποτε. Σύρε στοιχεία λίστας αριστερά ή δεξιά για γρήγορες ενέργειες.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

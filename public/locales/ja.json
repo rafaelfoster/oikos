@@ -29,7 +29,12 @@
     "unknownError": "不明なエラー",
     "confirm": "確認",
     "undo": "元に戻す",
-    "reset": "元に戻す"
+    "reset": "元に戻す",
+    "errorOffline": "インターネット接続がありません。ネットワークを確認してください。",
+    "errorForbidden": "アクセスが拒否されました。再度サインインしてください。",
+    "errorNotFound": "エントリが見つかりませんでした。",
+    "errorServer": "サーバーエラーが発生しました。後でもう一度お試しください。",
+    "errorTimeout": "接続に時間がかかりすぎました。もう一度お試しください。"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -187,7 +192,8 @@
     "archiveButton": "タスクをアーカイブ",
     "archivedToast": "タスクをアーカイブしました。",
     "kanbanArchived": "アーカイブ済み",
-    "reminderNeedsDueDate": "タスクのリマインダーを有効にするには期日を設定してください。"
+    "reminderNeedsDueDate": "タスクのリマインダーを有効にするには期日を設定してください。",
+    "emptyAction": "タスクを作成"
   },
   "shopping": {
     "title": "買い物",
@@ -227,7 +233,8 @@
     "catDrinks": "飲み物",
     "catHousehold": "日用品",
     "catDrugstore": "薬局",
-    "catMisc": "その他"
+    "catMisc": "その他",
+    "emptyAction": "アイテムを追加"
   },
   "meals": {
     "title": "食事計画",
@@ -403,7 +410,8 @@
     "formatLink": "リンク",
     "formatCode": "コード",
     "formatQuote": "引用",
-    "formatDivider": "区切り線"
+    "formatDivider": "区切り線",
+    "emptyAction": "メモを作成"
   },
   "contacts": {
     "title": "連絡先",
@@ -456,7 +464,8 @@
     "categoryInsurance": "保険",
     "categoryCraftsman": "職人",
     "categoryEmergency": "緊急連絡先",
-    "categoryOther": "その他"
+    "categoryOther": "その他",
+    "emptyAction": "連絡先を追加"
   },
   "budget": {
     "title": "家計",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "エントリを追加"
   },
   "settings": {
     "title": "設定",
@@ -843,7 +853,8 @@
     "titleRequired": "タイトルが必要です",
     "duplicate": "複製",
     "duplicated": "レシピが複製されました。",
-    "copySuffix": "コピー"
+    "copySuffix": "コピー",
+    "emptyAction": "レシピを作成"
   },
   "search": {
     "title": "検索",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "ナビゲーションとモジュール",
+    "step2Body": "画面下部からダッシュボードとカレンダーに直接アクセスできます。···ボタンでキッチン、メモ、連絡先などの追加モジュールを開きます。",
+    "step3Title": "さっそく始めよう",
+    "step3Body": "+ボタンでどこでも新しいエントリを作成できます。リストアイテムを左右にスワイプして素早く操作できます。",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

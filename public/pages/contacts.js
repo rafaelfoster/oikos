@@ -181,9 +181,16 @@ function renderList() {
         <div class="empty-state__title">${t('contacts.emptyTitle')}</div>
         <div class="empty-state__description">${t('contacts.emptyDescription')}</div>
         <p class="empty-state__hint">${t('emptyHint.contacts')}</p>
+        <button class="btn btn--primary empty-state__cta" id="empty-cta-contacts">
+          <i data-lucide="plus" aria-hidden="true" class="icon-base"></i>
+          ${t('contacts.emptyAction')}
+        </button>
       </div>
     `;
     if (window.lucide) lucide.createIcons();
+    container.querySelector('#empty-cta-contacts')?.addEventListener('click', () => {
+      document.querySelector('.page-fab')?.click();
+    });
     return;
   }
 

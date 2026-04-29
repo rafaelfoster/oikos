@@ -131,8 +131,16 @@ function renderRecipeList() {
     const emptyHint = document.createElement('p');
     emptyHint.className = 'empty-state__hint';
     emptyHint.textContent = t('emptyHint.recipes');
-    empty.append(emptyTitle, emptyDesc, emptyHint);
+    const emptyCta = document.createElement('button');
+    emptyCta.className = 'btn btn--primary empty-state__cta';
+    emptyCta.insertAdjacentHTML('afterbegin', '<i data-lucide="plus" aria-hidden="true" class="icon-base"></i>');
+    emptyCta.append(document.createTextNode(t('recipes.emptyAction')));
+    emptyCta.addEventListener('click', () => {
+      document.querySelector('.page-fab')?.click();
+    });
+    empty.append(emptyTitle, emptyDesc, emptyHint, emptyCta);
     list.appendChild(empty);
+    if (window.lucide) window.lucide.createIcons({ el: empty });
     return;
   }
 

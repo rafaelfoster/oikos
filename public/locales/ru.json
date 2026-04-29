@@ -29,7 +29,12 @@
     "unknownError": "Неизвестная ошибка",
     "confirm": "Подтвердить",
     "undo": "Отменить",
-    "reset": "Сбросить к исходному"
+    "reset": "Сбросить к исходному",
+    "errorOffline": "Нет подключения к интернету. Проверьте сеть.",
+    "errorForbidden": "Доступ запрещён. Пожалуйста, войдите снова.",
+    "errorNotFound": "Запись не найдена.",
+    "errorServer": "Ошибка сервера. Повторите попытку позже.",
+    "errorTimeout": "Соединение заняло слишком много времени. Попробуйте снова."
   },
   "nav": {
     "dashboard": "Обзор",
@@ -187,7 +192,8 @@
     "archiveButton": "Архивировать задачу",
     "archivedToast": "Задача архивирована.",
     "kanbanArchived": "Архивировано",
-    "reminderNeedsDueDate": "Установите срок выполнения, чтобы включить напоминания о задаче."
+    "reminderNeedsDueDate": "Установите срок выполнения, чтобы включить напоминания о задаче.",
+    "emptyAction": "Создать задачу"
   },
   "shopping": {
     "title": "Покупки",
@@ -227,7 +233,8 @@
     "catDrinks": "Напитки",
     "catHousehold": "Хозтовары",
     "catDrugstore": "Аптека",
-    "catMisc": "Разное"
+    "catMisc": "Разное",
+    "emptyAction": "Добавить товар"
   },
   "meals": {
     "title": "План питания",
@@ -403,7 +410,8 @@
     "formatLink": "Ссылка",
     "formatCode": "Код",
     "formatQuote": "Цитата",
-    "formatDivider": "Разделитель"
+    "formatDivider": "Разделитель",
+    "emptyAction": "Создать заметку"
   },
   "contacts": {
     "title": "Контакты",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Страховая",
     "categoryCraftsman": "Мастер",
     "categoryEmergency": "Экстренная помощь",
-    "categoryOther": "Другое"
+    "categoryOther": "Другое",
+    "emptyAction": "Добавить контакт"
   },
   "budget": {
     "title": "Бюджет",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "Добавить запись"
   },
   "settings": {
     "title": "Настройки",
@@ -843,7 +853,8 @@
     "titleRequired": "Название обязательно",
     "duplicate": "Дублировать",
     "duplicated": "Рецепт дублирован.",
-    "copySuffix": "копия"
+    "copySuffix": "копия",
+    "emptyAction": "Создать рецепт"
   },
   "search": {
     "title": "Поиск",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Навигация и модули",
+    "step2Body": "Внизу доступны Панель управления и Календарь напрямую. Кнопка ··· открывает дополнительные модули: Кухня, Заметки и Контакты.",
+    "step3Title": "Начните быстро",
+    "step3Body": "Кнопка + позволяет создавать новые записи везде. Смахните элементы списка влево или вправо для быстрых действий.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

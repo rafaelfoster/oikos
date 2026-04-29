@@ -29,7 +29,12 @@
     "unknownError": "Bilinmeyen hata",
     "confirm": "Onayla",
     "undo": "Geri al",
-    "reset": "Orijinale sıfırla"
+    "reset": "Orijinale sıfırla",
+    "errorOffline": "İnternet bağlantısı yok. Lütfen ağınızı kontrol edin.",
+    "errorForbidden": "Erişim reddedildi. Lütfen tekrar giriş yapın.",
+    "errorNotFound": "Kayıt bulunamadı.",
+    "errorServer": "Sunucu hatası. Lütfen daha sonra tekrar deneyin.",
+    "errorTimeout": "Bağlantı çok uzun sürdü. Lütfen tekrar deneyin."
   },
   "nav": {
     "dashboard": "Genel Bakış",
@@ -187,7 +192,8 @@
     "archiveButton": "Görevi arşivle",
     "archivedToast": "Görev arşivlendi.",
     "kanbanArchived": "Arşivlenmiş",
-    "reminderNeedsDueDate": "Görev hatırlatıcılarını etkinleştirmek için bir son tarih belirleyin."
+    "reminderNeedsDueDate": "Görev hatırlatıcılarını etkinleştirmek için bir son tarih belirleyin.",
+    "emptyAction": "Görev oluştur"
   },
   "shopping": {
     "title": "Alışveriş",
@@ -227,7 +233,8 @@
     "catDrinks": "İçecekler",
     "catHousehold": "Ev Gereçleri",
     "catDrugstore": "Eczane",
-    "catMisc": "Diğer"
+    "catMisc": "Diğer",
+    "emptyAction": "Öğe ekle"
   },
   "meals": {
     "title": "Yemek Planı",
@@ -403,7 +410,8 @@
     "formatLink": "Bağlantı",
     "formatCode": "Kod",
     "formatQuote": "Alıntı",
-    "formatDivider": "Ayırıcı"
+    "formatDivider": "Ayırıcı",
+    "emptyAction": "Not oluştur"
   },
   "contacts": {
     "title": "Kişiler",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Sigorta",
     "categoryCraftsman": "Usta",
     "categoryEmergency": "Acil",
-    "categoryOther": "Diğer"
+    "categoryOther": "Diğer",
+    "emptyAction": "Kişi ekle"
   },
   "budget": {
     "title": "Bütçe",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "Giriş ekle"
   },
   "settings": {
     "title": "Ayarlar",
@@ -843,7 +853,8 @@
     "titleRequired": "Başlık gerekli",
     "duplicate": "Çoğalt",
     "duplicated": "Tarif çoğaltıldı.",
-    "copySuffix": "kopya"
+    "copySuffix": "kopya",
+    "emptyAction": "Tarif oluştur"
   },
   "search": {
     "title": "Arama",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Gezinme ve Modüller",
+    "step2Body": "Aşağıda Gösterge Paneli ve Takvim'e doğrudan erişebilirsiniz. ···-düğmesiyle Mutfak, Notlar ve Kişiler gibi ek modülleri açabilirsiniz.",
+    "step3Title": "Hızlıca başlayın",
+    "step3Body": "+ düğmesiyle her yerde yeni girişler oluşturabilirsiniz. Hızlı işlemler için liste öğelerini sola veya sağa kaydırın.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

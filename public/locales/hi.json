@@ -29,7 +29,12 @@
     "unknownError": "अज्ञात त्रुटि",
     "confirm": "पुष्टि करें",
     "undo": "पूर्ववत करें",
-    "reset": "मूल पर वापस जाएं"
+    "reset": "मूल पर वापस जाएं",
+    "errorOffline": "इंटरनेट कनेक्शन नहीं है। कृपया अपना नेटवर्क जांचें।",
+    "errorForbidden": "पहुँच अस्वीकृत। कृपया फिर से लॉग इन करें।",
+    "errorNotFound": "प्रविष्टि नहीं मिली।",
+    "errorServer": "सर्वर त्रुटि। कृपया बाद में पुनः प्रयास करें।",
+    "errorTimeout": "कनेक्शन बहुत देर से हुआ। कृपया पुनः प्रयास करें।"
   },
   "nav": {
     "dashboard": "डैशबोर्ड",
@@ -187,7 +192,8 @@
     "archiveButton": "कार्य संग्रहित करें",
     "archivedToast": "कार्य संग्रहित किया गया।",
     "kanbanArchived": "संग्रहित",
-    "reminderNeedsDueDate": "कार्य अनुस्मारक सक्षम करने के लिए एक नियत तारीख निर्धारित करें।"
+    "reminderNeedsDueDate": "कार्य अनुस्मारक सक्षम करने के लिए एक नियत तारीख निर्धारित करें।",
+    "emptyAction": "कार्य बनाएं"
   },
   "shopping": {
     "title": "खरीदारी",
@@ -227,7 +233,8 @@
     "catDrinks": "पेय",
     "catHousehold": "घरेलू",
     "catDrugstore": "दवाखाना",
-    "catMisc": "विविध"
+    "catMisc": "विविध",
+    "emptyAction": "आइटम जोड़ें"
   },
   "meals": {
     "title": "भोजन योजना",
@@ -403,7 +410,8 @@
     "formatLink": "लिंक",
     "formatCode": "कोड",
     "formatQuote": "उद्धरण",
-    "formatDivider": "विभाजक"
+    "formatDivider": "विभाजक",
+    "emptyAction": "नोट बनाएं"
   },
   "contacts": {
     "title": "संपर्क",
@@ -456,7 +464,8 @@
     "categoryInsurance": "बीमा",
     "categoryCraftsman": "कारीगर",
     "categoryEmergency": "आपातकालीन",
-    "categoryOther": "विविध"
+    "categoryOther": "विविध",
+    "emptyAction": "संपर्क जोड़ें"
   },
   "budget": {
     "title": "बजट",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "प्रविष्टि जोड़ें"
   },
   "settings": {
     "title": "सेटिंग्स",
@@ -843,7 +853,8 @@
     "titleRequired": "शीर्षक आवश्यक है",
     "duplicate": "डुप्लिकेट",
     "duplicated": "रेसिपी डुप्लिकेट की गई।",
-    "copySuffix": "कॉपी"
+    "copySuffix": "कॉपी",
+    "emptyAction": "रेसिपी बनाएं"
   },
   "search": {
     "title": "खोज",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "नेविगेशन और मॉड्यूल",
+    "step2Body": "नीचे से डैशबोर्ड और कैलेंडर तक सीधी पहुँच। ··· बटन से किचन, नोट्स और संपर्क जैसे अन्य मॉड्यूल खोलें।",
+    "step3Title": "जल्दी शुरू करें",
+    "step3Body": "किसी भी जगह नई प्रविष्टियाँ बनाने के लिए + बटन दबाएँ। त्वरित क्रियाओं के लिए सूची आइटम को बाएँ या दाएँ स्वाइप करें।",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

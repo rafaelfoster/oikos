@@ -146,10 +146,17 @@ function renderGrid() {
         </svg>
         <div class="empty-state__title">${isFiltered ? t('notes.noResultsTitle') : t('notes.emptyTitle')}</div>
         <div class="empty-state__description">${isFiltered ? t('notes.noResultsDescription', { query: state.filterQuery }) : t('notes.emptyDescription')}</div>
-        ${!isFiltered ? `<p class="empty-state__hint">${t('emptyHint.notes')}</p>` : ''}
+        ${!isFiltered ? `<p class="empty-state__hint">${t('emptyHint.notes')}</p>
+        <button class="btn btn--primary empty-state__cta" id="empty-cta-notes">
+          <i data-lucide="plus" aria-hidden="true" class="icon-base"></i>
+          ${t('notes.emptyAction')}
+        </button>` : ''}
       </div>
     `;
     if (window.lucide) lucide.createIcons();
+    grid.querySelector('#empty-cta-notes')?.addEventListener('click', () => {
+      document.querySelector('.page-fab')?.click();
+    });
     return;
   }
 

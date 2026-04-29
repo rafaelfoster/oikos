@@ -29,7 +29,12 @@
     "unknownError": "Errore sconosciuto",
     "confirm": "Conferma",
     "undo": "Annulla",
-    "reset": "Ripristina originale"
+    "reset": "Ripristina originale",
+    "errorOffline": "Nessuna connessione internet. Controlla la tua rete.",
+    "errorForbidden": "Accesso negato. Per favore accedi di nuovo.",
+    "errorNotFound": "La voce non è stata trovata.",
+    "errorServer": "Errore del server. Riprova più tardi.",
+    "errorTimeout": "La connessione ha impiegato troppo tempo. Riprova."
   },
   "nav": {
     "dashboard": "Panoramica",
@@ -187,7 +192,8 @@
     "archiveButton": "Archivia attività",
     "archivedToast": "Attività archiviata.",
     "kanbanArchived": "Archiviato",
-    "reminderNeedsDueDate": "Imposta una data di scadenza per abilitare i promemoria delle attività."
+    "reminderNeedsDueDate": "Imposta una data di scadenza per abilitare i promemoria delle attività.",
+    "emptyAction": "Crea attività"
   },
   "shopping": {
     "title": "Spesa",
@@ -227,7 +233,8 @@
     "catDrinks": "Bevande",
     "catHousehold": "Casa",
     "catDrugstore": "Drogheria",
-    "catMisc": "Varie"
+    "catMisc": "Varie",
+    "emptyAction": "Aggiungi articolo"
   },
   "meals": {
     "title": "Piano pasti",
@@ -403,7 +410,8 @@
     "formatLink": "Link",
     "formatCode": "Codice",
     "formatQuote": "Citazione",
-    "formatDivider": "Divisore"
+    "formatDivider": "Divisore",
+    "emptyAction": "Crea nota"
   },
   "contacts": {
     "title": "Contatti",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Assicurazione",
     "categoryCraftsman": "Artigiano",
     "categoryEmergency": "Emergenza",
-    "categoryOther": "Altro"
+    "categoryOther": "Altro",
+    "emptyAction": "Aggiungi contatto"
   },
   "budget": {
     "title": "Bilancio",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Nome della nuova categoria:",
     "newSubcategoryPrompt": "Nome della nuova sottocategoria:",
     "categoryAddedToast": "Categoria aggiunta.",
-    "subcategoryAddedToast": "Sottocategoria aggiunta."
+    "subcategoryAddedToast": "Sottocategoria aggiunta.",
+    "emptyAction": "Aggiungi voce"
   },
   "settings": {
     "title": "Impostazioni",
@@ -843,7 +853,8 @@
     "titleRequired": "Il titolo è obbligatorio",
     "duplicate": "Duplica",
     "duplicated": "Ricetta duplicata.",
-    "copySuffix": "copia"
+    "copySuffix": "copia",
+    "emptyAction": "Crea ricetta"
   },
   "search": {
     "title": "Ricerca",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Navigazione e moduli",
+    "step2Body": "In basso accedi direttamente alla Dashboard e al Calendario. Con il pulsante ··· apri altri moduli come Cucina, Note e Contatti.",
+    "step3Title": "Inizia subito",
+    "step3Body": "Con il pulsante + crei nuove voci ovunque. Scorri gli elementi dell'elenco a sinistra o a destra per azioni rapide.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

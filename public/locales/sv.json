@@ -29,7 +29,12 @@
     "unknownError": "Okänt fel",
     "confirm": "Bekräfta",
     "undo": "Ångra",
-    "reset": "Återställ till original"
+    "reset": "Återställ till original",
+    "errorOffline": "Ingen internetanslutning. Kontrollera ditt nätverk.",
+    "errorForbidden": "Åtkomst nekad. Logga in igen.",
+    "errorNotFound": "Posten hittades inte.",
+    "errorServer": "Serverfel. Försök igen senare.",
+    "errorTimeout": "Anslutningen tog för lång tid. Försök igen."
   },
   "nav": {
     "dashboard": "Översikt",
@@ -187,7 +192,8 @@
     "archiveButton": "Arkivera uppgift",
     "archivedToast": "Uppgiften arkiverades.",
     "kanbanArchived": "Arkiverad",
-    "reminderNeedsDueDate": "Ange ett förfallodatum för att aktivera påminnelser för uppgiften."
+    "reminderNeedsDueDate": "Ange ett förfallodatum för att aktivera påminnelser för uppgiften.",
+    "emptyAction": "Skapa uppgift"
   },
   "shopping": {
     "title": "Shopping",
@@ -227,7 +233,8 @@
     "catDrinks": "Drycker",
     "catHousehold": "Hushåll",
     "catDrugstore": "Apotek",
-    "catMisc": "Diverse"
+    "catMisc": "Diverse",
+    "emptyAction": "Lägg till artikel"
   },
   "meals": {
     "title": "Måltidsplan",
@@ -403,7 +410,8 @@
     "formatLink": "Länk",
     "formatCode": "Kod",
     "formatQuote": "Citationstecken",
-    "formatDivider": "Delare"
+    "formatDivider": "Delare",
+    "emptyAction": "Skapa anteckning"
   },
   "contacts": {
     "title": "Kontakter",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Försäkring",
     "categoryCraftsman": "Handlare",
     "categoryEmergency": "Nödsituation",
-    "categoryOther": "Andra"
+    "categoryOther": "Andra",
+    "emptyAction": "Lägg till kontakt"
   },
   "budget": {
     "title": "Budget",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "Lägg till post"
   },
   "settings": {
     "title": "Inställningar",
@@ -843,7 +853,8 @@
     "titleRequired": "Titel krävs",
     "duplicate": "Duplicera",
     "duplicated": "Recept duplicerat.",
-    "copySuffix": "kopia"
+    "copySuffix": "kopia",
+    "emptyAction": "Skapa recept"
   },
   "search": {
     "title": "Sök",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Navigering och moduler",
+    "step2Body": "Nere på skärmen når du direkt Dashboard och Kalender. Med ···-knappen öppnar du fler moduler som Kök, Anteckningar och Kontakter.",
+    "step3Title": "Kom igång snabbt",
+    "step3Body": "Med +-knappen skapar du nya poster var som helst. Svep listobjekt åt vänster eller höger för snabbåtgärder.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

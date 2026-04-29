@@ -29,7 +29,12 @@
     "unknownError": "Error desconocido",
     "confirm": "Confirmar",
     "undo": "Deshacer",
-    "reset": "Restaurar original"
+    "reset": "Restaurar original",
+    "errorOffline": "Sin conexión a internet. Por favor, revisa tu red.",
+    "errorForbidden": "Acceso denegado. Por favor, inicia sesión de nuevo.",
+    "errorNotFound": "No se encontró el registro.",
+    "errorServer": "Error del servidor. Por favor, inténtalo más tarde.",
+    "errorTimeout": "La conexión tardó demasiado. Por favor, inténtalo de nuevo."
   },
   "nav": {
     "dashboard": "Inicio",
@@ -187,7 +192,8 @@
     "archiveButton": "Archivar tarea",
     "archivedToast": "Tarea archivada.",
     "kanbanArchived": "Archivado",
-    "reminderNeedsDueDate": "Establece una fecha de vencimiento para activar los recordatorios de tareas."
+    "reminderNeedsDueDate": "Establece una fecha de vencimiento para activar los recordatorios de tareas.",
+    "emptyAction": "Crear tarea"
   },
   "shopping": {
     "title": "Compras",
@@ -227,7 +233,8 @@
     "catDrinks": "Bebidas",
     "catHousehold": "Hogar",
     "catDrugstore": "Droguería",
-    "catMisc": "Otros"
+    "catMisc": "Otros",
+    "emptyAction": "Agregar artículo"
   },
   "meals": {
     "title": "Plan de comidas",
@@ -403,7 +410,8 @@
     "formatLink": "Enlace",
     "formatCode": "Código",
     "formatQuote": "Cita",
-    "formatDivider": "Separador"
+    "formatDivider": "Separador",
+    "emptyAction": "Crear nota"
   },
   "contacts": {
     "title": "Contactos",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Seguro",
     "categoryCraftsman": "Artesano",
     "categoryEmergency": "Emergencia",
-    "categoryOther": "Otros"
+    "categoryOther": "Otros",
+    "emptyAction": "Agregar contacto"
   },
   "budget": {
     "title": "Presupuesto",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Nombre de la nueva categoría:",
     "newSubcategoryPrompt": "Nombre de la nueva subcategoría:",
     "categoryAddedToast": "Categoría añadida.",
-    "subcategoryAddedToast": "Subcategoría añadida."
+    "subcategoryAddedToast": "Subcategoría añadida.",
+    "emptyAction": "Agregar entrada"
   },
   "settings": {
     "title": "Ajustes",
@@ -843,7 +853,8 @@
     "titleRequired": "El título es obligatorio",
     "duplicate": "Duplicar",
     "duplicated": "Receta duplicada.",
-    "copySuffix": "copia"
+    "copySuffix": "copia",
+    "emptyAction": "Crear receta"
   },
   "search": {
     "title": "Búsqueda",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Navegación y módulos",
+    "step2Body": "En la parte inferior accedes directamente al Panel y el Calendario. Con el botón ··· abres más módulos como Cocina, Notas y Contactos.",
+    "step3Title": "Empieza rápido",
+    "step3Body": "Con el botón + creas nuevas entradas en cualquier lugar. Desliza elementos de la lista a la izquierda o derecha para acciones rápidas.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

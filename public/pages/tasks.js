@@ -268,6 +268,10 @@ function renderTaskGroups(tasks, groupMode) {
       <div class="empty-state__title">${t('tasks.emptyTitle')}</div>
       <div class="empty-state__description">${t('tasks.emptyDescription')}</div>
       <p class="empty-state__hint">${t('emptyHint.tasks')}</p>
+      <button class="btn btn--primary empty-state__cta" id="empty-cta-tasks">
+        <i data-lucide="plus" aria-hidden="true" class="icon-base"></i>
+        ${t('tasks.emptyAction')}
+      </button>
     </div>`;
   }
 
@@ -1029,6 +1033,9 @@ function renderTaskList(container) {
   updateOverdueBadge();
   wireSwipeGestures(container);
   maybeShowSwipeHint(container);
+  listEl.querySelector('#empty-cta-tasks')?.addEventListener('click', () => {
+    document.querySelector('.page-fab')?.click();
+  });
 }
 
 function renderFilters(container) {

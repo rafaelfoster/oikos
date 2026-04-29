@@ -29,7 +29,12 @@
     "unknownError": "Невідома помилка",
     "confirm": "Підтвердити",
     "undo": "Скасувати",
-    "reset": "Скинути до оригіналу"
+    "reset": "Скинути до оригіналу",
+    "errorOffline": "Немає підключення до інтернету. Перевірте мережу.",
+    "errorForbidden": "Доступ заборонено. Будь ласка, увійдіть знову.",
+    "errorNotFound": "Запис не знайдено.",
+    "errorServer": "Помилка сервера. Спробуйте пізніше.",
+    "errorTimeout": "З'єднання тривало занадто довго. Спробуйте ще раз."
   },
   "nav": {
     "dashboard": "Огляд",
@@ -187,7 +192,8 @@
     "archiveButton": "Архівувати завдання",
     "archivedToast": "Завдання архівовано.",
     "kanbanArchived": "Архівовано",
-    "reminderNeedsDueDate": "Встановіть дату виконання, щоб увімкнути нагадування про завдання."
+    "reminderNeedsDueDate": "Встановіть дату виконання, щоб увімкнути нагадування про завдання.",
+    "emptyAction": "Створити завдання"
   },
   "shopping": {
     "title": "Покупки",
@@ -227,7 +233,8 @@
     "catDrinks": "Напої",
     "catHousehold": "Господарські товари",
     "catDrugstore": "Аптека",
-    "catMisc": "Різне"
+    "catMisc": "Різне",
+    "emptyAction": "Додати товар"
   },
   "meals": {
     "title": "План харчування",
@@ -403,7 +410,8 @@
     "formatLink": "Посилання",
     "formatCode": "Код",
     "formatQuote": "Цитата",
-    "formatDivider": "Розділювач"
+    "formatDivider": "Розділювач",
+    "emptyAction": "Створити нотатку"
   },
   "contacts": {
     "title": "Контакти",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Страхування",
     "categoryCraftsman": "Майстер",
     "categoryEmergency": "Екстрена служба",
-    "categoryOther": "Інше"
+    "categoryOther": "Інше",
+    "emptyAction": "Додати контакт"
   },
   "budget": {
     "title": "Бюджет",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "Додати запис"
   },
   "settings": {
     "title": "Налаштування",
@@ -874,7 +884,8 @@
     "titleRequired": "Назва обов'язкова",
     "duplicate": "Дублювати",
     "duplicated": "Рецепт продубльовано.",
-    "copySuffix": "копія"
+    "copySuffix": "копія",
+    "emptyAction": "Створити рецепт"
   },
   "search": {
     "title": "Пошук",
@@ -913,10 +924,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Навігація та модулі",
+    "step2Body": "Унизу ви маєте прямий доступ до Панелі керування та Календаря. Кнопка ··· відкриває додаткові модулі: Кухня, Нотатки та Контакти.",
+    "step3Title": "Починайте швидко",
+    "step3Body": "За допомогою кнопки + створюйте нові записи будь-де. Проведіть пальцем по елементу списку ліворуч або праворуч для швидких дій.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

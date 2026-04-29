@@ -172,6 +172,10 @@ function renderItems() {
         <div class="empty-state__title">${t('shopping.emptyList')}</div>
         <div class="empty-state__description">${t('shopping.emptyListDescription')}</div>
         <p class="empty-state__hint">${t('emptyHint.shopping')}</p>
+        <button class="btn btn--primary empty-state__cta" id="empty-cta-shopping">
+          <i data-lucide="plus" aria-hidden="true" class="icon-base"></i>
+          ${t('shopping.emptyAction')}
+        </button>
       </div>`;
   }
 
@@ -527,6 +531,9 @@ function updateItemsList(container) {
     stagger(listEl.querySelectorAll('.shopping-item'));
     wireSwipeGestures(container);
     maybeShowSwipeHint(container);
+    listEl.querySelector('#empty-cta-shopping')?.addEventListener('click', () => {
+      document.querySelector('.page-fab')?.click();
+    });
   }
   // clear-checked Button aktualisieren
   const checkedCount = state.items.filter((i) => i.is_checked).length;

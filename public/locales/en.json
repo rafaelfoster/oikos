@@ -29,7 +29,12 @@
     "unknownError": "Unknown error",
     "confirm": "Confirm",
     "undo": "Undo",
-    "reset": "Reset to original"
+    "reset": "Reset to original",
+    "errorOffline": "No internet connection. Please check your network.",
+    "errorForbidden": "Access denied. Please sign in again.",
+    "errorNotFound": "The entry was not found.",
+    "errorServer": "Server error. Please try again later.",
+    "errorTimeout": "The connection took too long. Please try again."
   },
   "nav": {
     "dashboard": "Overview",
@@ -187,7 +192,8 @@
     "filterGroupStatus": "Status",
     "swipedDoneToast": "Marked as done.",
     "swipedOpenToast": "Marked as open.",
-    "reminderNeedsDueDate": "Set a due date to enable task reminders."
+    "reminderNeedsDueDate": "Set a due date to enable task reminders.",
+    "emptyAction": "Create task"
   },
   "shopping": {
     "title": "Shopping",
@@ -227,7 +233,8 @@
     "catDrinks": "Drinks",
     "catHousehold": "Household",
     "catDrugstore": "Drugstore",
-    "catMisc": "Miscellaneous"
+    "catMisc": "Miscellaneous",
+    "emptyAction": "Add item"
   },
   "meals": {
     "title": "Meal Plan",
@@ -403,7 +410,8 @@
     "formatLink": "Link",
     "formatCode": "Code",
     "formatQuote": "Quote",
-    "formatDivider": "Divider"
+    "formatDivider": "Divider",
+    "emptyAction": "Create note"
   },
   "contacts": {
     "title": "Contacts",
@@ -456,7 +464,8 @@
     "categoryInsurance": "Insurance",
     "categoryCraftsman": "Tradesperson",
     "categoryEmergency": "Emergency",
-    "categoryOther": "Other"
+    "categoryOther": "Other",
+    "emptyAction": "Add contact"
   },
   "budget": {
     "title": "Budget",
@@ -555,7 +564,8 @@
     "newCategoryPrompt": "Name of the new category:",
     "newSubcategoryPrompt": "Name of the new subcategory:",
     "categoryAddedToast": "Category added.",
-    "subcategoryAddedToast": "Subcategory added."
+    "subcategoryAddedToast": "Subcategory added.",
+    "emptyAction": "Add entry"
   },
   "settings": {
     "title": "Settings",
@@ -903,7 +913,8 @@
     "titleRequired": "Title is required",
     "duplicate": "Duplicate",
     "duplicated": "Recipe duplicated.",
-    "copySuffix": "copy"
+    "copySuffix": "copy",
+    "emptyAction": "Create recipe"
   },
   "search": {
     "title": "Search",
@@ -914,10 +925,10 @@
   "onboarding": {
     "step1Title": "Welcome to Oikos",
     "step1Body": "Your personal family planner. Tasks, calendar, shopping and more – all in one place.",
-    "step2Title": "Everything at a glance",
-    "step2Body": "Use the navigation below to reach all modules. The + button creates new entries quickly.",
-    "step3Title": "Ready to go",
-    "step3Body": "The dashboard shows you the most important information at a glance. Customize it under \"Customize\".",
+    "step2Title": "Navigation & Modules",
+    "step2Body": "At the bottom you can directly access Dashboard and Calendar. The ··· button opens additional modules like Kitchen, Notes and Contacts.",
+    "step3Title": "Get started quickly",
+    "step3Body": "Use the + FAB button to create new entries anywhere. Swipe list items left or right for quick actions.",
     "next": "Next",
     "done": "Get started",
     "skip": "Skip"

@@ -1163,6 +1163,20 @@ function showToast(message, type = 'default', duration = 3000, onUndo = null) {
 // --------------------------------------------------------
 
 // --------------------------------------------------------
+// Fehler-Hilfsfunktion
+// --------------------------------------------------------
+
+function friendlyError(err) {
+  if (!navigator.onLine) return t('common.errorOffline');
+  const status = err?.status ?? err?.response?.status;
+  if (status === 403) return t('common.errorForbidden');
+  if (status === 404) return t('common.errorNotFound');
+  if (status >= 500) return t('common.errorServer');
+  if (err?.name === 'AbortError' || err?.name === 'TimeoutError') return t('common.errorTimeout');
+  return err?.data?.error || err?.message || t('common.errorGeneric');
+}
+
+// --------------------------------------------------------
 // Globale Fehler-Handler (Error Boundary)
 // --------------------------------------------------------
 
@@ -1177,8 +1191,7 @@ window.addEventListener('unhandledrejection', (e) => {
   // Auth-Fehler werden bereits von auth:expired behandelt
   if (e.reason?.status === 401) return;
   console.error('[Oikos] Unbehandeltes Promise-Rejection:', e.reason);
-  const msg = e.reason?.message || t('common.errorGeneric');
-  showToast(msg, 'danger');
+  showToast(friendlyError(e.reason), 'danger');
   e.preventDefault(); // Konsolenfehler unterdrücken (bereits geloggt)
 });
 
@@ -1341,6 +1354,7 @@ if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
 window.oikos = {
   navigate,
   showToast,
+  friendlyError,
   setThemeColor,
   applyTheme: (value) => {
     localStorage.setItem('oikos-theme', value);

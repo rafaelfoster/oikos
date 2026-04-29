@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.36.0] - 2026-04-29
+
+### Added
+- Navigation: Kitchen (Meals/Recipes/Shopping) is now grouped as a single "Küche" entry in the desktop sidebar, consistent with the mobile bottom bar
+- UX: empty states in Tasks, Notes, Contacts, Shopping, Recipes and Budget now include a primary CTA button that triggers the page FAB
+- UX: `friendlyError(err)` helper added to `window.oikos`; unhandled promise rejections now show status-code-aware messages (offline, forbidden, not found, server error, timeout) instead of raw error text
+- i18n: five new `common.error*` keys (offline, forbidden, notFound, server, timeout) added to all 15 locale files
+
+### Changed
+- Navigation: more-button icon changed from `grid-2x2` to `ellipsis` (matches the sheet it opens)
+- Navigation: desktop sidebar expands labels at 1 280 px instead of 1 440 px
+- UX: search overlay input field is now at the top, results below (standard top-to-bottom scan path)
+- UX: touch targets for kitchen tabs and shopping list tabs raised to 44 px (iOS minimum)
+- UX: dashboard metric values enlarged to `xl`/`bold` and labels styled as `2xs`/`uppercase` for clearer data hierarchy
+- Onboarding: step 2 text and icon updated to accurately describe the navigation structure (···-button and module groups); step 3 text and icon updated to explain the FAB and swipe gestures
+
 ## [0.35.0] - 2026-04-29
 
 ### Added

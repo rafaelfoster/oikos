@@ -19,8 +19,8 @@ const ONBOARDING_KEY = 'oikos-onboarded';
 function getOnboardingSteps() {
   return [
     { icon: 'home',         title: t('onboarding.step1Title'), body: t('onboarding.step1Body') },
-    { icon: 'grid-2x2',    title: t('onboarding.step2Title'), body: t('onboarding.step2Body') },
-    { icon: 'circle-check', title: t('onboarding.step3Title'), body: t('onboarding.step3Body') },
+    { icon: 'navigation',   title: t('onboarding.step2Title'), body: t('onboarding.step2Body') },
+    { icon: 'plus-circle',  title: t('onboarding.step3Title'), body: t('onboarding.step3Body') },
   ];
 }
 
