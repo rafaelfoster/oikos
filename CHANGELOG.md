@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.33.0] - 2026-04-29
+
+### Added
+- Calendar: overlapping timed events in week and day views now render side-by-side using a column-layout algorithm instead of stacking on top of each other
+- Calendar: events support optional file attachments (images, PDFs, and office documents up to 5 MB); images are shown inline in the event popup, other files as a download link
+- Birthdays: redesigned edit modal with photo avatar and name/date fields displayed side by side
+
+### Fixed
+- Calendar: attachment i18n keys are fully translated in all 15 locales (German translation added; Portuguese diacritics corrected)
+
 ## [0.32.3] - 2026-04-29
 
 ### Added
