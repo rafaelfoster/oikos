@@ -457,22 +457,32 @@ The SQLite database lives in a Docker named volume called `oikos_data`, mounted 
 
 ### Backup
 
-Copy the database from the running container to your host:
+Use the built-in backup helper to create a consistent SQLite backup from the running container, then copy it to your host:
 
 ```bash
-docker compose exec oikos cp /data/oikos.db /data/oikos-backup.db
+docker compose exec oikos node -e "import('./server/db.js').then(async db => { await db.backupToFile('/data/oikos-backup.db'); process.exit(0); })"
 docker cp oikos:/data/oikos-backup.db ./oikos-backup-$(date +%Y%m%d).db
-docker compose exec oikos rm /data/oikos-backup.db
 ```
+
+Admins can also download a backup from **Settings → Backup Management**.
 
 ### Restore
 
-Copy a backup file back into the container and restart:
+Admins can restore a backup from **Settings → Backup Management**. For operational restores via Docker Compose, stop the running app, mount the backup into a temporary container that uses the same Docker volume, and run the restore helper:
 
 ```bash
-docker cp ./oikos-backup-20260401.db oikos:/data/oikos.db
-docker compose restart
+docker compose stop oikos
+docker compose run --rm -v "$PWD/oikos-backup-20260401.db:/tmp/oikos-restore.db:ro" --entrypoint node oikos scripts/restore-backup.js /tmp/oikos-restore.db
+docker compose up -d
 ```
+
+For a local CLI restore outside Docker, set the same environment variables used by the app and run:
+
+```bash
+DB_PATH=/path/to/oikos.db node --import dotenv/config scripts/restore-backup.js ./oikos-backup-20260401.db
+```
+
+The restore helper validates that the file is an Oikos database before replacing the active database. It also keeps a pre-restore copy next to the database file for emergency rollback.
 
 ### Automated Backups
 
@@ -485,7 +495,7 @@ crontab -e
 Add this line:
 
 ```
-0 3 * * * docker cp oikos:/data/oikos.db /path/to/backups/oikos-$(date +\%Y\%m\%d).db
+0 3 * * * docker compose exec -T oikos node -e "import('./server/db.js').then(async db => { await db.backupToFile('/data/oikos-cron-backup.db'); process.exit(0); })" && docker cp oikos:/data/oikos-cron-backup.db /path/to/backups/oikos-$(date +\%Y\%m\%d).db
 ```
 
 This creates a backup at 3:00 AM every day.

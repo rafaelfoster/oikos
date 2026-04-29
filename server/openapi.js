@@ -272,6 +272,57 @@ function buildPaths() {
         },
       }),
     },
+    '/api/v1/backup/status': {
+      get: op({
+        summary: 'Get backup status',
+        tag: 'Backup',
+        admin: true,
+      }),
+    },
+    '/api/v1/backup/database': {
+      get: op({
+        summary: 'Download database backup',
+        tag: 'Backup',
+        admin: true,
+        responses: {
+          200: {
+            description: 'SQLite database backup file',
+            content: {
+              'application/octet-stream': {
+                schema: { type: 'string', format: 'binary' },
+              },
+            },
+          },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+    },
+    '/api/v1/backup/restore': {
+      post: op({
+        summary: 'Restore database backup',
+        tag: 'Backup',
+        admin: true,
+        stateChanging: true,
+        requestBody: {
+          required: true,
+          description: 'Raw SQLite database backup file.',
+          content: {
+            'application/octet-stream': {
+              schema: { type: 'string', format: 'binary' },
+            },
+          },
+        },
+        responses: {
+          200: { description: 'Database restored' },
+          400: { $ref: '#/components/responses/BadRequest' },
+          401: { $ref: '#/components/responses/Unauthorized' },
+          403: { $ref: '#/components/responses/Forbidden' },
+          500: { $ref: '#/components/responses/InternalServerError' },
+        },
+      }),
+    },
     '/api/v1/dashboard': { get: op({ summary: 'Get dashboard data', tag: 'Dashboard' }) },
     '/api/v1/tasks': {
       get: op({ summary: 'List tasks', tag: 'Tasks' }),
@@ -498,6 +549,7 @@ function buildOpenApiSpec(req, appVersion) {
       { name: 'Contacts' },
       { name: 'Birthdays' },
       { name: 'Budget' },
+      { name: 'Backup' },
       { name: 'Weather' },
       { name: 'Preferences' },
       { name: 'Reminders' },

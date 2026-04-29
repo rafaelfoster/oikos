@@ -244,6 +244,7 @@ export async function render(container, { user }) {
     'general', 'meals', 'budget', 'shopping', 'calendar',
     ...(user?.role === 'admin' ? ['family', 'api-tokens'] : []),
     'account',
+    ...(user?.role === 'admin' ? ['backup'] : []),
   ];
   const storedTab = sessionStorage.getItem(SETTINGS_TAB_KEY) ?? 'general';
   const activeTab = (syncOk || syncErr)
@@ -272,6 +273,7 @@ export async function render(container, { user }) {
         ${user?.role === 'admin' ? `<button class="${btnClass('family')}" role="tab" data-tab="family" aria-selected="${btnAria('family')}">${t('settings.tabFamily')}</button>` : ''}
         ${user?.role === 'admin' ? `<button class="${btnClass('api-tokens')}" role="tab" data-tab="api-tokens" aria-selected="${btnAria('api-tokens')}">${t('settings.tabApiTokens')}</button>` : ''}
         <button class="${btnClass('account')}"  role="tab" data-tab="account"  aria-selected="${btnAria('account')}">${t('settings.tabAccount')}</button>
+        ${user?.role === 'admin' ? `<button class="${btnClass('backup')}" role="tab" data-tab="backup" aria-selected="${btnAria('backup')}">${t('settings.tabBackup')}</button>` : ''}
       </nav>
 
       <!-- Panel: Allgemein (Design + Sprache) -->
@@ -712,6 +714,62 @@ export async function render(container, { user }) {
           <button class="btn btn--danger-outline settings-logout-btn" id="logout-btn">${t('settings.logout')}</button>
         </section>
       </div>
+
+      ${user?.role === 'admin' ? `
+      <!-- Panel: Backup Management -->
+      <div class="settings-tab-panel" data-panel="backup" role="tabpanel"${panelHidden('backup')}>
+        <section class="settings-section">
+          <h2 class="settings-section__title">${t('settings.sectionBackup')}</h2>
+
+          <div class="settings-card settings-backup-card">
+            <div class="settings-backup-card__icon">
+              <i data-lucide="database-backup" aria-hidden="true"></i>
+            </div>
+            <div class="settings-backup-card__body">
+              <h3 class="settings-card__title">${t('settings.backupDownloadTitle')}</h3>
+              <p class="form-hint">${t('settings.backupDownloadHint')}</p>
+              <div class="settings-form-actions">
+                <a class="btn btn--primary" href="/api/v1/backup/database" download>${t('settings.backupDownloadButton')}</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-card settings-backup-card settings-backup-card--danger">
+            <div class="settings-backup-card__icon">
+              <i data-lucide="rotate-ccw" aria-hidden="true"></i>
+            </div>
+            <div class="settings-backup-card__body">
+              <h3 class="settings-card__title">${t('settings.backupRestoreTitle')}</h3>
+              <p class="form-hint">${t('settings.backupRestoreHint')}</p>
+              <form id="backup-restore-form" class="settings-form settings-form--compact">
+                <label class="settings-backup-dropzone" id="backup-dropzone" for="backup-restore-file">
+                  <i data-lucide="upload-cloud" aria-hidden="true"></i>
+                  <span>${t('settings.backupDropzoneTitle')}</span>
+                  <small>${t('settings.backupDropzoneHint')}</small>
+                </label>
+                <input class="sr-only" type="file" id="backup-restore-file" accept=".db,.sqlite,.sqlite3,application/octet-stream" />
+                <div class="settings-backup-file" id="backup-selected-file" hidden></div>
+                <div id="backup-restore-error" class="form-error" hidden></div>
+                <div class="settings-form-actions">
+                  <button type="submit" class="btn btn--danger-outline" id="backup-restore-btn" disabled>${t('settings.backupRestoreButton')}</button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <h3 class="settings-card__title">${t('settings.backupCliTitle')}</h3>
+            <p class="form-hint">${t('settings.backupCliHint')}</p>
+            <pre class="settings-code-block"><code>docker compose stop oikos
+docker compose run --rm -v "$PWD/oikos-backup.db:/tmp/oikos-restore.db:ro" --entrypoint node oikos scripts/restore-backup.js /tmp/oikos-restore.db
+docker compose up -d</code></pre>
+            <p class="form-hint">${t('settings.backupCliBackupHint')}</p>
+            <pre class="settings-code-block"><code>docker compose exec oikos node -e "import('./server/db.js').then(async db =&gt; { await db.backupToFile('/data/oikos-backup.db'); process.exit(0); })"
+docker cp oikos:/data/oikos-backup.db ./oikos-backup.db</code></pre>
+          </div>
+        </section>
+      </div>
+      ` : ''}
     </div>
   `;
 
@@ -737,6 +795,7 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
   bindCategoryEvents(container);
   bindIcsEvents(container, user, icsSubscriptions);
   bindApiTokenEvents(container, apiTokens);
+  bindBackupEvents(container);
   // Theme-Toggle
   const themeToggle = container.querySelector('#theme-toggle');
   if (themeToggle) {
@@ -1399,6 +1458,75 @@ function bindApiTokenEvents(container, initialTokens) {
       window.oikos?.showToast(t('settings.apiTokenRevokedToast'), 'default');
     } catch (err) {
       window.oikos?.showToast(err.message, 'danger');
+    }
+  });
+}
+
+function bindBackupEvents(container) {
+  const form = container.querySelector('#backup-restore-form');
+  const fileInput = container.querySelector('#backup-restore-file');
+  const selectedFile = container.querySelector('#backup-selected-file');
+  const restoreBtn = container.querySelector('#backup-restore-btn');
+  const errorEl = container.querySelector('#backup-restore-error');
+  const dropzone = container.querySelector('#backup-dropzone');
+
+  if (!form || !fileInput || !selectedFile || !restoreBtn || !errorEl) return;
+
+  function setFile(file) {
+    if (!file) {
+      selectedFile.hidden = true;
+      selectedFile.textContent = '';
+      restoreBtn.disabled = true;
+      return;
+    }
+    selectedFile.textContent = `${file.name} · ${Math.round(file.size / 1024)} KB`;
+    selectedFile.hidden = false;
+    restoreBtn.disabled = false;
+  }
+
+  fileInput.addEventListener('change', () => {
+    errorEl.hidden = true;
+    setFile(fileInput.files?.[0]);
+  });
+
+  dropzone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('settings-backup-dropzone--active');
+  });
+
+  dropzone?.addEventListener('dragleave', () => {
+    dropzone.classList.remove('settings-backup-dropzone--active');
+  });
+
+  dropzone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('settings-backup-dropzone--active');
+    const file = e.dataTransfer?.files?.[0];
+    if (!file) return;
+    const transfer = new DataTransfer();
+    transfer.items.add(file);
+    fileInput.files = transfer.files;
+    errorEl.hidden = true;
+    setFile(file);
+  });
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const file = fileInput.files?.[0];
+    if (!file) return;
+    if (!await confirmModal(t('settings.backupRestoreConfirm'), { danger: true, confirmLabel: t('settings.backupRestoreButton') })) return;
+
+    errorEl.hidden = true;
+    restoreBtn.disabled = true;
+    restoreBtn.textContent = t('settings.backupRestoring');
+    try {
+      await api.rawPost('/backup/restore', file);
+      window.oikos?.showToast(t('settings.backupRestoredToast'), 'success');
+      window.location.reload();
+    } catch (err) {
+      showError(errorEl, err.message ?? t('common.errorGeneric'));
+      restoreBtn.disabled = false;
+      restoreBtn.textContent = t('settings.backupRestoreButton');
     }
   });
 }
