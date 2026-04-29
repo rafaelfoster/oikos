@@ -1791,26 +1791,37 @@ function bindIcsEvents(container, user, initialSubs) {
                   <label class="form-label" for="ics-edit-shared" style="margin:0">${t('settings.ics.form.shared')}</label>
                 </div>
               </div>
-              <p id="ics-edit-error" class="form-error" hidden></p>
+              <div id="ics-edit-error" class="form-error" hidden></div>
+              <div class="settings-form-actions">
+                <button type="button" class="btn btn--secondary" id="ics-edit-cancel">${t('common.cancel')}</button>
+                <button type="submit" class="btn btn--primary">${t('settings.ics.actions.save')}</button>
+              </div>
             </form>
           `,
-          onSave: async (modalEl, close) => {
-            const name   = modalEl.querySelector('#ics-edit-name').value.trim();
-            const color  = modalEl.querySelector('#ics-edit-color').value;
-            const shared = modalEl.querySelector('#ics-edit-shared').checked ? 1 : 0;
-            const errEl  = modalEl.querySelector('#ics-edit-error');
-            errEl.hidden = true;
-            try {
-              const res = await api.patch(`/calendar/subscriptions/${id}`, { name, color, shared });
-              const idx = subs.findIndex((s) => s.id === id);
-              if (idx >= 0) subs[idx] = res.data;
-              renderIcsList(container, subs, user);
-              window.oikos?.showToast(t('settings.ics.updatedToast'), 'success');
-              close();
-            } catch (err) {
-              errEl.textContent = err.message ?? t('common.errorGeneric');
-              errEl.hidden = false;
-            }
+          onSave(panel) {
+            panel.querySelector('#ics-edit-cancel')?.addEventListener('click', () => closeModal());
+            panel.querySelector('#ics-edit-form')?.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const submitBtn = panel.querySelector('[type=submit]');
+              const errEl     = panel.querySelector('#ics-edit-error');
+              const name      = panel.querySelector('#ics-edit-name').value.trim();
+              const color     = panel.querySelector('#ics-edit-color').value;
+              const shared    = panel.querySelector('#ics-edit-shared').checked ? 1 : 0;
+              errEl.hidden    = true;
+              submitBtn.disabled = true;
+              try {
+                const res = await api.patch(`/calendar/subscriptions/${id}`, { name, color, shared });
+                const idx = subs.findIndex((s) => s.id === id);
+                if (idx >= 0) subs[idx] = res.data;
+                renderIcsList(container, subs, user);
+                window.oikos?.showToast(t('settings.ics.updatedToast'), 'success');
+                closeModal({ force: true });
+              } catch (err) {
+                errEl.textContent = err.message ?? t('common.errorGeneric');
+                errEl.hidden = false;
+                submitBtn.disabled = false;
+              }
+            });
           },
         });
       }
