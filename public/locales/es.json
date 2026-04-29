@@ -734,13 +734,13 @@
         "shared": "Compartido"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "Número de teléfono (opcional)",
+    "memberEmailLabel": "Correo electrónico (opcional)",
+    "memberBirthDateLabel": "Fecha de nacimiento (opcional)",
+    "memberContactBirthdayHint": "Este miembro se sincroniza automáticamente con Contactos y Cumpleaños.",
+    "memberBirthDateInvalid": "Usa una fecha de nacimiento válida en el formato seleccionado.",
+    "memberPhoneMeta": "Teléfono: {{value}}",
+    "memberBirthdayMeta": "Cumpleaños: {{date}}"
   },
   "login": {
     "tagline": "Planificación familiar. Segura. Privada. Código abierto.",

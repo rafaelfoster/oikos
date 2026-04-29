@@ -734,13 +734,13 @@
         "shared": "مشترك"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "رقم الهاتف (اختياري)",
+    "memberEmailLabel": "البريد الإلكتروني (اختياري)",
+    "memberBirthDateLabel": "تاريخ الميلاد (اختياري)",
+    "memberContactBirthdayHint": "تتم مزامنة هذا العضو تلقائيًا مع جهات الاتصال وأعياد الميلاد.",
+    "memberBirthDateInvalid": "استخدم تاريخ ميلاد صحيحًا بالتنسيق المحدد.",
+    "memberPhoneMeta": "الهاتف: {{value}}",
+    "memberBirthdayMeta": "عيد الميلاد: {{date}}"
   },
   "login": {
     "tagline": "تخطيط عائلي. آمن. يحترم الخصوصية. مفتوح المصدر.",

@@ -734,13 +734,13 @@
         "shared": "Κοινόχρηστο"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "Αριθμός τηλεφώνου (προαιρετικό)",
+    "memberEmailLabel": "Email (προαιρετικό)",
+    "memberBirthDateLabel": "Ημερομηνία γέννησης (προαιρετικό)",
+    "memberContactBirthdayHint": "Αυτό το μέλος συγχρονίζεται αυτόματα με τις Επαφές και τα Γενέθλια.",
+    "memberBirthDateInvalid": "Χρησιμοποιήστε μια έγκυρη ημερομηνία γέννησης στην επιλεγμένη μορφή.",
+    "memberPhoneMeta": "Τηλέφωνο: {{value}}",
+    "memberBirthdayMeta": "Γενέθλια: {{date}}"
   },
   "login": {
     "tagline": "Οικογενειακός προγραμματισμός. Ασφαλής. Φιλικός προς την ιδιωτικότητα. Ανοιχτός κώδικας.",

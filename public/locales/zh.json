@@ -734,13 +734,13 @@
         "shared": "共享"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "电话号码（可选）",
+    "memberEmailLabel": "电子邮件（可选）",
+    "memberBirthDateLabel": "出生日期（可选）",
+    "memberContactBirthdayHint": "此成员自动与联系人和生日同步。",
+    "memberBirthDateInvalid": "请使用所选日期格式的有效出生日期。",
+    "memberPhoneMeta": "电话：{{value}}",
+    "memberBirthdayMeta": "生日：{{date}}"
   },
   "login": {
     "tagline": "家庭规划。安全。注重隐私。开源。",

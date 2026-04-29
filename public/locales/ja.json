@@ -734,13 +734,13 @@
         "shared": "共有"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "電話番号（任意）",
+    "memberEmailLabel": "メールアドレス（任意）",
+    "memberBirthDateLabel": "生年月日（任意）",
+    "memberContactBirthdayHint": "このメンバーは連絡先と誕生日と自動的に同期されます。",
+    "memberBirthDateInvalid": "選択した日付形式で有効な生年月日を入力してください。",
+    "memberPhoneMeta": "電話: {{value}}",
+    "memberBirthdayMeta": "誕生日: {{date}}"
   },
   "login": {
     "tagline": "家族計画。安全。プライバシー重視。オープンソース。",

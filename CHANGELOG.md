@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.31.0] - 2026-04-29
+
+### Added
+- Family: phone, email, and birthday fields on family member records, automatically synced to Contacts and Birthdays
+- Settings: dedicated "Family Management" tab (admin-only) for managing family members including contact details
+- Settings: dedicated "API Tokens" tab (admin-only) for token management
+- Calendar: local tooth SVG icon for dentist events replaces the drill icon (migration 24 restores tooth icon for existing events)
+- i18n: `reset`, `tabFamily`, `tabApiTokens`, and family member field keys translated in all 15 locales
+
+### Changed
+- Settings: avatar editor uses icon buttons instead of a file input label for a cleaner UX
+- Settings: tab bar constrained to standard app width so all tabs fit in one row on desktop
+- Family members page moved from Account tab to its own Family tab (admin only); Account tab stays focused on personal profile and password
+
+### Fixed
+- Theme toggle: `data-theme` attribute removed when reset to system default (previously left stale)
+- Calendar: dentist icon normalised — `tooth` is now the canonical stored value (`drill` accepted as alias for backwards compatibility)
+- i18n: missing translations for family member fields added to ar, el, es, fr, hi, it, ja, ru, sv, tr, uk, zh
+
 ## [0.30.3] - 2026-04-28
 
 ### Changed

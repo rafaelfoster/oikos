@@ -734,13 +734,13 @@
         "shared": "Спільне"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "Номер телефону (необов'язково)",
+    "memberEmailLabel": "Електронна пошта (необов'язково)",
+    "memberBirthDateLabel": "Дата народження (необов'язково)",
+    "memberContactBirthdayHint": "Цей учасник автоматично синхронізується з контактами та днями народження.",
+    "memberBirthDateInvalid": "Використовуйте дійсну дату народження у вибраному форматі.",
+    "memberPhoneMeta": "Телефон: {{value}}",
+    "memberBirthdayMeta": "День народження: {{date}}"
   },
   "login": {
     "tagline": "Планування для родини. Безпечно. Конфіденційно. Відкритий код.",

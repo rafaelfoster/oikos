@@ -734,13 +734,13 @@
         "shared": "साझा"
       }
     },
-    "memberPhoneLabel": "Phone number (optional)",
-    "memberEmailLabel": "Email (optional)",
-    "memberBirthDateLabel": "Birthday date (optional)",
-    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
-    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
-    "memberPhoneMeta": "Phone: {{value}}",
-    "memberBirthdayMeta": "Birthday: {{date}}"
+    "memberPhoneLabel": "फ़ोन नंबर (वैकल्पिक)",
+    "memberEmailLabel": "ईमेल (वैकल्पिक)",
+    "memberBirthDateLabel": "जन्म तिथि (वैकल्पिक)",
+    "memberContactBirthdayHint": "यह सदस्य स्वचालित रूप से संपर्क और जन्मदिन के साथ समन्वयित होता है।",
+    "memberBirthDateInvalid": "चयनित दिनांक प्रारूप में एक मान्य जन्म तिथि का उपयोग करें।",
+    "memberPhoneMeta": "फ़ोन: {{value}}",
+    "memberBirthdayMeta": "जन्मदिन: {{date}}"
   },
   "login": {
     "tagline": "पारिवारिक योजना। सुरक्षित। गोपनीयता-अनुकूल। ओपन सोर्स।",
