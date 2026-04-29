@@ -115,6 +115,12 @@
   padding: var(--space-3) var(--space-4) var(--space-2);
   flex-shrink: 0;
   border-top: 3px solid var(--module-accent);
+  background-color: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  backdrop-filter: var(--blur-sm);
+  -webkit-backdrop-filter: var(--blur-sm);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-sticky);
 }
 
 .list-header__name {

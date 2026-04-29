@@ -1625,6 +1625,21 @@
   margin-bottom: var(--space-4);
 }
 
+/* ── prefers-reduced-transparency Fallback ──
+ * Deaktiviert Blur und transparente Hintergründe für bessere Zugänglichkeit.
+ */
+@media (prefers-reduced-transparency: reduce) {
+  .tasks-toolbar,
+  .notes-toolbar,
+  .cal-toolbar,
+  .contacts-toolbar,
+  .list-header {
+    background-color: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 /* --------------------------------------------------------
  * Toast-Benachrichtigungen
  * -------------------------------------------------------- */
