@@ -48,16 +48,17 @@ The goal is a single, private place for everything that keeps a household runnin
 
 | Module | Description |
 |---|---|
-| **Tasks** | Shared tasks with deadlines, priorities, subtasks, and recurring schedules. Kanban board with touch-friendly one-tap status buttons. |
+| **Tasks** | Shared tasks with deadlines, priorities, subtasks, and recurring schedules. Kanban board with touch-friendly one-tap status buttons. Archive completed tasks to keep lists clean. Inline reminder presets (15 min to 2 weeks before due). |
 | **Shopping Lists** | Collaborative lists organized by aisle. Import ingredients from meal plans in one click. |
 | **Meal Planning** | Weekly drag-and-drop planner. Export ingredient lists directly to your shopping list. |
 | **Recipes** | Create, duplicate, and scale reusable recipes. Pre-fill meal slots from a recipe or save any meal as a recipe. |
-| **Calendar** | Two-way sync with Google Calendar (OAuth) and Apple iCloud (CalDAV). Subscribe to any public ICS/webcal URL with per-subscription color and visibility. |
+| **Calendar** | Two-way sync with Google Calendar (OAuth) and Apple iCloud (CalDAV). Subscribe to any public ICS/webcal URL with per-subscription color and visibility. Overlapping timed events render side-by-side. Events support file attachments (images, PDFs, Office documents). |
+| **Documents** | Upload and manage family files (PDF, images, Office documents up to 5 MB). Grid/list view, drag-and-drop upload, category tags (medical, school, identity, finance, and more), per-document visibility (family, selected members, private), archive and download. |
 | **Budget** | Track income and expenses with recurring entries, monthly trends, and CSV export. 35 predefined categories plus custom ones. Supports 15 currencies. |
 | **Notes & Contacts** | Colored sticky notes with Markdown support. Contact directory with vCard import/export. |
 | **Birthdays** | Birthday tracker with automatic annual calendar events, age display, profile photos, and 1-day-before reminders. |
 | **Reminders** | Time-based reminders on tasks and calendar events. In-app notification badge. |
-| **Family** | Assign family roles and profile pictures per member. |
+| **Family** | Assign family roles, profile pictures, phone, email, and birthday per member. Family details are automatically synced to Contacts and Birthdays. |
 | **API Tokens** | Named Bearer / X-API-Key tokens for external integrations. SHA-256-hashed at rest, with optional expiry. OpenAPI 3.0 spec at `/api/v1/openapi.json`. |
 
 ## Design & Technology
@@ -66,7 +67,7 @@ The goal is a single, private place for everything that keeps a household runnin
 - **PWA** — installable on any device, works offline, dark mode, responsive from phone to desktop
 - **Privacy First** — SQLCipher AES-256 encrypted database, fully self-hosted, zero telemetry
 - **Zero Build Step** — pure ES modules, no bundler, no transpiler, no framework
-- **Multilingual** — 14 languages with automatic locale detection (de, en, es, fr, it, sv, el, ru, tr, zh, ja, ar, hi, pt)
+- **Multilingual** — 15 languages with automatic locale detection (de, en, es, fr, it, sv, el, ru, tr, zh, ja, ar, hi, pt, uk)
 
 ## Quick Start
 
