@@ -28,7 +28,8 @@
     "all": "Todo",
     "unknownError": "Error desconocido",
     "confirm": "Confirmar",
-    "undo": "Deshacer"
+    "undo": "Deshacer",
+    "reset": "Restaurar original"
   },
   "nav": {
     "dashboard": "Inicio",
@@ -550,6 +551,8 @@
     "tabBudget": "Presupuesto",
     "tabShopping": "Compras",
     "tabCalendar": "Calendario",
+    "tabFamily": "Gestión familiar",
+    "tabApiTokens": "API Tokens",
     "tabAccount": "Cuenta",
     "tabsAriaLabel": "Secciones de configuración",
     "sectionDesign": "Diseño",
@@ -730,7 +733,14 @@
         "private": "Privado",
         "shared": "Compartido"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Planificación familiar. Segura. Privada. Código abierto.",

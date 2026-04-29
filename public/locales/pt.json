@@ -28,7 +28,8 @@
     "all": "Todos",
     "unknownError": "Erro desconhecido",
     "confirm": "Confirmar",
-    "undo": "Desfazer"
+    "undo": "Desfazer",
+    "reset": "Restaurar original"
   },
   "nav": {
     "dashboard": "Painel",
@@ -550,6 +551,8 @@
     "tabBudget": "Orçamento",
     "tabShopping": "Compras",
     "tabCalendar": "Calendário",
+    "tabFamily": "Gestão da família",
+    "tabApiTokens": "API Tokens",
     "tabAccount": "Conta",
     "tabsAriaLabel": "Seções de configurações",
     "sectionDesign": "Design",
@@ -730,7 +733,14 @@
         "private": "Privado",
         "shared": "Partilhado"
       }
-    }
+    },
+    "memberPhoneLabel": "Telefone (opcional)",
+    "memberEmailLabel": "E-mail (opcional)",
+    "memberBirthDateLabel": "Data de aniversário (opcional)",
+    "memberContactBirthdayHint": "Este membro é sincronizado automaticamente com Contatos e Aniversários.",
+    "memberBirthDateInvalid": "Use uma data de aniversário válida no formato selecionado.",
+    "memberPhoneMeta": "Telefone: {{value}}",
+    "memberBirthdayMeta": "Aniversário: {{date}}"
   },
   "login": {
     "tagline": "Planejamento familiar. Seguro. Privado. Código aberto.",

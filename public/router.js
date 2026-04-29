@@ -134,6 +134,7 @@ const PRIMARY_NAV = 4;
 
 const DEFAULT_APP_NAME = 'Oikos';
 const APP_NAME_STORAGE_KEY = 'oikos-app-name';
+const APP_VERSION_STORAGE_KEY = 'oikos-app-version';
 
 function getDirection(fromPath, toPath) {
   const fromIdx = ROUTE_ORDER.indexOf(fromPath ?? '/');
@@ -146,12 +147,25 @@ function getAppName() {
   return localStorage.getItem(APP_NAME_STORAGE_KEY) || DEFAULT_APP_NAME;
 }
 
+function getAppVersion() {
+  return localStorage.getItem(APP_VERSION_STORAGE_KEY) || '';
+}
+
 function setAppName(name) {
   const next = String(name || '').trim();
   if (next) {
     localStorage.setItem(APP_NAME_STORAGE_KEY, next);
   } else {
     localStorage.removeItem(APP_NAME_STORAGE_KEY);
+  }
+}
+
+function setAppVersion(version) {
+  const next = String(version || '').trim();
+  if (next) {
+    localStorage.setItem(APP_VERSION_STORAGE_KEY, next);
+  } else {
+    localStorage.removeItem(APP_VERSION_STORAGE_KEY);
   }
 }
 
@@ -174,8 +188,14 @@ function routeTitle(path) {
 
 function updateBranding(path = currentPath) {
   const appName = getAppName();
-  const sidebarLogoSpan = document.querySelector('.nav-sidebar__logo span');
-  if (sidebarLogoSpan) sidebarLogoSpan.textContent = appName;
+  const sidebarLogoName = document.querySelector('.nav-sidebar__brand-name');
+  if (sidebarLogoName) sidebarLogoName.textContent = appName;
+  const sidebarVersion = document.querySelector('.nav-sidebar__version');
+  if (sidebarVersion) {
+    const version = getAppVersion();
+    sidebarVersion.textContent = version ? t('login.version', { version }) : '';
+    sidebarVersion.hidden = !version;
+  }
 
   const loginTitle = document.querySelector('.login-hero__title');
   if (path === '/login' && loginTitle) loginTitle.textContent = appName;
@@ -283,6 +303,14 @@ async function syncPreferencesOnce() {
     }
   } catch {
     // Non-critical. The settings page can refresh this later.
+  }
+  try {
+    const res = await api.get('/version');
+    if (res?.version) setAppVersion(res.version);
+    if (res?.app_name) setAppName(res.app_name);
+    updateBranding();
+  } catch {
+    // Non-critical. The login page and settings page can refresh branding later.
   }
 }
 
@@ -427,9 +455,18 @@ function renderAppShell(container) {
   logomark.appendChild(logoSvg);
   sidebarLogo.appendChild(logomark);
 
+  const sidebarBrandText = document.createElement('div');
+  sidebarBrandText.className = 'nav-sidebar__brand-text';
   const sidebarLogoSpan = document.createElement('span');
+  sidebarLogoSpan.className = 'nav-sidebar__brand-name';
   sidebarLogoSpan.textContent = getAppName();
-  sidebarLogo.appendChild(sidebarLogoSpan);
+  const sidebarVersion = document.createElement('small');
+  sidebarVersion.className = 'nav-sidebar__version';
+  const cachedVersion = getAppVersion();
+  sidebarVersion.textContent = cachedVersion ? t('login.version', { version: cachedVersion }) : '';
+  sidebarVersion.hidden = !cachedVersion;
+  sidebarBrandText.append(sidebarLogoSpan, sidebarVersion);
+  sidebarLogo.appendChild(sidebarBrandText);
   const sidebarItems = document.createElement('div');
   sidebarItems.className = 'nav-sidebar__items';
   sidebarItems.setAttribute('role', 'list');
@@ -1162,6 +1199,16 @@ if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
 // --------------------------------------------------------
 (async () => {
   try {
+    // Vorab-Theme-Anwendung ohne Abhängigkeit von window.oikos
+    const stored = localStorage.getItem('oikos-theme');
+    if (stored === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (stored === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    
     await initI18n();
     navigate(location.pathname, false);
   } catch (err) {
@@ -1177,6 +1224,16 @@ window.oikos = {
   navigate,
   showToast,
   setThemeColor,
+  applyTheme: (value) => {
+    localStorage.setItem('oikos-theme', value);
+    if (value === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else if (value === 'light') {
+      document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  },
   restoreThemeColor: () => {
     const route = ROUTES.find((r) => r.path === currentPath);
     updateThemeColorForRoute(route);

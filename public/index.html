@@ -48,6 +48,8 @@
         document.documentElement.setAttribute('data-theme', 'dark');
       } else if (stored === 'light') {
         document.documentElement.setAttribute('data-theme', 'light');
+      } else {
+        document.documentElement.removeAttribute('data-theme');
       }
       // System/null: tokens.css @media (prefers-color-scheme: dark) übernimmt
     })();

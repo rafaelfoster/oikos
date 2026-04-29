@@ -10,11 +10,11 @@
 .settings-page { --module-accent: var(--module-settings); }
 
 /* --------------------------------------------------------
-   Seiten-Layout - nutzt layout-center (max 720px)
+   Seiten-Layout
    -------------------------------------------------------- */
 
 .settings-page {
-  max-width: var(--content-max-width-narrow);
+  max-width: var(--content-max-width);
   margin: 0 auto;
 }
 
@@ -48,6 +48,7 @@
 
 .settings-tabs {
   display: flex;
+  flex-wrap: nowrap;
   gap: 0;
   overflow-x: auto;
   scrollbar-width: none;
@@ -67,7 +68,7 @@
 
 .settings-tab-btn {
   flex-shrink: 0;
-  padding: var(--space-3) var(--space-4);
+  padding: var(--space-3) clamp(var(--space-2), 1.3vw, var(--space-4));
   border: none;
   border-bottom: 2px solid transparent;
   background: transparent;
@@ -196,22 +197,126 @@
 }
 
 .settings-avatar-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.settings-avatar-button {
+  display: block;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  cursor: pointer;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.settings-avatar-button:hover,
+.settings-avatar-button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+  outline: none;
+}
+
+.settings-avatar-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-1);
+}
+
+.settings-avatar-action {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.settings-avatar-action:hover,
+.settings-avatar-action:focus-visible {
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.settings-avatar-action--danger:hover,
+.settings-avatar-action--danger:focus-visible {
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  background: var(--color-danger-light);
+}
+
+.settings-avatar-action i,
+.settings-avatar-action svg {
+  width: 14px;
+  height: 14px;
+}
+
+.settings-profile-editor {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: var(--space-4);
   align-items: start;
 }
 
-.settings-avatar-editor__controls {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+.settings-profile-editor__fields {
   min-width: 0;
 }
 
+.settings-name-color-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--space-3);
+  align-items: end;
+}
+
+.settings-name-color-row__name {
+  min-width: 0;
+}
+
+.settings-color-field {
+  align-items: center;
+}
+
+.settings-color-button {
+  width: 44px;
+  height: 44px;
+  padding: 2px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.settings-color-button::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.settings-color-button::-webkit-color-swatch {
+  border: none;
+  border-radius: var(--radius-full);
+}
+
+.settings-color-button::-moz-color-swatch {
+  border: none;
+  border-radius: var(--radius-full);
+}
+
 @media (max-width: 520px) {
-  .settings-avatar-editor {
+  .settings-profile-editor {
     grid-template-columns: 1fr;
+  }
+
+  .settings-avatar-editor {
+    align-items: flex-start;
   }
 }
 

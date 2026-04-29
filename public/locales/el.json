@@ -28,7 +28,8 @@
     "all": "Όλα",
     "unknownError": "Άγνωστο σφάλμα",
     "confirm": "Επιβεβαίωση",
-    "undo": "Αναίρεση"
+    "undo": "Αναίρεση",
+    "reset": "Επαναφορά στο αρχικό"
   },
   "nav": {
     "dashboard": "Επισκόπηση",
@@ -550,6 +551,8 @@
     "tabBudget": "Προϋπολογισμός",
     "tabShopping": "Αγορές",
     "tabCalendar": "Ημερολόγιο",
+    "tabFamily": "Διαχείριση οικογένειας",
+    "tabApiTokens": "API Tokens",
     "tabAccount": "Λογαριασμός",
     "tabsAriaLabel": "Τμήματα ρυθμίσεων",
     "sectionDesign": "Εμφάνιση",
@@ -730,7 +733,14 @@
         "private": "Ιδιωτικό",
         "shared": "Κοινόχρηστο"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Οικογενειακός προγραμματισμός. Ασφαλής. Φιλικός προς την ιδιωτικότητα. Ανοιχτός κώδικας.",

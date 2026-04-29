@@ -28,7 +28,8 @@
     "all": "Все",
     "unknownError": "Неизвестная ошибка",
     "confirm": "Подтвердить",
-    "undo": "Отменить"
+    "undo": "Отменить",
+    "reset": "Сбросить к исходному"
   },
   "nav": {
     "dashboard": "Обзор",
@@ -550,6 +551,8 @@
     "tabBudget": "Бюджет",
     "tabShopping": "Покупки",
     "tabCalendar": "Календарь",
+    "tabFamily": "Управление семьей",
+    "tabApiTokens": "API-токены",
     "tabAccount": "Аккаунт",
     "tabsAriaLabel": "Разделы настроек",
     "sectionDesign": "Внешний вид",
@@ -730,7 +733,14 @@
         "private": "Личное",
         "shared": "Общее"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Семейное планирование. Безопасно. С уважением к приватности. Открытый исходный код.",

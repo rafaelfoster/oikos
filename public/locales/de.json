@@ -28,7 +28,8 @@
     "all": "Alle",
     "unknownError": "Unbekannter Fehler",
     "confirm": "Bestätigen",
-    "undo": "Rückgängig"
+    "undo": "Rückgängig",
+    "reset": "Auf Original zurücksetzen"
   },
   "nav": {
     "dashboard": "Übersicht",
@@ -575,6 +576,8 @@
     "tabBudget": "Budget",
     "tabShopping": "Einkauf",
     "tabCalendar": "Kalender",
+    "tabFamily": "Familienverwaltung",
+    "tabApiTokens": "API-Tokens",
     "tabAccount": "Konto",
     "tabsAriaLabel": "Einstellungsbereiche",
     "sectionDesign": "Design",
@@ -755,7 +758,14 @@
       "addedToast": "Abonnement hinzugefügt.",
       "syncedToast": "Abonnement synchronisiert.",
       "deletedToast": "Abonnement gelöscht."
-    }
+    },
+    "memberPhoneLabel": "Telefonnummer (optional)",
+    "memberEmailLabel": "E-Mail (optional)",
+    "memberBirthDateLabel": "Geburtstag (optional)",
+    "memberContactBirthdayHint": "Dieses Mitglied wird automatisch mit Kontakten und Geburtstagen synchronisiert.",
+    "memberBirthDateInvalid": "Bitte ein gültiges Geburtstagsdatum im ausgewählten Format verwenden.",
+    "memberPhoneMeta": "Telefon: {{value}}",
+    "memberBirthdayMeta": "Geburtstag: {{date}}"
   },
   "login": {
     "tagline": "Familienplanung. Sicher. Datenschutzfreundlich. Open Source.",

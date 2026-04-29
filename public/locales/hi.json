@@ -28,7 +28,8 @@
     "all": "सभी",
     "unknownError": "अज्ञात त्रुटि",
     "confirm": "पुष्टि करें",
-    "undo": "पूर्ववत करें"
+    "undo": "पूर्ववत करें",
+    "reset": "मूल पर वापस जाएं"
   },
   "nav": {
     "dashboard": "डैशबोर्ड",
@@ -550,6 +551,8 @@
     "tabBudget": "बजट",
     "tabShopping": "खरीदारी",
     "tabCalendar": "कैलेंडर",
+    "tabFamily": "परिवार प्रबंधन",
+    "tabApiTokens": "API टोकन",
     "tabAccount": "खाता",
     "tabsAriaLabel": "सेटिंग्स अनुभाग",
     "sectionDesign": "डिज़ाइन",
@@ -730,7 +733,14 @@
         "private": "निजी",
         "shared": "साझा"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "पारिवारिक योजना। सुरक्षित। गोपनीयता-अनुकूल। ओपन सोर्स।",

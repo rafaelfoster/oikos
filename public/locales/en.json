@@ -28,7 +28,8 @@
     "all": "All",
     "unknownError": "Unknown error",
     "confirm": "Confirm",
-    "undo": "Undo"
+    "undo": "Undo",
+    "reset": "Reset to original"
   },
   "nav": {
     "dashboard": "Overview",
@@ -550,6 +551,8 @@
     "tabBudget": "Budget",
     "tabShopping": "Shopping",
     "tabCalendar": "Calendar",
+    "tabFamily": "Family Management",
+    "tabApiTokens": "API Tokens",
     "tabAccount": "Account",
     "tabsAriaLabel": "Settings sections",
     "sectionDesign": "Appearance",
@@ -730,7 +733,14 @@
         "private": "Private",
         "shared": "Shared"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Family planning. Secure. Privacy-friendly. Open source.",

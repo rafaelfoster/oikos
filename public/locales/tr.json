@@ -28,7 +28,8 @@
     "all": "Tümü",
     "unknownError": "Bilinmeyen hata",
     "confirm": "Onayla",
-    "undo": "Geri al"
+    "undo": "Geri al",
+    "reset": "Orijinale sıfırla"
   },
   "nav": {
     "dashboard": "Genel Bakış",
@@ -550,6 +551,8 @@
     "tabBudget": "Bütçe",
     "tabShopping": "Alışveriş",
     "tabCalendar": "Takvim",
+    "tabFamily": "Aile Yönetimi",
+    "tabApiTokens": "API Tokenları",
     "tabAccount": "Hesap",
     "tabsAriaLabel": "Ayar bölümleri",
     "sectionDesign": "Görünüm",
@@ -730,7 +733,14 @@
         "private": "Özel",
         "shared": "Paylaşımlı"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Aile planlaması. Güvenli. Gizlilik dostu. Açık kaynak.",

@@ -11,14 +11,28 @@ import rateLimit from 'express-rate-limit';
 import crypto from 'node:crypto';
 import * as db from './db.js';
 import { generateToken, csrfMiddleware } from './middleware/csrf.js';
+import { collectErrors, date as validateDate, str, MAX_SHORT, MAX_TITLE } from './middleware/validate.js';
 import { createLogger } from './logger.js';
+import { deleteBirthdayArtifacts, syncBirthdayArtifacts } from './services/birthdays.js';
 
 const log = createLogger('Auth');
 const router = express.Router();
 const API_TOKEN_PREFIX = 'oikos_';
 const FAMILY_ROLES = ['dad', 'mom', 'parent', 'child', 'grandparent', 'relative', 'other'];
 const MAX_AVATAR_DATA_LENGTH = 768 * 1024;
-const USER_PUBLIC_COLUMNS = 'id, username, display_name, avatar_color, avatar_data, role, family_role, created_at';
+const USER_PUBLIC_COLUMNS = `
+  id,
+  username,
+  display_name,
+  avatar_color,
+  avatar_data,
+  role,
+  family_role,
+  created_at,
+  (SELECT phone FROM contacts WHERE contacts.family_user_id = users.id LIMIT 1) AS phone,
+  (SELECT email FROM contacts WHERE contacts.family_user_id = users.id LIMIT 1) AS email,
+  (SELECT birth_date FROM birthdays WHERE birthdays.family_user_id = users.id LIMIT 1) AS birth_date
+`;
 
 // --------------------------------------------------------
 // Session-Store (better-sqlite3, gleiche DB-Instanz wie App)
@@ -162,8 +176,99 @@ function publicUser(row) {
     avatar_data: row.avatar_data ?? null,
     role: row.role,
     family_role: row.family_role,
+    phone: row.phone ?? null,
+    email: row.email ?? null,
+    birth_date: row.birth_date ?? null,
     created_at: row.created_at,
   };
+}
+
+function validateMemberProfileFields(body) {
+  const vPhone = body.phone !== undefined
+    ? str(body.phone, 'Phone number', { max: MAX_SHORT, required: false })
+    : { value: undefined, error: null };
+  const vEmail = body.email !== undefined
+    ? str(body.email, 'Email', { max: MAX_TITLE, required: false })
+    : { value: undefined, error: null };
+  const vBirthDate = body.birth_date !== undefined
+    ? validateDate(body.birth_date, 'Birthday date')
+    : { value: undefined, error: null };
+  return {
+    values: {
+      phone: vPhone.value,
+      email: vEmail.value,
+      birth_date: vBirthDate.value,
+    },
+    errors: collectErrors([vPhone, vEmail, vBirthDate]),
+  };
+}
+
+function syncFamilyMemberArtifacts(database, userId, {
+  displayName,
+  phone = undefined,
+  email = undefined,
+  birthDate = undefined,
+  avatarData = undefined,
+  actorUserId,
+} = {}) {
+  const user = database.prepare('SELECT id, display_name, avatar_data FROM users WHERE id = ?').get(userId);
+  if (!user) return;
+  const name = displayName || user.display_name;
+  const photo = avatarData !== undefined ? avatarData : user.avatar_data;
+
+  const contact = database.prepare('SELECT * FROM contacts WHERE family_user_id = ?').get(userId);
+  if (contact) {
+    database.prepare(`
+      UPDATE contacts
+      SET name = ?,
+          category = COALESCE(category, 'Sonstiges'),
+          phone = ?,
+          email = ?
+      WHERE id = ?
+    `).run(
+      name,
+      phone !== undefined ? phone : contact.phone,
+      email !== undefined ? email : contact.email,
+      contact.id,
+    );
+  } else {
+    database.prepare(`
+      INSERT INTO contacts (name, category, phone, email, family_user_id)
+      VALUES (?, 'Sonstiges', ?, ?, ?)
+    `).run(name, phone ?? null, email ?? null, userId);
+  }
+
+  const birthday = database.prepare('SELECT * FROM birthdays WHERE family_user_id = ?').get(userId);
+  if (birthDate === null) {
+    if (birthday) {
+      deleteBirthdayArtifacts(database, birthday);
+      database.prepare('DELETE FROM birthdays WHERE id = ?').run(birthday.id);
+    }
+    return;
+  }
+
+  if (birthday) {
+    database.prepare(`
+      UPDATE birthdays
+      SET name = ?,
+          birth_date = COALESCE(?, birth_date),
+          photo_data = ?,
+          updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
+      WHERE id = ?
+    `).run(name, birthDate ?? null, photo ?? null, birthday.id);
+    const updated = database.prepare('SELECT * FROM birthdays WHERE id = ?').get(birthday.id);
+    syncBirthdayArtifacts(database, updated);
+    return;
+  }
+
+  if (birthDate) {
+    const result = database.prepare(`
+      INSERT INTO birthdays (name, birth_date, photo_data, created_by, family_user_id)
+      VALUES (?, ?, ?, ?, ?)
+    `).run(name, birthDate, photo ?? null, actorUserId || userId, userId);
+    const created = database.prepare('SELECT * FROM birthdays WHERE id = ?').get(result.lastInsertRowid);
+    syncBirthdayArtifacts(database, created);
+  }
 }
 
 function normalizeAvatarData(value) {
@@ -394,12 +499,20 @@ router.post('/setup', loginLimiter, async (req, res) => {
     const avatarColor = avatarColors[Math.floor(Math.random() * avatarColors.length)];
     const hash = await bcrypt.hash(password, 12);
 
-    const result = db.get()
-      .prepare('INSERT INTO users (username, display_name, password_hash, avatar_color, role) VALUES (?, ?, ?, ?, ?)')
-      .run(username, display_name, hash, avatarColor, 'admin');
+    const result = db.transaction(() => {
+      const created = db.get()
+        .prepare('INSERT INTO users (username, display_name, password_hash, avatar_color, role) VALUES (?, ?, ?, ?, ?)')
+        .run(username, display_name, hash, avatarColor, 'admin');
+      syncFamilyMemberArtifacts(db.get(), created.lastInsertRowid, {
+        displayName: display_name,
+        actorUserId: created.lastInsertRowid,
+      });
+      return created;
+    });
+    const createdUser = db.get().prepare(`SELECT ${USER_PUBLIC_COLUMNS} FROM users WHERE id = ?`).get(result.lastInsertRowid);
 
     res.status(201).json({
-      user: { id: result.lastInsertRowid, username, display_name, avatar_color: avatarColor, avatar_data: null, role: 'admin', family_role: 'other' },
+      user: publicUser(createdUser),
     });
   } catch (err) {
     if (err.message?.includes('UNIQUE constraint')) {
@@ -583,15 +696,30 @@ router.post('/users', requireAuth, requireAdmin, csrfMiddleware, async (req, res
     if (normalizedAvatarData?.error) {
       return res.status(400).json({ error: normalizedAvatarData.error, code: 400 });
     }
+    const memberFields = validateMemberProfileFields(req.body);
+    if (memberFields.errors.length) {
+      return res.status(400).json({ error: memberFields.errors.join(' '), code: 400 });
+    }
 
     const hash = await bcrypt.hash(password, 12);
 
-    const result = db.get()
-      .prepare(`
-        INSERT INTO users (username, display_name, password_hash, avatar_color, avatar_data, role, family_role)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `)
-      .run(username, display_name, hash, avatar_color, normalizedAvatarData ?? null, role, family_role);
+    const result = db.transaction(() => {
+      const created = db.get()
+        .prepare(`
+          INSERT INTO users (username, display_name, password_hash, avatar_color, avatar_data, role, family_role)
+          VALUES (?, ?, ?, ?, ?, ?, ?)
+        `)
+        .run(username, display_name, hash, avatar_color, normalizedAvatarData ?? null, role, family_role);
+      syncFamilyMemberArtifacts(db.get(), created.lastInsertRowid, {
+        displayName: display_name,
+        phone: memberFields.values.phone,
+        email: memberFields.values.email,
+        birthDate: memberFields.values.birth_date,
+        avatarData: normalizedAvatarData ?? null,
+        actorUserId: req.authUserId,
+      });
+      return created;
+    });
 
     const createdUser = db.get().prepare(`SELECT ${USER_PUBLIC_COLUMNS} FROM users WHERE id = ?`).get(result.lastInsertRowid);
 
@@ -645,15 +773,30 @@ router.patch('/users/:id', requireAuth, requireAdmin, csrfMiddleware, async (req
     if (avatarData?.error) {
       return res.status(400).json({ error: avatarData.error, code: 400 });
     }
+    const memberFields = validateMemberProfileFields(req.body);
+    if (memberFields.errors.length) {
+      return res.status(400).json({ error: memberFields.errors.join(' '), code: 400 });
+    }
 
     const adminError = assertAdminWouldRemain(userId, nextRole);
     if (adminError) return res.status(400).json({ error: adminError, code: 400 });
 
-    db.get().prepare(`
-      UPDATE users
-      SET username = ?, display_name = ?, avatar_color = ?, avatar_data = ?, role = ?, family_role = ?
-      WHERE id = ?
-    `).run(username, displayName, avatarColor || '#007AFF', avatarData ?? null, nextRole, familyRole, userId);
+    db.transaction(() => {
+      db.get().prepare(`
+        UPDATE users
+        SET username = ?, display_name = ?, avatar_color = ?, avatar_data = ?, role = ?, family_role = ?
+        WHERE id = ?
+      `).run(username, displayName, avatarColor || '#007AFF', avatarData ?? null, nextRole, familyRole, userId);
+
+      syncFamilyMemberArtifacts(db.get(), userId, {
+        displayName,
+        phone: memberFields.values.phone,
+        email: memberFields.values.email,
+        birthDate: memberFields.values.birth_date,
+        avatarData: avatarData ?? null,
+        actorUserId: req.authUserId,
+      });
+    });
 
     if (nextRole !== existing.role) {
       updateUserRoleSessions(userId, nextRole);
@@ -685,6 +828,7 @@ router.patch('/me/profile', requireAuth, csrfMiddleware, (req, res) => {
     const avatarData = req.body.avatar_data !== undefined
       ? normalizeAvatarData(req.body.avatar_data)
       : existing.avatar_data;
+    const memberFields = validateMemberProfileFields(req.body);
 
     if (!displayName) return res.status(400).json({ error: 'Display name is required.', code: 400 });
     if (displayName.length > 128) {
@@ -693,12 +837,25 @@ router.patch('/me/profile', requireAuth, csrfMiddleware, (req, res) => {
     if (avatarData?.error) {
       return res.status(400).json({ error: avatarData.error, code: 400 });
     }
+    if (memberFields.errors.length) {
+      return res.status(400).json({ error: memberFields.errors.join(' '), code: 400 });
+    }
 
-    db.get().prepare(`
-      UPDATE users
-      SET display_name = ?, avatar_color = ?, avatar_data = ?
-      WHERE id = ?
-    `).run(displayName, avatarColor || '#007AFF', avatarData ?? null, req.authUserId);
+    db.transaction(() => {
+      db.get().prepare(`
+        UPDATE users
+        SET display_name = ?, avatar_color = ?, avatar_data = ?
+        WHERE id = ?
+      `).run(displayName, avatarColor || '#007AFF', avatarData ?? null, req.authUserId);
+      syncFamilyMemberArtifacts(db.get(), req.authUserId, {
+        displayName,
+        phone: memberFields.values.phone,
+        email: memberFields.values.email,
+        birthDate: memberFields.values.birth_date,
+        avatarData: avatarData ?? null,
+        actorUserId: req.authUserId,
+      });
+    });
 
     const updated = db.get().prepare(`SELECT ${USER_PUBLIC_COLUMNS} FROM users WHERE id = ?`).get(req.authUserId);
     res.json({ user: publicUser(updated) });
@@ -767,7 +924,11 @@ router.delete('/users/:id', requireAuth, requireAdmin, csrfMiddleware, (req, res
       return res.status(400).json({ error: 'You cannot delete your own account.', code: 400 });
     }
 
-    const result = db.get().prepare('DELETE FROM users WHERE id = ?').run(userId);
+    const result = db.transaction(() => {
+      const birthday = db.get().prepare('SELECT * FROM birthdays WHERE family_user_id = ?').get(userId);
+      if (birthday) deleteBirthdayArtifacts(db.get(), birthday);
+      return db.get().prepare('DELETE FROM users WHERE id = ?').run(userId);
+    });
 
     if (result.changes === 0) {
       return res.status(404).json({ error: 'User not found.', code: 404 });

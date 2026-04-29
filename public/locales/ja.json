@@ -28,7 +28,8 @@
     "all": "すべて",
     "unknownError": "不明なエラー",
     "confirm": "確認",
-    "undo": "元に戻す"
+    "undo": "元に戻す",
+    "reset": "元に戻す"
   },
   "nav": {
     "dashboard": "ダッシュボード",
@@ -550,6 +551,8 @@
     "tabBudget": "家計",
     "tabShopping": "買い物",
     "tabCalendar": "カレンダー",
+    "tabFamily": "家族管理",
+    "tabApiTokens": "APIトークン",
     "tabAccount": "アカウント",
     "tabsAriaLabel": "設定カテゴリー",
     "sectionDesign": "デザイン",
@@ -730,7 +733,14 @@
         "private": "プライベート",
         "shared": "共有"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "家族計画。安全。プライバシー重視。オープンソース。",

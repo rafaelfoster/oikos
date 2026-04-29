@@ -28,7 +28,8 @@
     "all": "Alla",
     "unknownError": "Okänt fel",
     "confirm": "Bekräfta",
-    "undo": "Ångra"
+    "undo": "Ångra",
+    "reset": "Återställ till original"
   },
   "nav": {
     "dashboard": "Översikt",
@@ -550,6 +551,8 @@
     "tabBudget": "Budget",
     "tabShopping": "Inköp",
     "tabCalendar": "Kalender",
+    "tabFamily": "Familjehantering",
+    "tabApiTokens": "API Tokens",
     "tabAccount": "Konto",
     "tabsAriaLabel": "Inställningsavsnitt",
     "sectionDesign": "Utseende",
@@ -730,7 +733,14 @@
         "private": "Privat",
         "shared": "Delad"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Familjeplanering. Säker. Sekretessvänlig. Öppen källkod.",

@@ -28,7 +28,8 @@
     "all": "الكل",
     "unknownError": "خطأ غير معروف",
     "confirm": "تأكيد",
-    "undo": "تراجع"
+    "undo": "تراجع",
+    "reset": "إعادة التعيين للأصل"
   },
   "nav": {
     "dashboard": "لوحة التحكم",
@@ -550,6 +551,8 @@
     "tabBudget": "الميزانية",
     "tabShopping": "التسوق",
     "tabCalendar": "التقويم",
+    "tabFamily": "إدارة العائلة",
+    "tabApiTokens": "رموز API",
     "tabAccount": "الحساب",
     "tabsAriaLabel": "أقسام الإعدادات",
     "sectionDesign": "التصميم",
@@ -730,7 +733,14 @@
         "private": "خاص",
         "shared": "مشترك"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "تخطيط عائلي. آمن. يحترم الخصوصية. مفتوح المصدر.",

@@ -28,7 +28,8 @@
     "all": "Tout",
     "unknownError": "Erreur inconnue",
     "confirm": "Confirmer",
-    "undo": "Annuler"
+    "undo": "Annuler",
+    "reset": "Réinitialiser"
   },
   "nav": {
     "dashboard": "Accueil",
@@ -550,6 +551,8 @@
     "tabBudget": "Budget",
     "tabShopping": "Courses",
     "tabCalendar": "Calendrier",
+    "tabFamily": "Gestion familiale",
+    "tabApiTokens": "API Tokens",
     "tabAccount": "Compte",
     "tabsAriaLabel": "Sections des paramètres",
     "sectionDesign": "Apparence",
@@ -730,7 +733,14 @@
         "private": "Privé",
         "shared": "Partagé"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Planification familiale. Sécurisée. Respectueuse de la vie privée. Open source.",

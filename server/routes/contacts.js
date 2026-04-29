@@ -138,6 +138,13 @@ router.put('/:id', (req, res) => {
 router.delete('/:id', (req, res) => {
   try {
     const id     = parseInt(req.params.id, 10);
+    const contact = db.get().prepare('SELECT family_user_id FROM contacts WHERE id = ?').get(id);
+    if (!contact) return res.status(404).json({ error: 'Kontakt nicht gefunden', code: 404 });
+    
+    if (contact.family_user_id) {
+      return res.status(403).json({ error: 'Familienmitglieder können nicht aus der Kontaktliste gelöscht werden.', code: 403 });
+    }
+
     const result = db.get().prepare('DELETE FROM contacts WHERE id = ?').run(id);
     if (result.changes === 0)
       return res.status(404).json({ error: 'Kontakt nicht gefunden', code: 404 });

@@ -6,7 +6,7 @@
 
 import { api, auth } from '/api.js';
 import { openModal, closeModal, confirmModal } from '/components/modal.js';
-import { t, formatDate, formatTime } from '/i18n.js';
+import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, getDateFormat } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import '/components/oikos-locale-picker.js';
 
@@ -56,6 +56,37 @@ function buildFamilyRoleOptions(selected = 'other') {
   `).join('');
 }
 
+function maskDateInputValue(value) {
+  const digits = String(value || '').replace(/\D/g, '').slice(0, 8);
+  if (!digits) return '';
+
+  if (getDateFormat() === 'ymd') {
+    return [
+      digits.slice(0, 4),
+      digits.slice(4, 6),
+      digits.slice(6, 8),
+    ].filter(Boolean).join('-');
+  }
+
+  return [
+    digits.slice(0, 2),
+    digits.slice(2, 4),
+    digits.slice(4, 8),
+  ].filter(Boolean).join('/');
+}
+
+function bindSettingsDateInputs(root) {
+  root.querySelectorAll('.js-date-input').forEach((input) => {
+    input.addEventListener('input', () => {
+      input.value = maskDateInputValue(input.value);
+    });
+    input.addEventListener('blur', () => {
+      const parsed = parseDateInput(input.value);
+      if (parsed) input.value = formatDateInput(parsed);
+    });
+  });
+}
+
 function avatarHtml(user, className = 'settings-avatar') {
   const safeName = esc(user?.display_name || '');
   const fallback = esc(initials(user?.display_name || ''));
@@ -70,14 +101,17 @@ function avatarHtml(user, className = 'settings-avatar') {
 function avatarEditorHtml(user, prefix) {
   return `
     <div class="settings-avatar-editor">
-      <div class="settings-avatar-preview" id="${prefix}-avatar-preview">
+      <button type="button" class="settings-avatar-button" id="${prefix}-avatar-preview" aria-label="${t('settings.profilePictureLabel')}">
         ${avatarHtml(user, 'settings-avatar settings-avatar--lg')}
-      </div>
-      <div class="settings-avatar-editor__controls">
-        <label class="form-label" for="${prefix}-avatar-file">${t('settings.profilePictureLabel')}</label>
-        <input class="form-input" type="file" id="${prefix}-avatar-file" accept="image/png,image/jpeg,image/webp" />
-        <p class="form-hint">${t('settings.profilePictureHint')}</p>
-        <button type="button" class="btn btn--secondary" id="${prefix}-avatar-remove">${t('settings.profilePictureRemove')}</button>
+      </button>
+      <input class="sr-only" type="file" id="${prefix}-avatar-file" accept="image/png,image/jpeg,image/webp" />
+      <div class="settings-avatar-actions">
+        <button type="button" class="settings-avatar-action" id="${prefix}-avatar-edit" aria-label="${t('settings.profilePictureLabel')}" title="${t('settings.profilePictureLabel')}">
+          <i data-lucide="edit-2" aria-hidden="true"></i>
+        </button>
+        <button type="button" class="settings-avatar-action settings-avatar-action--danger" id="${prefix}-avatar-remove" aria-label="${t('settings.profilePictureRemove')}" title="${t('settings.profilePictureRemove')}">
+          <i data-lucide="trash-2" aria-hidden="true"></i>
+        </button>
       </div>
     </div>
   `;
@@ -88,6 +122,17 @@ function setAvatarPreview(container, selector, user) {
   if (!preview) return;
   preview.replaceChildren();
   preview.insertAdjacentHTML('beforeend', avatarHtml(user, 'settings-avatar settings-avatar--lg'));
+}
+
+function bindAvatarPicker(container, prefix) {
+  const fileInput = container.querySelector(`#${prefix}-avatar-file`);
+  const pickers = [
+    container.querySelector(`#${prefix}-avatar-preview`),
+    container.querySelector(`#${prefix}-avatar-edit`),
+  ];
+  pickers.forEach((picker) => {
+    picker?.addEventListener('click', () => fileInput?.click());
+  });
 }
 
 function readImageAsDataUrl(file) {
@@ -137,6 +182,14 @@ function readImageAsDataUrl(file) {
  * @param {{ user: object }} context
  */
 export async function render(container, { user }) {
+  try {
+    const me = await auth.me();
+    if (me?.user && user) Object.assign(user, me.user);
+    else if (me?.user) user = me.user;
+  } catch {
+    // Non-critical: render with the user object provided by the router.
+  }
+
   // URL-Parameter auswerten (z.B. nach OAuth-Callback)
   const params   = new URLSearchParams(location.search);
   const syncOk   = params.get('sync_ok');
@@ -187,9 +240,15 @@ export async function render(container, { user }) {
       ? (appleStatus.lastSync ? t('settings.configuredLastSync', { date: formatDateTime(appleStatus.lastSync) }) : t('settings.configured'))
       : t('settings.notConnected');
 
+  const allowedTabs = [
+    'general', 'meals', 'budget', 'shopping', 'calendar',
+    ...(user?.role === 'admin' ? ['family', 'api-tokens'] : []),
+    'account',
+  ];
+  const storedTab = sessionStorage.getItem(SETTINGS_TAB_KEY) ?? 'general';
   const activeTab = (syncOk || syncErr)
     ? 'calendar'
-    : (sessionStorage.getItem(SETTINGS_TAB_KEY) ?? 'general');
+    : (allowedTabs.includes(storedTab) ? storedTab : 'general');
 
   const panelHidden = (id) => id === activeTab ? '' : ' hidden';
   const btnClass    = (id) => `settings-tab-btn${id === activeTab ? ' settings-tab-btn--active' : ''}`;
@@ -210,6 +269,8 @@ export async function render(container, { user }) {
         <button class="${btnClass('budget')}"   role="tab" data-tab="budget"   aria-selected="${btnAria('budget')}">${t('settings.tabBudget')}</button>
         <button class="${btnClass('shopping')}" role="tab" data-tab="shopping" aria-selected="${btnAria('shopping')}">${t('settings.tabShopping')}</button>
         <button class="${btnClass('calendar')}" role="tab" data-tab="calendar" aria-selected="${btnAria('calendar')}">${t('settings.tabCalendar')}</button>
+        ${user?.role === 'admin' ? `<button class="${btnClass('family')}" role="tab" data-tab="family" aria-selected="${btnAria('family')}">${t('settings.tabFamily')}</button>` : ''}
+        ${user?.role === 'admin' ? `<button class="${btnClass('api-tokens')}" role="tab" data-tab="api-tokens" aria-selected="${btnAria('api-tokens')}">${t('settings.tabApiTokens')}</button>` : ''}
         <button class="${btnClass('account')}"  role="tab" data-tab="account"  aria-selected="${btnAria('account')}">${t('settings.tabAccount')}</button>
       </nav>
 
@@ -467,6 +528,110 @@ export async function render(container, { user }) {
         </section>
       </div>
 
+      ${user?.role === 'admin' ? `
+      <!-- Panel: Family Management -->
+      <div class="settings-tab-panel" data-panel="family" role="tabpanel"${panelHidden('family')}>
+        <section class="settings-section">
+          <h2 class="settings-section__title">${t('settings.sectionFamily')}</h2>
+          <div class="settings-card" id="members-card">
+            <ul class="settings-members" id="members-list">
+              ${users.map(memberHtml).join('')}
+            </ul>
+            <button class="btn btn--primary settings-add-btn" id="add-member-btn">${t('settings.addMember')}</button>
+          </div>
+
+          <div class="settings-card settings-card--hidden" id="add-member-form-card">
+            <h3 class="settings-card__title">${t('settings.newMemberTitle')}</h3>
+            <form id="add-member-form" class="settings-form">
+              <div class="form-group">
+                <label class="form-label" for="new-username">${t('settings.usernameLabel')}</label>
+                <input class="form-input" type="text" id="new-username" required autocomplete="off" />
+              </div>
+              <div class="settings-name-color-row">
+                <div class="form-group settings-name-color-row__name">
+                  <label class="form-label" for="new-display-name">${t('settings.displayNameLabel')}</label>
+                  <input class="form-input" type="text" id="new-display-name" required />
+                </div>
+                <div class="form-group settings-color-field">
+                  <label class="form-label" for="new-avatar-color">${t('settings.colorLabel')}</label>
+                  <input class="settings-color-button" type="color" id="new-avatar-color" value="#007AFF" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-member-password">${t('settings.memberPasswordLabel')}</label>
+                <input class="form-input" type="password" id="new-member-password" minlength="8" required autocomplete="new-password" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-family-role">${t('settings.familyRoleLabel')}</label>
+                <select class="form-input" id="new-family-role">
+                  ${buildFamilyRoleOptions()}
+                </select>
+              </div>
+              <div class="modal-grid modal-grid--2">
+                <div class="form-group">
+                  <label class="form-label" for="new-member-phone">${t('settings.memberPhoneLabel')}</label>
+                  <input class="form-input" type="tel" id="new-member-phone" autocomplete="tel" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="new-member-email">${t('settings.memberEmailLabel')}</label>
+                  <input class="form-input" type="email" id="new-member-email" autocomplete="email" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="new-member-birth-date">${t('settings.memberBirthDateLabel')}</label>
+                <input class="form-input js-date-input" type="text" id="new-member-birth-date" placeholder="${dateInputPlaceholder()}" inputmode="numeric" />
+                <p class="form-hint">${t('settings.memberContactBirthdayHint')}</p>
+              </div>
+              <label class="toggle-row">
+                <input type="checkbox" id="new-system-admin" />
+                <span>${t('settings.systemAdminLabel')}</span>
+              </label>
+              <p class="form-hint">${t('settings.systemAdminHint')}</p>
+              <div id="member-error" class="form-error" hidden></div>
+              <div class="settings-form-actions">
+                <button type="submit" class="btn btn--primary">${t('settings.createMember')}</button>
+                <button type="button" class="btn btn--secondary" id="cancel-add-member">${t('settings.cancelAddMember')}</button>
+              </div>
+            </form>
+          </div>
+        </section>
+      </div>
+      ` : ''}
+
+      ${user?.role === 'admin' ? `
+      <!-- Panel: API Tokens -->
+      <div class="settings-tab-panel" data-panel="api-tokens" role="tabpanel"${panelHidden('api-tokens')}>
+        <section class="settings-section">
+          <h2 class="settings-section__title">${t('settings.apiTokensTitle')}</h2>
+          <div class="settings-card">
+            <h3 class="settings-card__title">${t('settings.apiTokensCardTitle')}</h3>
+            <p class="form-hint" style="margin-bottom:var(--space-3)">${t('settings.apiTokensHint')}</p>
+            <ul class="settings-members" id="api-token-list">
+              ${apiTokens.map(apiTokenHtml).join('')}
+            </ul>
+            <form id="api-token-form" class="settings-form" autocomplete="off">
+              <div class="form-group">
+                <label class="form-label" for="api-token-name">${t('settings.apiTokenNameLabel')}</label>
+                <input class="form-input" type="text" id="api-token-name" maxlength="100" required />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="api-token-expires">${t('settings.apiTokenExpiresLabel')}</label>
+                <input class="form-input" type="datetime-local" id="api-token-expires" />
+                <p class="form-hint">${t('settings.apiTokenExpiresHint')}</p>
+              </div>
+              <div id="api-token-created" class="settings-token-output" hidden>
+                <label class="form-label" for="api-token-created-value">${t('settings.apiTokenCreatedLabel')}</label>
+                <input class="form-input" id="api-token-created-value" type="text" readonly />
+                <p class="form-hint">${t('settings.apiTokenCreatedHint')}</p>
+              </div>
+              <div id="api-token-error" class="form-error" hidden></div>
+              <button type="submit" class="btn btn--primary">${t('settings.apiTokenCreate')}</button>
+            </form>
+          </div>
+        </section>
+      </div>
+      ` : ''}
+
       <!-- Panel: Konto -->
       <div class="settings-tab-panel" data-panel="account" role="tabpanel"${panelHidden('account')}>
         <section class="settings-section">
@@ -485,14 +650,35 @@ export async function render(container, { user }) {
           <div class="settings-card">
             <h3 class="settings-card__title">${t('settings.profilePictureTitle')}</h3>
             <form id="profile-form" class="settings-form">
-              ${avatarEditorHtml(user, 'profile')}
-              <div class="form-group">
-                <label class="form-label" for="profile-display-name">${t('settings.displayNameLabel')}</label>
-                <input class="form-input" type="text" id="profile-display-name" maxlength="128" value="${esc(user?.display_name || '')}" required />
+              <div class="settings-profile-editor">
+                ${avatarEditorHtml(user, 'profile')}
+                <div class="settings-profile-editor__fields">
+                  <div class="settings-name-color-row">
+                    <div class="form-group settings-name-color-row__name">
+                      <label class="form-label" for="profile-display-name">${t('settings.displayNameLabel')}</label>
+                      <input class="form-input" type="text" id="profile-display-name" maxlength="128" value="${esc(user?.display_name || '')}" required />
+                    </div>
+                    <div class="form-group settings-color-field">
+                      <label class="form-label" for="profile-avatar-color">${t('settings.colorLabel')}</label>
+                      <input class="settings-color-button" type="color" id="profile-avatar-color" value="${esc(user?.avatar_color || '#007AFF')}" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-grid modal-grid--2">
+                <div class="form-group">
+                  <label class="form-label" for="profile-phone">${t('settings.memberPhoneLabel')}</label>
+                  <input class="form-input" type="tel" id="profile-phone" value="${esc(user?.phone || '')}" autocomplete="tel" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="profile-email">${t('settings.memberEmailLabel')}</label>
+                  <input class="form-input" type="email" id="profile-email" value="${esc(user?.email || '')}" autocomplete="email" />
+                </div>
               </div>
               <div class="form-group">
-                <label class="form-label" for="profile-avatar-color">${t('settings.colorLabel')}</label>
-                <input class="form-input form-input--color" type="color" id="profile-avatar-color" value="${esc(user?.avatar_color || '#007AFF')}" />
+                <label class="form-label" for="profile-birth-date">${t('settings.memberBirthDateLabel')}</label>
+                <input class="form-input js-date-input" type="text" id="profile-birth-date" value="${esc(formatDateInput(user?.birth_date))}" placeholder="${dateInputPlaceholder()}" inputmode="numeric" />
+                <p class="form-hint">${t('settings.memberContactBirthdayHint')}</p>
               </div>
               <div id="profile-error" class="form-error" hidden></div>
               <div class="settings-form-actions">
@@ -522,85 +708,6 @@ export async function render(container, { user }) {
           </div>
         </section>
 
-        ${user?.role === 'admin' ? `
-        <section class="settings-section">
-          <h2 class="settings-section__title">${t('settings.apiTokensTitle')}</h2>
-          <div class="settings-card">
-            <h3 class="settings-card__title">${t('settings.apiTokensCardTitle')}</h3>
-            <p class="form-hint" style="margin-bottom:var(--space-3)">${t('settings.apiTokensHint')}</p>
-            <ul class="settings-members" id="api-token-list">
-              ${apiTokens.map(apiTokenHtml).join('')}
-            </ul>
-            <form id="api-token-form" class="settings-form" autocomplete="off">
-              <div class="form-group">
-                <label class="form-label" for="api-token-name">${t('settings.apiTokenNameLabel')}</label>
-                <input class="form-input" type="text" id="api-token-name" maxlength="100" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="api-token-expires">${t('settings.apiTokenExpiresLabel')}</label>
-                <input class="form-input" type="datetime-local" id="api-token-expires" />
-                <p class="form-hint">${t('settings.apiTokenExpiresHint')}</p>
-              </div>
-              <div id="api-token-created" class="settings-token-output" hidden>
-                <label class="form-label" for="api-token-created-value">${t('settings.apiTokenCreatedLabel')}</label>
-                <input class="form-input" id="api-token-created-value" type="text" readonly />
-                <p class="form-hint">${t('settings.apiTokenCreatedHint')}</p>
-              </div>
-              <div id="api-token-error" class="form-error" hidden></div>
-              <button type="submit" class="btn btn--primary">${t('settings.apiTokenCreate')}</button>
-            </form>
-          </div>
-        </section>
-
-        <section class="settings-section">
-          <h2 class="settings-section__title">${t('settings.sectionFamily')}</h2>
-          <div class="settings-card" id="members-card">
-            <ul class="settings-members" id="members-list">
-              ${users.map(memberHtml).join('')}
-            </ul>
-            <button class="btn btn--primary settings-add-btn" id="add-member-btn">${t('settings.addMember')}</button>
-          </div>
-
-          <div class="settings-card settings-card--hidden" id="add-member-form-card">
-            <h3 class="settings-card__title">${t('settings.newMemberTitle')}</h3>
-            <form id="add-member-form" class="settings-form">
-              <div class="form-group">
-                <label class="form-label" for="new-username">${t('settings.usernameLabel')}</label>
-                <input class="form-input" type="text" id="new-username" required autocomplete="off" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-display-name">${t('settings.displayNameLabel')}</label>
-                <input class="form-input" type="text" id="new-display-name" required />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-member-password">${t('settings.memberPasswordLabel')}</label>
-                <input class="form-input" type="password" id="new-member-password" minlength="8" required autocomplete="new-password" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-avatar-color">${t('settings.colorLabel')}</label>
-                <input class="form-input form-input--color" type="color" id="new-avatar-color" value="#007AFF" />
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="new-family-role">${t('settings.familyRoleLabel')}</label>
-                <select class="form-input" id="new-family-role">
-                  ${buildFamilyRoleOptions()}
-                </select>
-              </div>
-              <label class="toggle-row">
-                <input type="checkbox" id="new-system-admin" />
-                <span>${t('settings.systemAdminLabel')}</span>
-              </label>
-              <p class="form-hint">${t('settings.systemAdminHint')}</p>
-              <div id="member-error" class="form-error" hidden></div>
-              <div class="settings-form-actions">
-                <button type="submit" class="btn btn--primary">${t('settings.createMember')}</button>
-                <button type="button" class="btn btn--secondary" id="cancel-add-member">${t('settings.cancelAddMember')}</button>
-              </div>
-            </form>
-          </div>
-        </section>
-        ` : ''}
-
         <section class="settings-section">
           <button class="btn btn--danger-outline settings-logout-btn" id="logout-btn">${t('settings.logout')}</button>
         </section>
@@ -617,6 +724,7 @@ export async function render(container, { user }) {
   }
 
   bindEvents(container, user, users, categories, icsSubscriptions, apiTokens);
+  if (window.lucide) window.lucide.createIcons();
 }
 
 // --------------------------------------------------------
@@ -625,6 +733,7 @@ export async function render(container, { user }) {
 
 function bindEvents(container, user, users, categories, icsSubscriptions, apiTokens) {
   bindTabEvents(container);
+  bindSettingsDateInputs(container);
   bindCategoryEvents(container);
   bindIcsEvents(container, user, icsSubscriptions);
   bindApiTokenEvents(container, apiTokens);
@@ -728,6 +837,7 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
 
   const profileState = { avatarData: user?.avatar_data ?? null };
   const profileAvatarFile = container.querySelector('#profile-avatar-file');
+  bindAvatarPicker(container, 'profile');
   if (profileAvatarFile) {
     profileAvatarFile.addEventListener('change', async () => {
       const errorEl = container.querySelector('#profile-error');
@@ -765,13 +875,21 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
       e.preventDefault();
       const errorEl = container.querySelector('#profile-error');
       const btn = profileForm.querySelector('[type=submit]');
+      const birthDateRaw = container.querySelector('#profile-birth-date')?.value || '';
       errorEl.hidden = true;
+      if (!isDateInputValid(birthDateRaw)) {
+        showError(errorEl, t('settings.memberBirthDateInvalid'));
+        return;
+      }
       btn.disabled = true;
       try {
         const res = await auth.updateProfile({
           display_name: container.querySelector('#profile-display-name').value.trim(),
           avatar_color: container.querySelector('#profile-avatar-color').value,
           avatar_data: profileState.avatarData,
+          phone: container.querySelector('#profile-phone')?.value.trim() || null,
+          email: container.querySelector('#profile-email')?.value.trim() || null,
+          birth_date: parseDateInput(birthDateRaw) || null,
         });
         Object.assign(user, res.user);
         window.oikos?.showToast(t('settings.profileSavedToast'), 'success');
@@ -934,6 +1052,11 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
       e.preventDefault();
       const errorEl = container.querySelector('#member-error');
       errorEl.hidden = true;
+      const birthDateRaw = container.querySelector('#new-member-birth-date')?.value || '';
+      if (!isDateInputValid(birthDateRaw)) {
+        showError(errorEl, t('settings.memberBirthDateInvalid'));
+        return;
+      }
 
       const data = {
         username:     container.querySelector('#new-username').value.trim(),
@@ -942,6 +1065,9 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
         avatar_color: container.querySelector('#new-avatar-color').value,
         family_role:  container.querySelector('#new-family-role').value,
         system_admin: container.querySelector('#new-system-admin')?.checked === true,
+        phone:        container.querySelector('#new-member-phone')?.value.trim() || null,
+        email:        container.querySelector('#new-member-email')?.value.trim() || null,
+        birth_date:   parseDateInput(birthDateRaw) || null,
       };
 
       const btn = addMemberForm.querySelector('[type=submit]');
@@ -1049,24 +1175,45 @@ function openEditMemberModal(member, currentUser, users, container) {
     size: 'md',
     content: `
       <form id="edit-member-form" class="settings-form">
-        ${avatarEditorHtml(member, 'edit-member')}
-        <div class="form-group">
-          <label class="form-label" for="edit-member-username">${t('settings.usernameLabel')}</label>
-          <input class="form-input" type="text" id="edit-member-username" value="${esc(member.username)}" required autocomplete="off" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="edit-member-display-name">${t('settings.displayNameLabel')}</label>
-          <input class="form-input" type="text" id="edit-member-display-name" value="${esc(member.display_name)}" required maxlength="128" />
-        </div>
-        <div class="form-group">
-          <label class="form-label" for="edit-member-avatar-color">${t('settings.colorLabel')}</label>
-          <input class="form-input form-input--color" type="color" id="edit-member-avatar-color" value="${esc(member.avatar_color || '#007AFF')}" />
+        <div class="settings-profile-editor">
+          ${avatarEditorHtml(member, 'edit-member')}
+          <div class="settings-profile-editor__fields">
+            <div class="form-group">
+              <label class="form-label" for="edit-member-username">${t('settings.usernameLabel')}</label>
+              <input class="form-input" type="text" id="edit-member-username" value="${esc(member.username)}" required autocomplete="off" />
+            </div>
+            <div class="settings-name-color-row">
+              <div class="form-group settings-name-color-row__name">
+                <label class="form-label" for="edit-member-display-name">${t('settings.displayNameLabel')}</label>
+                <input class="form-input" type="text" id="edit-member-display-name" value="${esc(member.display_name)}" required maxlength="128" />
+              </div>
+              <div class="form-group settings-color-field">
+                <label class="form-label" for="edit-member-avatar-color">${t('settings.colorLabel')}</label>
+                <input class="settings-color-button" type="color" id="edit-member-avatar-color" value="${esc(member.avatar_color || '#007AFF')}" />
+              </div>
+            </div>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label" for="edit-member-family-role">${t('settings.familyRoleLabel')}</label>
           <select class="form-input" id="edit-member-family-role">
             ${buildFamilyRoleOptions(member.family_role)}
           </select>
+        </div>
+        <div class="modal-grid modal-grid--2">
+          <div class="form-group">
+            <label class="form-label" for="edit-member-phone">${t('settings.memberPhoneLabel')}</label>
+            <input class="form-input" type="tel" id="edit-member-phone" value="${esc(member.phone || '')}" autocomplete="tel" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="edit-member-email">${t('settings.memberEmailLabel')}</label>
+            <input class="form-input" type="email" id="edit-member-email" value="${esc(member.email || '')}" autocomplete="email" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="edit-member-birth-date">${t('settings.memberBirthDateLabel')}</label>
+          <input class="form-input js-date-input" type="text" id="edit-member-birth-date" value="${esc(formatDateInput(member.birth_date))}" placeholder="${dateInputPlaceholder()}" inputmode="numeric" />
+          <p class="form-hint">${t('settings.memberContactBirthdayHint')}</p>
         </div>
         <label class="toggle-row">
           <input type="checkbox" id="edit-member-system-admin" ${member.role === 'admin' ? 'checked' : ''} />
@@ -1083,6 +1230,8 @@ function openEditMemberModal(member, currentUser, users, container) {
     onSave(panel) {
       const fileInput = panel.querySelector('#edit-member-avatar-file');
       const errorEl = panel.querySelector('#edit-member-error');
+      bindSettingsDateInputs(panel);
+      bindAvatarPicker(panel, 'edit-member');
       fileInput?.addEventListener('change', async () => {
         errorEl.hidden = true;
         try {
@@ -1116,6 +1265,12 @@ function openEditMemberModal(member, currentUser, users, container) {
         e.preventDefault();
         const submitBtn = panel.querySelector('[type=submit]');
         errorEl.hidden = true;
+        const birthDateRaw = panel.querySelector('#edit-member-birth-date')?.value || '';
+        if (!isDateInputValid(birthDateRaw)) {
+          showError(errorEl, t('settings.memberBirthDateInvalid'));
+          submitBtn.disabled = false;
+          return;
+        }
         submitBtn.disabled = true;
         try {
           const res = await auth.updateUser(member.id, {
@@ -1125,6 +1280,9 @@ function openEditMemberModal(member, currentUser, users, container) {
             avatar_data: state.avatarData,
             family_role: panel.querySelector('#edit-member-family-role').value,
             system_admin: panel.querySelector('#edit-member-system-admin').checked,
+            phone: panel.querySelector('#edit-member-phone')?.value.trim() || null,
+            email: panel.querySelector('#edit-member-email')?.value.trim() || null,
+            birth_date: parseDateInput(birthDateRaw) || null,
           });
           const idx = users.findIndex((u) => u.id === member.id);
           if (idx !== -1) users[idx] = res.user;
@@ -1389,12 +1547,18 @@ function bindCategoryEvents(container) {
 function memberHtml(u) {
   const familyRole = familyRoleLabel(u.family_role);
   const systemRole = u.role === 'admin' ? ` · ${esc(t('settings.systemAdminBadge'))}` : '';
+  const profileMeta = [
+    u.phone ? t('settings.memberPhoneMeta', { value: u.phone }) : '',
+    u.email || '',
+    u.birth_date ? t('settings.memberBirthdayMeta', { date: formatDate(u.birth_date) }) : '',
+  ].filter(Boolean).map(esc).join(' · ');
   return `
     <li class="settings-member" data-id="${u.id}">
       ${avatarHtml(u, 'settings-avatar settings-avatar--sm')}
       <div class="settings-member__info">
         <span class="settings-member__name">${esc(u.display_name)}</span>
         <span class="settings-member__meta">@${esc(u.username)} · ${esc(familyRole)}${systemRole}</span>
+        ${profileMeta ? `<span class="settings-member__meta">${profileMeta}</span>` : ''}
       </div>
       <button class="btn btn--icon btn--secondary" data-edit-user="${u.id}" aria-label="${esc(u.display_name)} ${t('settings.editMemberLabel')}" title="${t('settings.editMemberLabel')}">
         <i data-lucide="edit-2" aria-hidden="true"></i>
@@ -1624,15 +1788,7 @@ function currentTheme() {
 }
 
 function applyTheme(value) {
-  localStorage.setItem('oikos-theme', value);
-  if (value === 'dark') {
-    document.documentElement.setAttribute('data-theme', 'dark');
-  } else if (value === 'light') {
-    document.documentElement.setAttribute('data-theme', 'light');
-  } else {
-    document.documentElement.removeAttribute('data-theme');
-    // tokens.css @media (prefers-color-scheme: dark) übernimmt sofort
-  }
+  window.oikos?.applyTheme(value);
 }
 
 function showError(el, msg) {

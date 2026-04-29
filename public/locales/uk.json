@@ -28,7 +28,8 @@
     "all": "Усі",
     "unknownError": "Невідома помилка",
     "confirm": "Підтвердити",
-    "undo": "Скасувати"
+    "undo": "Скасувати",
+    "reset": "Скинути до оригіналу"
   },
   "nav": {
     "dashboard": "Огляд",
@@ -550,6 +551,8 @@
     "tabBudget": "Бюджет",
     "tabShopping": "Покупки",
     "tabCalendar": "Календар",
+    "tabFamily": "Керування родиною",
+    "tabApiTokens": "API-токени",
     "tabAccount": "Обліковий запис",
     "tabsAriaLabel": "Розділи налаштувань",
     "sectionDesign": "Зовнішній вигляд",
@@ -730,7 +733,14 @@
         "private": "Приватне",
         "shared": "Спільне"
       }
-    }
+    },
+    "memberPhoneLabel": "Phone number (optional)",
+    "memberEmailLabel": "Email (optional)",
+    "memberBirthDateLabel": "Birthday date (optional)",
+    "memberContactBirthdayHint": "This member is automatically synchronized with Contacts and Birthdays.",
+    "memberBirthDateInvalid": "Use a valid birthday date in the selected date format.",
+    "memberPhoneMeta": "Phone: {{value}}",
+    "memberBirthdayMeta": "Birthday: {{date}}"
   },
   "login": {
     "tagline": "Планування для родини. Безпечно. Конфіденційно. Відкритий код.",
