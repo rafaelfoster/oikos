@@ -735,7 +735,8 @@
       "badges": {
         "private": "Privado",
         "shared": "Partilhado"
-      }
+      },
+      "updatedToast": "Subscrição atualizada."
     },
     "memberPhoneLabel": "Telefone (opcional)",
     "memberEmailLabel": "E-mail (opcional)",

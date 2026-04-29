@@ -732,7 +732,8 @@
       "badges": {
         "private": "خاص",
         "shared": "مشترك"
-      }
+      },
+      "updatedToast": "تم تحديث الاشتراك."
     },
     "memberPhoneLabel": "رقم الهاتف (اختياري)",
     "memberEmailLabel": "البريد الإلكتروني (اختياري)",

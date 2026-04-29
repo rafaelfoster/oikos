@@ -732,7 +732,8 @@
       "badges": {
         "private": "निजी",
         "shared": "साझा"
-      }
+      },
+      "updatedToast": "सदस्यता अपडेट की गई।"
     },
     "memberPhoneLabel": "फ़ोन नंबर (वैकल्पिक)",
     "memberEmailLabel": "ईमेल (वैकल्पिक)",

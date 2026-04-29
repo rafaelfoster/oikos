@@ -732,7 +732,8 @@
       "badges": {
         "private": "Личное",
         "shared": "Общее"
-      }
+      },
+      "updatedToast": "Подписка обновлена."
     },
     "memberPhoneLabel": "Номер телефона (необязательно)",
     "memberEmailLabel": "Электронная почта (необязательно)",

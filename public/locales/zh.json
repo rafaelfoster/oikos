@@ -732,7 +732,8 @@
       "badges": {
         "private": "私人",
         "shared": "共享"
-      }
+      },
+      "updatedToast": "订阅已更新。"
     },
     "memberPhoneLabel": "电话号码（可选）",
     "memberEmailLabel": "电子邮件（可选）",

@@ -1644,6 +1644,19 @@ function renderIcsList(container, subs, user) {
       syncBtn.appendChild(syncIcon);
       actions.appendChild(syncBtn);
 
+      const editBtn = document.createElement('button');
+      editBtn.className = 'btn btn--icon btn--ghost';
+      editBtn.title = t('settings.ics.actions.edit');
+      editBtn.setAttribute('aria-label', t('settings.ics.actions.edit'));
+      editBtn.dataset.action = 'ics-edit';
+      editBtn.dataset.id = sub.id;
+      const editIcon = document.createElement('i');
+      editIcon.setAttribute('data-lucide', 'pencil');
+      editIcon.style.cssText = 'width:14px;height:14px';
+      editIcon.setAttribute('aria-hidden', 'true');
+      editBtn.appendChild(editIcon);
+      actions.appendChild(editBtn);
+
       const delBtn = document.createElement('button');
       delBtn.className = 'btn btn--icon btn--danger-outline';
       delBtn.title = t('settings.ics.actions.delete');
@@ -1754,6 +1767,63 @@ function bindIcsEvents(container, user, initialSubs) {
           if (origIcon) origIcon.setAttribute('data-lucide', 'refresh-cw');
           if (window.lucide) window.lucide.createIcons();
         }
+      }
+
+      if (action === 'ics-edit') {
+        const sub = subs.find((s) => s.id === id);
+        if (!sub) return;
+        openModal({
+          title: t('settings.ics.actions.edit'),
+          size: 'sm',
+          content: `
+            <form id="ics-edit-form" class="settings-form">
+              <div class="form-group">
+                <label class="form-label" for="ics-edit-name">${t('settings.ics.form.name')}</label>
+                <input class="form-input" type="text" id="ics-edit-name" value="${esc(sub.name)}" required maxlength="100" />
+              </div>
+              <div class="settings-name-color-row">
+                <div class="form-group settings-color-field">
+                  <label class="form-label" for="ics-edit-color">${t('settings.ics.form.color')}</label>
+                  <input class="settings-color-button" type="color" id="ics-edit-color" value="${esc(sub.color || '#3b82f6')}" />
+                </div>
+                <div class="form-group" style="display:flex;align-items:center;gap:var(--space-2);padding-top:var(--space-5)">
+                  <input type="checkbox" id="ics-edit-shared" ${sub.shared ? 'checked' : ''} />
+                  <label class="form-label" for="ics-edit-shared" style="margin:0">${t('settings.ics.form.shared')}</label>
+                </div>
+              </div>
+              <div id="ics-edit-error" class="form-error" hidden></div>
+              <div class="settings-form-actions">
+                <button type="button" class="btn btn--secondary" id="ics-edit-cancel">${t('common.cancel')}</button>
+                <button type="submit" class="btn btn--primary">${t('settings.ics.actions.save')}</button>
+              </div>
+            </form>
+          `,
+          onSave(panel) {
+            panel.querySelector('#ics-edit-cancel')?.addEventListener('click', () => closeModal());
+            panel.querySelector('#ics-edit-form')?.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const submitBtn = panel.querySelector('[type=submit]');
+              const errEl     = panel.querySelector('#ics-edit-error');
+              const name      = panel.querySelector('#ics-edit-name').value.trim();
+              const color     = panel.querySelector('#ics-edit-color').value;
+              const shared    = panel.querySelector('#ics-edit-shared').checked ? 1 : 0;
+              errEl.hidden    = true;
+              submitBtn.disabled = true;
+              try {
+                const res = await api.patch(`/calendar/subscriptions/${id}`, { name, color, shared });
+                const idx = subs.findIndex((s) => s.id === id);
+                if (idx >= 0) subs[idx] = res.data;
+                renderIcsList(container, subs, user);
+                window.oikos?.showToast(t('settings.ics.updatedToast'), 'success');
+                closeModal({ force: true });
+              } catch (err) {
+                errEl.textContent = err.message ?? t('common.errorGeneric');
+                errEl.hidden = false;
+                submitBtn.disabled = false;
+              }
+            });
+          },
+        });
       }
 
       if (action === 'ics-delete') {

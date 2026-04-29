@@ -732,7 +732,8 @@
       "badges": {
         "private": "Özel",
         "shared": "Paylaşımlı"
-      }
+      },
+      "updatedToast": "Abonelik güncellendi."
     },
     "memberPhoneLabel": "Telefon numarası (isteğe bağlı)",
     "memberEmailLabel": "E-posta (isteğe bağlı)",

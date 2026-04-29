@@ -732,7 +732,8 @@
       "badges": {
         "private": "Ιδιωτικό",
         "shared": "Κοινόχρηστο"
-      }
+      },
+      "updatedToast": "Η συνδρομή ενημερώθηκε."
     },
     "memberPhoneLabel": "Αριθμός τηλεφώνου (προαιρετικό)",
     "memberEmailLabel": "Email (προαιρετικό)",

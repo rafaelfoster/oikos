@@ -757,7 +757,8 @@
       "empty": "Noch keine Abonnements.",
       "addedToast": "Abonnement hinzugefügt.",
       "syncedToast": "Abonnement synchronisiert.",
-      "deletedToast": "Abonnement gelöscht."
+      "deletedToast": "Abonnement gelöscht.",
+      "updatedToast": "Abonnement aktualisiert."
     },
     "memberPhoneLabel": "Telefonnummer (optional)",
     "memberEmailLabel": "E-Mail (optional)",

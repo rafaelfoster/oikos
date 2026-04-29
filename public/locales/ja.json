@@ -732,7 +732,8 @@
       "badges": {
         "private": "プライベート",
         "shared": "共有"
-      }
+      },
+      "updatedToast": "サブスクリプションが更新されました。"
     },
     "memberPhoneLabel": "電話番号（任意）",
     "memberEmailLabel": "メールアドレス（任意）",
