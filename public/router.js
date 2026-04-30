@@ -366,6 +366,16 @@ async function renderPage(route, previousPath = null) {
 
     await module.render(pageWrapper, { user: currentUser });
 
+    // FAB Long Loop: Einstiegsanimation nach FAB_SEEN_MAX Views deaktivieren
+    if (pageWrapper.querySelector('.page-fab')) {
+      let fabCount = parseInt(localStorage.getItem(FAB_SEEN_KEY) ?? '0', 10);
+      if (fabCount < FAB_SEEN_MAX) {
+        fabCount++;
+        localStorage.setItem(FAB_SEEN_KEY, String(fabCount));
+      }
+      document.documentElement.classList.toggle('fab-anim-done', fabCount >= FAB_SEEN_MAX);
+    }
+
     // Route-Announcer: Screenreader über Seitenwechsel informieren (gezielt, nicht gesamter Inhalt)
     const announcer = document.getElementById('route-announcer');
     if (announcer) {
@@ -617,10 +627,23 @@ function renderAppShell(container) {
   initNavHideOnScroll(container);
   initOfflineBanner();
   initKeyboardShortcuts();
+  if (localStorage.getItem(SEARCH_KBD_KEY)) {
+    document.documentElement.classList.add('search-kbd-done');
+  }
 }
 
+const FAB_SEEN_KEY = 'oikos:fabSeenCount';
+const FAB_SEEN_MAX = 5;
+const SEARCH_KBD_KEY = 'oikos:searchKbdUsed';
+
 const SHORTCUTS = [
-  { key: '/',   description: () => t('shortcuts.search'),  action: () => document.getElementById('more-sheet-search')?.click() },
+  { key: '/',   description: () => t('shortcuts.search'),  action: () => {
+    if (!localStorage.getItem(SEARCH_KBD_KEY)) {
+      localStorage.setItem(SEARCH_KBD_KEY, '1');
+      document.documentElement.classList.add('search-kbd-done');
+    }
+    document.getElementById('more-sheet-search')?.click();
+  } },
   { key: 'n',   description: () => t('shortcuts.new'),     action: () => document.querySelector('.page-fab')?.click() },
   { key: '?',   description: () => t('shortcuts.help'),    action: () => showShortcutsModal() },
   { key: 'g d', description: () => t('shortcuts.goDash'),  action: () => navigate('/') },
@@ -1107,6 +1130,9 @@ function renderError(container, err) {
  * @param {'default'|'success'|'danger'|'warning'} type
  * @param {number} duration - ms
  */
+const TOAST_SUCCESS_KEY = 'oikos:toastSuccessCount';
+const TOAST_SUCCESS_MAX = 50;
+
 const TOAST_ICONS = {
   success: '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
   danger:  '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
@@ -1116,6 +1142,13 @@ const TOAST_ICONS = {
 function showToast(message, type = 'default', duration = 3000, onUndo = null) {
   const container = document.getElementById('toast-container');
   if (!container) return;
+
+  // Long Loop: Success-Toasts nach TOAST_SUCCESS_MAX Aufrufen unterdrücken
+  if (type === 'success' && typeof onUndo !== 'function') {
+    const successCount = parseInt(localStorage.getItem(TOAST_SUCCESS_KEY) ?? '0', 10) + 1;
+    localStorage.setItem(TOAST_SUCCESS_KEY, String(successCount));
+    if (successCount > TOAST_SUCCESS_MAX) return;
+  }
 
   // Max. 3 gleichzeitige Toasts: ältesten entfernen falls Limit erreicht
   const existing = container.querySelectorAll('.toast');

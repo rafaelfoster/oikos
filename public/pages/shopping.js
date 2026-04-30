@@ -352,6 +352,8 @@ function wireQuickAdd(container) {
       // Erfolgs-Feedback auf dem +-Button (DOM-API, kein innerHTML)
       _flashAddBtn(form.querySelector('.quick-add__btn'));
       nameInput.focus();
+      nameInput.classList.add('quick-add__input--flash');
+      nameInput.addEventListener('animationend', () => nameInput.classList.remove('quick-add__input--flash'), { once: true });
     } catch (err) {
       window.oikos.showToast(err.message, 'danger');
     }

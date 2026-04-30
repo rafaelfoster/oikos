@@ -305,7 +305,7 @@
 }
 
 @media (min-width: 1024px) {
-  .more-sheet__search-kbd {
+  html:not(.search-kbd-done) .more-sheet__search-kbd {
     display: inline;
   }
 }
@@ -577,6 +577,11 @@
   outline: 2px solid var(--color-bg);
   outline-offset: 2px;
   box-shadow: 0 0 0 4px var(--color-accent);
+}
+
+/* Long Loop: FAB-Animation nach N Aufrufen deaktivieren */
+html.fab-anim-done .page-fab {
+  animation: none;
 }
 
 /* Desktop: FAB Position anpassen (keine Bottom-Nav) und etwas kleiner */
@@ -1383,6 +1388,22 @@
   display: flex;
 }
 
+/* Pulse-Animation bei wiederholtem Fehler */
+@keyframes field-error-pulse {
+  0%, 100% { box-shadow: none; }
+  40%       { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 35%, transparent); }
+}
+
+.form-field--error-repeat .input,
+.form-field--error-repeat .form-input {
+  animation: field-error-pulse 500ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-field--error-repeat .input,
+  .form-field--error-repeat .form-input { animation: none; }
+}
+
 /* --------------------------------------------------------
  * Toggle-Switch
  * Custom iOS-style toggle, ersetzt native Checkboxen.
@@ -1505,6 +1526,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .empty-state { animation: none; }
+  .empty-state__cta { animation: none; }
 }
 
 .empty-state__icon {
@@ -1540,6 +1562,7 @@
 
 .empty-state__cta {
   margin-top: var(--space-2);
+  animation: list-item-in 300ms var(--ease-out) 300ms both;
 }
 
 .empty-state--compact {
@@ -2311,6 +2334,23 @@ textarea.input { resize: vertical; }
     text-decoration: underline;
     text-underline-offset: 3px;
   }
+}
+
+/* --------------------------------------------------------
+ * Signature Moment: Eingabefeld-Glow nach erfolgreichem Item-Add
+ * -------------------------------------------------------- */
+@keyframes input-add-flash {
+  0%   { box-shadow: none; }
+  25%  { box-shadow: 0 0 0 3px color-mix(in srgb, var(--module-accent, var(--color-accent)) 45%, transparent); }
+  100% { box-shadow: none; }
+}
+
+.quick-add__input--flash {
+  animation: input-add-flash 550ms var(--ease-out) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-add__input--flash { animation: none; }
 }
 
 /* --------------------------------------------------------
