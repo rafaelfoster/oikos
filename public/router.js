@@ -627,13 +627,23 @@ function renderAppShell(container) {
   initNavHideOnScroll(container);
   initOfflineBanner();
   initKeyboardShortcuts();
+  if (localStorage.getItem(SEARCH_KBD_KEY)) {
+    document.documentElement.classList.add('search-kbd-done');
+  }
 }
 
 const FAB_SEEN_KEY = 'oikos:fabSeenCount';
 const FAB_SEEN_MAX = 5;
+const SEARCH_KBD_KEY = 'oikos:searchKbdUsed';
 
 const SHORTCUTS = [
-  { key: '/',   description: () => t('shortcuts.search'),  action: () => document.getElementById('more-sheet-search')?.click() },
+  { key: '/',   description: () => t('shortcuts.search'),  action: () => {
+    if (!localStorage.getItem(SEARCH_KBD_KEY)) {
+      localStorage.setItem(SEARCH_KBD_KEY, '1');
+      document.documentElement.classList.add('search-kbd-done');
+    }
+    document.getElementById('more-sheet-search')?.click();
+  } },
   { key: 'n',   description: () => t('shortcuts.new'),     action: () => document.querySelector('.page-fab')?.click() },
   { key: '?',   description: () => t('shortcuts.help'),    action: () => showShortcutsModal() },
   { key: 'g d', description: () => t('shortcuts.goDash'),  action: () => navigate('/') },

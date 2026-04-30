@@ -305,7 +305,7 @@
 }
 
 @media (min-width: 1024px) {
-  .more-sheet__search-kbd {
+  html:not(.search-kbd-done) .more-sheet__search-kbd {
     display: inline;
   }
 }
