@@ -445,6 +445,67 @@
   word-break: break-word;
 }
 
+.document-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 148px;
+  padding: var(--space-5);
+  border: 1.5px dashed color-mix(in srgb, var(--module-calendar) 48%, var(--color-border));
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--module-calendar) 7%, var(--color-surface));
+  color: var(--color-text-secondary);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.document-dropzone:hover,
+.document-dropzone--active {
+  border-color: var(--module-calendar);
+  background: color-mix(in srgb, var(--module-calendar) 12%, var(--color-surface));
+}
+
+.document-dropzone--active {
+  transform: translateY(-1px);
+}
+
+.document-dropzone__icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--module-calendar);
+  background: color-mix(in srgb, var(--module-calendar) 15%, transparent);
+}
+
+.document-dropzone__icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.document-dropzone__title {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.document-dropzone__hint,
+.document-dropzone__file {
+  max-width: 100%;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
+}
+
+.document-dropzone__file {
+  color: var(--module-calendar);
+  font-weight: var(--font-weight-medium);
+}
+
 /* --------------------------------------------------------
  * Tagesansicht
  * -------------------------------------------------------- */

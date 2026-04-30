@@ -327,20 +327,41 @@ function readFileAsDataUrl(file) {
   });
 }
 
+function attachmentDataUrl(data, mime) {
+  const raw = String(data || '');
+  if (!raw) return '';
+  if (raw.startsWith('data:')) return raw;
+  return mime ? `data:${mime};base64,${raw}` : raw;
+}
+
 function attachmentHtml(event) {
   if (!event?.attachment_data) return '';
   const name = esc(event.attachment_name || t('calendar.attachmentFallback'));
+  const src = esc(attachmentDataUrl(event.attachment_data, event.attachment_mime));
   if (isImageAttachment(event.attachment_mime)) {
     return `
       <div class="event-popup__attachment event-popup__attachment--image">
-        <img src="${event.attachment_data}" alt="${name}">
+        <img src="${src}" alt="${name}">
       </div>`;
   }
   return `
-    <a class="event-popup__attachment event-popup__attachment--file" href="${event.attachment_data}" download="${name}">
+    <a class="event-popup__attachment event-popup__attachment--file" href="${src}" download="${name}">
       <i data-lucide="paperclip" aria-hidden="true"></i>
       <span>${name}</span>
     </a>`;
+}
+
+function attachmentPreviewHtml(event) {
+  if (!event?.attachment_data) return '';
+  const name = esc(event.attachment_name || t('calendar.attachmentFallback'));
+  const src = esc(attachmentDataUrl(event.attachment_data, event.attachment_mime));
+  return isImageAttachment(event.attachment_mime)
+    ? `<img src="${src}" alt="${name}">`
+    : `<a href="${src}" download="${name}">${name}</a>`;
+}
+
+function selectedAttachmentLabel(name) {
+  return t('documents.selectedFileLabel', { name: name || t('calendar.attachmentFallback') });
 }
 
 function bindDateInputs(root) {
@@ -1028,12 +1049,24 @@ function showEventPopup(ev, anchor) {
     popup.querySelector('.event-popup__actions').before(resetLink);
   }
 
-  // Positionierung
+  // Positionierung: erst messen, dann im Viewport halten.
   const rect = anchor.getBoundingClientRect();
-  const top  = Math.min(rect.bottom + 8, window.innerHeight - 280);
-  const left = Math.min(rect.left, window.innerWidth - 340);
-  popup.style.top  = `${Math.max(8, top)}px`;
-  popup.style.left = `${Math.max(8, left)}px`;
+  const gap = 8;
+  const margin = 8;
+  const popupRect = popup.getBoundingClientRect();
+  const viewportWidth = document.documentElement.clientWidth;
+  const viewportHeight = document.documentElement.clientHeight;
+  const fitsBelow = rect.bottom + gap + popupRect.height <= viewportHeight - margin;
+  const top = fitsBelow
+    ? rect.bottom + gap
+    : Math.max(margin, rect.top - gap - popupRect.height);
+  const left = Math.min(
+    Math.max(margin, rect.left),
+    Math.max(margin, viewportWidth - popupRect.width - margin)
+  );
+  const maxTop = Math.max(margin, viewportHeight - popupRect.height - margin);
+  popup.style.top = `${Math.min(Math.max(margin, top), maxTop)}px`;
+  popup.style.left = `${left}px`;
 
   popup.querySelector('#popup-edit').addEventListener('click', async () => {
     popup.remove();
@@ -1257,6 +1290,7 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
       const reminderOffset = panel.querySelector('#modal-reminder-offset');
       const reminderCustom = panel.querySelector('#modal-reminder-custom');
       const attachmentInput = panel.querySelector('#modal-attachment');
+      const selectedAttachment = panel.querySelector('#modal-selected-attachment');
       const attachmentPreview = panel.querySelector('#modal-attachment-preview');
       const attachmentState = {
         name: event?.attachment_name || null,
@@ -1264,39 +1298,55 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
         size: event?.attachment_size || null,
         data: event?.attachment_data || null,
       };
-      const syncAttachmentPreview = () => {
-        if (!attachmentPreview) return;
-        attachmentPreview.replaceChildren();
-        if (!attachmentState.data) {
-          attachmentPreview.hidden = true;
-          return;
-        }
-        attachmentPreview.hidden = false;
-        if (isImageAttachment(attachmentState.mime)) {
-          attachmentPreview.insertAdjacentHTML('beforeend', `<img src="${attachmentState.data}" alt="${esc(attachmentState.name || '')}">`);
-        } else {
-          attachmentPreview.insertAdjacentHTML('beforeend', `<a href="${attachmentState.data}" download="${esc(attachmentState.name || '')}">${esc(attachmentState.name || '')}</a>`);
-        }
+
+      const syncSelectedAttachment = () => {
+        if (!selectedAttachment) return;
+        selectedAttachment.hidden = !attachmentState.name;
+        selectedAttachment.textContent = attachmentState.name ? selectedAttachmentLabel(attachmentState.name) : '';
       };
-      attachmentInput?.addEventListener('change', async () => {
+
+      const syncAttachmentSelection = () => {
+        if (!selectedAttachment) return;
         const file = attachmentInput.files?.[0];
-        if (!file) return;
-        if (file.size > MAX_ATTACHMENT_BYTES) {
-          window.oikos?.showToast(t('calendar.attachmentTooLarge'), 'error');
-          attachmentInput.value = '';
+        if (file) {
+          selectedAttachment.hidden = false;
+          selectedAttachment.textContent = selectedAttachmentLabel(file.name);
+          if (attachmentPreview) {
+            attachmentPreview.replaceChildren();
+            attachmentPreview.hidden = true;
+          }
           return;
         }
-        try {
-          attachmentState.data = await readFileAsDataUrl(file);
-          attachmentState.name = file.name;
-          attachmentState.mime = file.type || 'application/octet-stream';
-          attachmentState.size = file.size;
-          syncAttachmentPreview();
-        } catch (err) {
-          window.oikos?.showToast(err.message, 'danger');
-        }
-      });
-      syncAttachmentPreview();
+        syncSelectedAttachment();
+      };
+
+      attachmentInput?.addEventListener('change', syncAttachmentSelection);
+
+      const attachmentDropzone = panel.querySelector('#modal-attachment-dropzone');
+      if (attachmentDropzone && attachmentInput) {
+        ['dragenter', 'dragover'].forEach((eventName) => {
+          attachmentDropzone.addEventListener(eventName, (dropEvent) => {
+            dropEvent.preventDefault();
+            attachmentDropzone.classList.add('document-dropzone--active');
+          });
+        });
+        ['dragleave', 'drop'].forEach((eventName) => {
+          attachmentDropzone.addEventListener(eventName, (dropEvent) => {
+            dropEvent.preventDefault();
+            attachmentDropzone.classList.remove('document-dropzone--active');
+          });
+        });
+        attachmentDropzone.addEventListener('drop', (dropEvent) => {
+          const file = dropEvent.dataTransfer?.files?.[0];
+          if (!file) return;
+          const transfer = new DataTransfer();
+          transfer.items.add(file);
+          attachmentInput.files = transfer.files;
+          syncAttachmentSelection();
+        });
+      }
+
+      syncSelectedAttachment();
       reminderOffset?.addEventListener('change', () => {
         if (reminderCustom) reminderCustom.hidden = reminderOffset.value !== 'custom';
       });
@@ -1445,14 +1495,20 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
 
     <div class="form-group">
       <label class="form-label" for="modal-attachment">${t('calendar.attachmentLabel')}</label>
-      <input class="form-input" id="modal-attachment" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+      <label class="document-dropzone" id="modal-attachment-dropzone" for="modal-attachment">
+        <input class="sr-only" id="modal-attachment" type="file" accept="image/png,image/jpeg,image/webp,image/gif,application/pdf,text/plain,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+        <span class="document-dropzone__icon">
+          <i data-lucide="file-up" aria-hidden="true"></i>
+        </span>
+        <span class="document-dropzone__title">${t('documents.dropzoneTitle')}</span>
+        <span class="document-dropzone__hint">${t('documents.dropzoneHint')}</span>
+        <span class="document-dropzone__file" id="modal-selected-attachment" ${isEdit && event.attachment_name ? '' : 'hidden'}>
+          ${isEdit && event.attachment_name ? esc(selectedAttachmentLabel(event.attachment_name)) : ''}
+        </span>
+      </label>
       <div class="form-help">${t('calendar.attachmentHint')}</div>
       <div class="event-attachment-preview" id="modal-attachment-preview" ${isEdit && event.attachment_data ? '' : 'hidden'}>
-        ${isEdit && event.attachment_data
-          ? (isImageAttachment(event.attachment_mime)
-            ? `<img src="${event.attachment_data}" alt="${esc(event.attachment_name || '')}">`
-            : `<a href="${event.attachment_data}" download="${esc(event.attachment_name || '')}">${esc(event.attachment_name || '')}</a>`)
-          : ''}
+        ${isEdit && event.attachment_data ? attachmentPreviewHtml(event) : ''}
       </div>
     </div>
 
@@ -1524,15 +1580,30 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null, attach
       saveBtn.textContent = mode === 'edit' ? t('common.save') : t('common.create');
       return;
     }
+    const attachmentPayload = {
+      name: attachmentState?.name || null,
+      mime: attachmentState?.mime || null,
+      size: attachmentState?.size || null,
+      data: attachmentState?.data || null,
+    };
+    const attachmentFile = overlay.querySelector('#modal-attachment')?.files?.[0];
+    if (attachmentFile) {
+      if (attachmentFile.size > MAX_ATTACHMENT_BYTES) throw new Error(t('calendar.attachmentTooLarge'));
+      attachmentPayload.name = attachmentFile.name;
+      attachmentPayload.mime = attachmentFile.type || 'application/octet-stream';
+      attachmentPayload.size = attachmentFile.size;
+      attachmentPayload.data = await readFileAsDataUrl(attachmentFile);
+    }
+
     const body = {
       title, description, start_datetime, end_datetime,
       all_day: allday ? 1 : 0,
       location, color, icon, assigned_to: assigned_to ? parseInt(assigned_to, 10) : null,
       recurrence_rule: rrule.recurrence_rule,
-      attachment_name: attachmentState?.name || null,
-      attachment_mime: attachmentState?.mime || null,
-      attachment_size: attachmentState?.size || null,
-      attachment_data: attachmentState?.data || null,
+      attachment_name: attachmentPayload.name,
+      attachment_mime: attachmentPayload.mime,
+      attachment_size: attachmentPayload.size,
+      attachment_data: attachmentPayload.data,
     };
 
     let savedEventId = eventId;

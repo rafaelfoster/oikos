@@ -31,6 +31,11 @@
   <link rel="modulepreload" href="/router.js" />
   <link rel="modulepreload" href="/rrule-ui.js" />
 
+  <!-- Theme: explizite Nutzer-Overrides vor CSS-Rendering anwenden (Flash-Prevention).
+       System-Präferenz wird durch @media (prefers-color-scheme: dark) in tokens.css
+       direkt per CSS behandelt — kein JS-matchMedia erforderlich. -->
+  <script src="/theme-init.js"></script>
+
   <!-- Styles (Basis - seitenspezifische CSS wird vom Router on-demand geladen) -->
   <link rel="stylesheet" href="/styles/tokens.css" />
   <link rel="stylesheet" href="/styles/reset.css" />
@@ -39,30 +44,11 @@
   <link rel="stylesheet" href="/styles/glass.css" />
   <link rel="stylesheet" href="/styles/kitchen-tabs.css" />
   <link rel="stylesheet" href="/styles/login.css" />
-  <!-- Theme: explizite Nutzer-Overrides vor CSS-Rendering anwenden (Flash-Prevention).
-       System-Präferenz wird durch @media (prefers-color-scheme: dark) in tokens.css
-       direkt per CSS behandelt — kein JS-matchMedia erforderlich. -->
-  <script>
-    (function() {
-      var stored = localStorage.getItem('oikos-theme');
-      if (stored === 'dark') {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else if (stored === 'light') {
-        document.documentElement.setAttribute('data-theme', 'light');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-      }
-      // System/null: tokens.css @media (prefers-color-scheme: dark) übernimmt
-    })();
-  </script>
 
   <!-- Lucide Icons (lokal, v0.469.0) -->
   <script src="/lucide.min.js"></script>
 </head>
 <body>
-  <!-- Skip-Link: sichtbar bei Keyboard-Fokus, verknüpft mit <main id="main-content"> -->
-  <a href="#main-content" class="sr-only">Zum Hauptinhalt springen</a>
-
   <!-- Offline-Banner: sichtbar wenn navigator.onLine === false -->
   <div id="offline-banner" class="offline-banner" hidden aria-live="polite" role="status">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"

@@ -922,9 +922,13 @@
   background-color: var(--color-overlay);
   z-index: var(--z-modal);
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   overflow: hidden;
+  padding: max(var(--space-3), env(safe-area-inset-top))
+           max(var(--space-3), env(safe-area-inset-right))
+           max(var(--space-3), env(safe-area-inset-bottom))
+           max(var(--space-3), env(safe-area-inset-left));
   animation: modal-overlay-in 0.2s ease forwards;
   /* iOS Safari: click-Events auf non-interactive divs erfordern cursor:pointer */
   cursor: pointer;
@@ -932,7 +936,6 @@
 
 @media (min-width: 768px) {
   .modal-overlay {
-    align-items: center;
     padding: var(--space-6);
   }
 }
@@ -940,11 +943,11 @@
 .modal-panel {
   background-color: var(--color-surface);
   width: 100%;
-  max-height: 90dvh;
+  max-height: calc(100dvh - (2 * var(--space-3)) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  border-radius: var(--radius-lg);
   border: 1px solid var(--color-border-subtle);
   box-shadow: var(--shadow-lg);
   animation: modal-slide-up 0.25s var(--ease-out) forwards;
@@ -955,6 +958,7 @@
 @media (min-width: 768px) {
   .modal-panel {
     max-width: 520px;
+    max-height: calc(100dvh - (2 * var(--space-6)));
     border-radius: var(--radius-lg);
     animation: modal-scale-in 0.2s var(--ease-out) forwards;
   }
@@ -1106,7 +1110,7 @@
 
 @keyframes sheet-out {
   from { transform: translateY(0); }
-  to   { transform: translateY(100%); }
+  to   { transform: translateY(16px); opacity: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

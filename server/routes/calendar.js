@@ -86,6 +86,21 @@ function parseAttachment(dataUrl) {
   return { name: null, mime, size: buffer.length, data: base64 };
 }
 
+function attachmentDataUrl(event) {
+  if (!event?.attachment_data) return event?.attachment_data ?? null;
+  if (String(event.attachment_data).startsWith('data:')) return event.attachment_data;
+  if (!event.attachment_mime) return event.attachment_data;
+  return `data:${event.attachment_mime};base64,${event.attachment_data}`;
+}
+
+function serializeEvent(event) {
+  if (!event) return event;
+  return {
+    ...event,
+    attachment_data: attachmentDataUrl(event),
+  };
+}
+
 // --------------------------------------------------------
 // RRULE-Expansion: alle Vorkommen eines wiederkehrenden Events
 // innerhalb [from, to] generieren (inklusive beider Grenzen).
@@ -225,7 +240,7 @@ router.get('/', (req, res) => {
     sql += ' ORDER BY e.start_datetime ASC, e.all_day DESC';
 
     const rawEvents = db.get().prepare(sql).all(...params);
-    const events    = expandRecurringEvents(rawEvents, from, to);
+    const events    = expandRecurringEvents(rawEvents, from, to).map(serializeEvent);
     res.json({ data: events, from, to });
   } catch (err) {
     log.error('', err);
@@ -271,7 +286,8 @@ router.get('/upcoming', (req, res) => {
 
     const expanded = expandRecurringEvents(rawEvents, nowDate, future)
       .filter((e) => e.start_datetime >= new Date().toISOString())
-      .slice(0, limit);
+      .slice(0, limit)
+      .map(serializeEvent);
 
     res.json({ data: expanded });
   } catch (err) {
@@ -571,7 +587,7 @@ router.get('/:id', (req, res) => {
     `).get(id);
 
     if (!event) return res.status(404).json({ error: 'Termin nicht gefunden', code: 404 });
-    res.json({ data: event });
+    res.json({ data: serializeEvent(event) });
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
@@ -649,7 +665,7 @@ router.post('/', (req, res) => {
       WHERE e.id = ?
     `).get(result.lastInsertRowid);
 
-    res.status(201).json({ data: event });
+    res.status(201).json({ data: serializeEvent(event) });
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
@@ -743,7 +759,7 @@ router.put('/:id', (req, res) => {
       WHERE e.id = ?
     `).get(id);
 
-    res.json({ data: updated });
+    res.json({ data: serializeEvent(updated) });
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
