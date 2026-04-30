@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.0] - 2026-04-30
+
+### Added
+- **Time format preference**: Settings → General now includes a 24-hour / AM·PM toggle. The selected format is persisted in household preferences (backend) and localStorage, and takes effect globally for all time displays in calendar and tasks. Time inputs in modals accept both formats and normalise on blur. The calendar also remembers the last selected view (month / week / day) across sessions.
+
 ## [0.38.4] - 2026-04-30
 
 ### Fixed
