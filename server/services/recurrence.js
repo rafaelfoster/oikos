@@ -78,7 +78,13 @@ function nextOccurrence(baseDateStr, rrule) {
       });
       // Tage bis zum nächsten Vorkommen (mind. 1, damit nicht derselbe Tag)
       let daysUntil = (sorted[0] - currentDay + 7) % 7;
-      if (daysUntil === 0) daysUntil = 7 * interval;
+      if (daysUntil === 0) {
+        // Selber Wochentag → ganzes Intervall überspringen
+        daysUntil = 7 * interval;
+      } else if ((sorted[0] + 6) % 7 < (currentDay + 6) % 7) {
+        // Wochengrenze überschritten (ISO-Woche MO–SO) → interval-1 Wochen extra überspringen
+        daysUntil += 7 * (interval - 1);
+      }
       next.setUTCDate(next.getUTCDate() + daysUntil);
     }
 

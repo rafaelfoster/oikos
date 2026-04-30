@@ -252,6 +252,33 @@ test('Monatsbereich: 42 Tage für Kalenderraster', () => {
 });
 
 // --------------------------------------------------------
+// nextOccurrence: INTERVAL-Korrektheit mit BYDAY
+// --------------------------------------------------------
+import { nextOccurrence } from './server/services/recurrence.js';
+
+test('nextOccurrence: WEEKLY BYDAY=MO,TU,WE,TH,FR INTERVAL=2 — kein täglicher Übergang', () => {
+  const rule = 'FREQ=WEEKLY;BYDAY=MO,TU,WE,TH,FR;INTERVAL=2';
+  // Innerhalb der Woche: Mo→Di (1 Tag, kein Intervallsprung)
+  assert(nextOccurrence('2026-05-04', rule) === '2026-05-05', 'Mo→Di');
+  // Innerhalb der Woche: Di→Mi
+  assert(nextOccurrence('2026-05-05', rule) === '2026-05-06', 'Di→Mi');
+  // Freitag → Montag der übernächsten Woche (3 + 7 = 10 Tage)
+  assert(nextOccurrence('2026-05-08', rule) === '2026-05-18', 'Fr→Mo (übernächste Woche)');
+});
+
+test('nextOccurrence: WEEKLY BYDAY=SA,SU INTERVAL=2 — Wochenend-Pair bleibt zusammen', () => {
+  const rule = 'FREQ=WEEKLY;BYDAY=SA,SU;INTERVAL=2';
+  // Sa→So (1 Tag, gleiche Woche)
+  assert(nextOccurrence('2026-05-09', rule) === '2026-05-10', 'Sa→So');
+  // So→Sa der übernächsten Woche (13 Tage)
+  assert(nextOccurrence('2026-05-10', rule) === '2026-05-23', 'So→Sa (übernächste Woche)');
+});
+
+test('nextOccurrence: WEEKLY BYDAY=MO INTERVAL=2 — klassisch alle 2 Wochen', () => {
+  assert(nextOccurrence('2026-05-04', 'FREQ=WEEKLY;BYDAY=MO;INTERVAL=2') === '2026-05-18', 'Mo→Mo+14');
+});
+
+// --------------------------------------------------------
 // Ergebnis
 // --------------------------------------------------------
 console.log(`\n[Calendar-Test] Ergebnis: ${passed} bestanden, ${failed} fehlgeschlagen\n`);

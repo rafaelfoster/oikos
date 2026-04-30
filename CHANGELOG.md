@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.2] - 2026-04-30
+
+### Fixed
+- Recurring calendar events with `FREQ=WEEKLY;INTERVAL=N;BYDAY=...` (N > 1) now correctly skip N−1 weeks between occurrences instead of repeating every week
+
 ## [0.38.1] - 2026-04-30
 
 ### Changed
