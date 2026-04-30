@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.2] - 2026-04-30
+
+### Changed
+- Search bar in More sheet: added hover, active, and focus states with accent colour highlight and subtle scale feedback
+- Search bar icon changes to accent colour on hover and press for clearer trigger affordance
+- Keyboard shortcut hint (`/`) shown inside search bar on desktop as discoverability signal
+
 ## [0.37.1] - 2026-04-30
 
 ### Changed

@@ -550,8 +550,13 @@ function renderAppShell(container) {
   const moreSearchPlaceholder = document.createElement('span');
   moreSearchPlaceholder.className = 'more-sheet__search-placeholder';
   moreSearchPlaceholder.textContent = t('search.placeholder');
+  const moreSearchKbd = document.createElement('kbd');
+  moreSearchKbd.className = 'more-sheet__search-kbd';
+  moreSearchKbd.textContent = '/';
+  moreSearchKbd.setAttribute('aria-hidden', 'true');
   moreSearchBar.appendChild(moreSearchIcon);
   moreSearchBar.appendChild(moreSearchPlaceholder);
+  moreSearchBar.appendChild(moreSearchKbd);
   moreSheet.appendChild(moreSearchBar);
 
   navItems().filter((i) => !i.kitchenGroup).slice(PRIMARY_NAV).forEach((item) => moreSheet.appendChild(moreItemEl(item)));
