@@ -1510,6 +1510,7 @@ html.fab-anim-done .page-fab {
 
 @media (prefers-reduced-motion: reduce) {
   .empty-state { animation: none; }
+  .empty-state__cta { animation: none; }
 }
 
 .empty-state__icon {
@@ -1545,6 +1546,7 @@ html.fab-anim-done .page-fab {
 
 .empty-state__cta {
   margin-top: var(--space-2);
+  animation: list-item-in 300ms var(--ease-out) 300ms both;
 }
 
 .empty-state--compact {
