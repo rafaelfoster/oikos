@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.4] - 2026-04-30
+
+### Fixed
+- Dashboard portrait mode on mobile: layout no longer overflows to landscape width; `overflow: visible` override in the Admin Dashboard Layout CSS block has been removed so the correct `overflow: clip` takes effect, and `.app-content` now uses `overflow-x: hidden` (instead of `clip`) to properly contain layout overflow at the scroll container level
+
 ## [0.38.3] - 2026-04-30
 
 ### Fixed
