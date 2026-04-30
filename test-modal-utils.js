@@ -39,12 +39,20 @@ const _origSetTimeout = setTimeout;
 
 function makeField() {
   const classes = new Set();
+  const listeners = {};
+  const dataset = {};
   return {
+    dataset,
+    offsetWidth: 0,
     classList: {
       toggle(cls, force) { force ? classes.add(cls) : classes.delete(cls); },
+      add(cls) { classes.add(cls); },
+      remove(cls) { classes.delete(cls); },
       contains(cls) { return classes.has(cls); },
     },
+    addEventListener(event, fn) { listeners[event] = fn; },
     _classes: classes,
+    _listeners: listeners,
   };
 }
 

@@ -1388,6 +1388,22 @@ html.fab-anim-done .page-fab {
   display: flex;
 }
 
+/* Pulse-Animation bei wiederholtem Fehler */
+@keyframes field-error-pulse {
+  0%, 100% { box-shadow: none; }
+  40%       { box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-danger) 35%, transparent); }
+}
+
+.form-field--error-repeat .input,
+.form-field--error-repeat .form-input {
+  animation: field-error-pulse 500ms var(--ease-out);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-field--error-repeat .input,
+  .form-field--error-repeat .form-input { animation: none; }
+}
+
 /* --------------------------------------------------------
  * Toggle-Switch
  * Custom iOS-style toggle, ersetzt native Checkboxen.

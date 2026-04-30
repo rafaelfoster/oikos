@@ -608,6 +608,20 @@ function _validateField(input) {
   group?.classList.toggle('form-field--error', !hasValue);
   group?.classList.toggle('form-field--valid', hasValue);
   input.setAttribute('aria-invalid', String(!hasValue));
+
+  if (!hasValue && group) {
+    const count = parseInt(group.dataset.errorCount ?? '0', 10) + 1;
+    group.dataset.errorCount = String(count);
+    if (count >= 2) {
+      group.classList.remove('form-field--error-repeat');
+      void group.offsetWidth;
+      group.classList.add('form-field--error-repeat');
+      group.addEventListener('animationend', () => group.classList.remove('form-field--error-repeat'), { once: true });
+    }
+  } else if (hasValue && group) {
+    group.dataset.errorCount = '0';
+  }
+
   return hasValue;
 }
 
