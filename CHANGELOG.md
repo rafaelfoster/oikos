@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.37.0] - 2026-04-30
+
+### Added
+- Calendar: drag-and-drop file upload dropzone for event attachments (consistent with Documents module)
+- Calendar: popup positioning now fully viewport-aware (flips above anchor if insufficient space below)
+
+### Fixed
+- Calendar: event attachments with raw base64 data (no `data:` prefix) now render correctly as images
+- Calendar: "file too large" error is now shown correctly when saving an oversized attachment
+
+### Changed
+- Theme init script extracted from inline `<script>` to `/theme-init.js` for a stricter Content Security Policy (`'self'` only, no SHA hash)
+- Modal overlay is now vertically centered on mobile (with safe-area insets) matching desktop behavior; rounded corners on all sides
+- Modal `max-height` is computed from `100dvh` minus safe-area insets for accurate sizing on notched devices
+
 ## [0.36.1] - 2026-04-29
 
 ### Fixed
