@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.38.3] - 2026-04-30
+
+### Fixed
+- Dashboard portrait mode on Android: horizontal scrollbar no longer appears due to subpixel overflow in the main scroll container (`overflow-x: clip` added to `.app-content`)
+
 ## [0.38.2] - 2026-04-30
 
 ### Fixed
