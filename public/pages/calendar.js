@@ -8,7 +8,7 @@ import { api } from '/api.js';
 import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js';
 import { openModal as openSharedModal, closeModal } from '/components/modal.js';
 import { stagger } from '/utils/ux.js';
-import { t, formatDate as formatPreferredDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
+import { t, formatDate as formatPreferredDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, formatTimeInput, parseTimeInput, timeInputPlaceholder } from '/i18n.js';
 import { esc, fmtLocation } from '/utils/html.js';
 import { refresh as refreshReminders } from '/reminders.js';
 
@@ -1204,6 +1204,15 @@ function renderCalendarReminderSection(reminder = null, event = null) {
     </div>`;
 }
 
+function bindTimeInputs(root) {
+  root.querySelectorAll('.js-time-input').forEach((input) => {
+    input.addEventListener('blur', () => {
+      const parsed = parseTimeInput(input.value);
+      if (parsed) input.value = formatTimeInput(parsed);
+    });
+  });
+}
+
 // --------------------------------------------------------
 // Event-Modal (Erstellen / Bearbeiten)
 // --------------------------------------------------------
@@ -1265,6 +1274,7 @@ function openEventModal({ mode, event = null, date = null, reminder = null }) {
       if (isEdit && event?.all_day) { timeFields.style.display = 'none'; alldayFields.style.display = ''; }
 
       bindDateInputs(panel);
+      bindTimeInputs(panel);
 
       const iconInput = panel.querySelector('#modal-icon');
       const iconTrigger = panel.querySelector('#modal-icon-trigger');
@@ -1455,7 +1465,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
         </div>
         <div class="form-group">
           <label class="form-label" for="modal-start-time">${t('calendar.startTimeLabel')}</label>
-          <input type="time" class="form-input" id="modal-start-time" value="${startTime}">
+          <input type="text" class="form-input js-time-input" id="modal-start-time" value="${formatTimeInput(startTime)}" placeholder="${timeInputPlaceholder()}">
         </div>
       </div>
       <div class="modal-grid modal-grid--2">
@@ -1465,7 +1475,7 @@ function buildEventModalContent({ mode, event, date, reminder = null }) {
         </div>
         <div class="form-group">
           <label class="form-label" for="modal-end-time">${t('calendar.endTimeLabel')}</label>
-          <input type="time" class="form-input" id="modal-end-time" value="${endTime}">
+          <input type="text" class="form-input js-time-input" id="modal-end-time" value="${formatTimeInput(endTime)}" placeholder="${timeInputPlaceholder()}">
         </div>
       </div>
     </div>
@@ -1573,9 +1583,15 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null, attach
     end_datetime   = end_datetime || null;
   } else {
     const sd = readDateInput(overlay, '#modal-start-date');
-    const st = overlay.querySelector('#modal-start-time').value;
+    const stRaw = overlay.querySelector('#modal-start-time').value;
+    const st = parseTimeInput(stRaw);
     const ed = readDateInput(overlay, '#modal-end-date');
-    const et = overlay.querySelector('#modal-end-time').value;
+    const etRaw = overlay.querySelector('#modal-end-time').value;
+    const et = parseTimeInput(etRaw);
+    if ((stRaw && !st) || (etRaw && !et)) {
+      window.oikos?.showToast(t('calendar.invalidDate'), 'error');
+      return;
+    }
     start_datetime = st ? `${sd}T${st}` : sd;
     end_datetime   = ed ? (et ? `${ed}T${et}` : ed) : null;
   }

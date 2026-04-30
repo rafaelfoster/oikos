@@ -22,6 +22,8 @@ const DEFAULT_APP_NAME = 'Oikos';
 
 const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd'];
 const DEFAULT_DATE_FORMAT = 'mdy';
+const VALID_TIME_FORMATS = ['24h', '12h'];
+const DEFAULT_TIME_FORMAT = '24h';
 
 const VALID_WIDGET_IDS = ['tasks', 'calendar', 'birthdays', 'budget', 'family', 'weather', 'shopping', 'meals', 'notes'];
 const DEFAULT_WIDGET_CONFIG = JSON.stringify(VALID_WIDGET_IDS.map((id) => ({ id, visible: true })));
@@ -88,6 +90,7 @@ router.get('/', (req, res) => {
     const visibleMealTypes = raw.split(',').filter((t) => VALID_MEAL_TYPES.includes(t));
     const currency = cfgGet('currency') ?? DEFAULT_CURRENCY;
     const dateFormat = VALID_DATE_FORMATS.includes(cfgGet('date_format')) ? cfgGet('date_format') : DEFAULT_DATE_FORMAT;
+    const timeFormat = VALID_TIME_FORMATS.includes(cfgGet('time_format')) ? cfgGet('time_format') : DEFAULT_TIME_FORMAT;
     const appName = cfgGet('app_name') ?? DEFAULT_APP_NAME;
     const dashboardWidgets = parseWidgetConfig(cfgGet('dashboard_widgets'));
 
@@ -96,6 +99,7 @@ router.get('/', (req, res) => {
         visible_meal_types: visibleMealTypes,
         currency,
         date_format: dateFormat,
+        time_format: timeFormat,
         app_name: appName,
         dashboard_widgets: dashboardWidgets,
       },
@@ -115,7 +119,7 @@ router.get('/', (req, res) => {
 
 router.put('/', (req, res) => {
   try {
-    const { visible_meal_types, currency, date_format, app_name, dashboard_widgets } = req.body;
+    const { visible_meal_types, currency, date_format, time_format, app_name, dashboard_widgets } = req.body;
 
     if (visible_meal_types !== undefined) {
       if (!Array.isArray(visible_meal_types)) {
@@ -142,6 +146,13 @@ router.put('/', (req, res) => {
       cfgSet('date_format', date_format);
     }
 
+    if (time_format !== undefined) {
+      if (!VALID_TIME_FORMATS.includes(time_format)) {
+        return res.status(400).json({ error: `Ungültiges Zeitformat. Erlaubt: ${VALID_TIME_FORMATS.join(', ')}`, code: 400 });
+      }
+      cfgSet('time_format', time_format);
+    }
+
     if (app_name !== undefined) {
       const vAppName = str(app_name, 'Application name', { max: MAX_SHORT, required: false });
       if (vAppName.error) return res.status(400).json({ error: vAppName.error, code: 400 });
@@ -161,6 +172,7 @@ router.put('/', (req, res) => {
     const savedMealTypes = rawMealTypes.split(',').filter((t) => VALID_MEAL_TYPES.includes(t));
     const savedCurrency = cfgGet('currency') ?? DEFAULT_CURRENCY;
     const savedDateFormat = VALID_DATE_FORMATS.includes(cfgGet('date_format')) ? cfgGet('date_format') : DEFAULT_DATE_FORMAT;
+    const savedTimeFormat = VALID_TIME_FORMATS.includes(cfgGet('time_format')) ? cfgGet('time_format') : DEFAULT_TIME_FORMAT;
     const savedAppName = cfgGet('app_name') ?? DEFAULT_APP_NAME;
     const savedWidgets = parseWidgetConfig(cfgGet('dashboard_widgets'));
 
@@ -169,6 +181,7 @@ router.put('/', (req, res) => {
         visible_meal_types: savedMealTypes,
         currency: savedCurrency,
         date_format: savedDateFormat,
+        time_format: savedTimeFormat,
         app_name: savedAppName,
         dashboard_widgets: savedWidgets,
       },

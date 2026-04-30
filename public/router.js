@@ -300,6 +300,10 @@ async function syncPreferencesOnce() {
     if (dateFormat) {
       localStorage.setItem('oikos-date-format', dateFormat);
     }
+    const timeFormat = res?.data?.time_format;
+    if (timeFormat) {
+      localStorage.setItem('oikos-time-format', timeFormat);
+    }
     if (res?.data?.app_name) {
       setAppName(res.data.app_name);
       updateBranding();
@@ -1331,6 +1335,17 @@ window.addEventListener('locale-changed', () => {
 window.addEventListener('app-name-changed', () => {
   updateBranding(currentPath || '/');
 });
+
+function refreshCurrentRoute() {
+  if (!currentPath) return;
+  setTimeout(() => {
+    if (!currentPath) return;
+    navigate(currentPath, false);
+  }, 0);
+}
+
+window.addEventListener('date-format-changed', refreshCurrentRoute);
+window.addEventListener('time-format-changed', refreshCurrentRoute);
 
 // --------------------------------------------------------
 // Virtuelle Tastatur: FAB ausblenden wenn Keyboard offen

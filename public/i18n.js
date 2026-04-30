@@ -9,7 +9,10 @@ const SUPPORTED_LOCALES = ['de', 'en', 'es', 'fr', 'it', 'sv', 'el', 'ru', 'tr',
 const DEFAULT_LOCALE = 'de';
 const STORAGE_KEY = 'oikos-locale';
 const DATE_FORMAT_KEY = 'oikos-date-format';
+const TIME_FORMAT_KEY = 'oikos-time-format';
 const DEFAULT_DATE_FORMAT = 'dmy';
+const DEFAULT_TIME_FORMAT = '24h';
+const VALID_TIME_FORMATS = ['24h', '12h'];
 
 let currentLocale = DEFAULT_LOCALE;
 let translations = {};
@@ -91,6 +94,15 @@ function getDateFormatPreference() {
 
 export function getDateFormat() {
   return getDateFormatPreference();
+}
+
+function getTimeFormatPreference() {
+  const stored = localStorage.getItem(TIME_FORMAT_KEY);
+  return VALID_TIME_FORMATS.includes(stored) ? stored : DEFAULT_TIME_FORMAT;
+}
+
+export function getTimeFormat() {
+  return getTimeFormatPreference();
 }
 
 function formatDateParts(date, useUtc = false) {
@@ -176,9 +188,78 @@ export function formatTime(date) {
   if (date == null) return '';
   const d = date instanceof Date ? date : new Date(date);
   if (isNaN(d.getTime())) return '';
+  if (getTimeFormatPreference() === '12h') {
+    const hour = d.getHours();
+    const minute = String(d.getMinutes()).padStart(2, '0');
+    const displayHour = hour % 12 || 12;
+    return `${displayHour}:${minute} ${hour >= 12 ? 'PM' : 'AM'}`;
+  }
   return new Intl.DateTimeFormat(currentLocale, {
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
   }).format(d);
+}
+
+function toTimeParts(value) {
+  if (value == null || value === '') return null;
+
+  if (value instanceof Date) {
+    if (isNaN(value.getTime())) return null;
+    return { hour: value.getHours(), minute: value.getMinutes() };
+  }
+
+  const raw = String(value).trim();
+  if (!raw) return null;
+
+  if (/^\d{1,2}:\d{2}$/.test(raw)) {
+    const [hour, minute] = raw.split(':').map(Number);
+    if (hour >= 0 && hour < 24 && minute >= 0 && minute < 60) {
+      return { hour, minute };
+    }
+    return null;
+  }
+
+  const ampmMatch = raw.match(/^(\d{1,2})(?::(\d{2}))?\s*([ap]m)$/i);
+  if (ampmMatch) {
+    let hour = Number(ampmMatch[1]);
+    const minute = Number(ampmMatch[2] ?? 0);
+    const meridiem = ampmMatch[3].toLowerCase();
+    if (!Number.isInteger(hour) || !Number.isInteger(minute) || minute < 0 || minute >= 60) return null;
+    if (hour < 1 || hour > 12) return null;
+    if (meridiem === 'pm' && hour !== 12) hour += 12;
+    if (meridiem === 'am' && hour === 12) hour = 0;
+    return { hour, minute };
+  }
+
+  return null;
+}
+
+export function formatTimeInput(value) {
+  const parts = toTimeParts(value);
+  if (!parts) return '';
+  const hour = String(parts.hour).padStart(2, '0');
+  const minute = String(parts.minute).padStart(2, '0');
+  if (getTimeFormatPreference() === '12h') {
+    const isPm = parts.hour >= 12;
+    const displayHour = parts.hour % 12 || 12;
+    return `${displayHour}:${minute} ${isPm ? 'PM' : 'AM'}`;
+  }
+  return `${hour}:${minute}`;
+}
+
+export function parseTimeInput(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const parts = toTimeParts(raw);
+  if (!parts) return '';
+  return `${String(parts.hour).padStart(2, '0')}:${String(parts.minute).padStart(2, '0')}`;
+}
+
+export function isTimeInputValid(value) {
+  return !String(value || '').trim() || !!parseTimeInput(value);
+}
+
+export function timeInputPlaceholder() {
+  return getTimeFormatPreference() === '12h' ? 'h:mm AM/PM' : 'HH:MM';
 }

@@ -8,7 +8,7 @@ import { api } from '/api.js';
 import { renderRRuleFields, bindRRuleEvents, getRRuleValues } from '/rrule-ui.js';
 import { openModal as openSharedModal, closeModal, wireBlurValidation, validateAll, btnSuccess, btnError, promptModal } from '/components/modal.js';
 import { stagger, vibrate } from '/utils/ux.js';
-import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid } from '/i18n.js';
+import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, formatTimeInput, parseTimeInput, timeInputPlaceholder } from '/i18n.js';
 import { esc } from '/utils/html.js';
 import { refresh as refreshReminders } from '/reminders.js';
 
@@ -361,8 +361,8 @@ function renderModalContent({ task = null, users = [], reminder = null } = {}) {
         </div>
         <div class="form-group">
           <label class="label" for="task-due-time">${t('tasks.dueTimeLabel')}</label>
-          <input class="input" type="time" id="task-due-time" name="due_time"
-                 value="${task?.due_time ?? ''}">
+          <input class="input js-time-input" type="text" id="task-due-time" name="due_time"
+                 value="${formatTimeInput(task?.due_time ?? '')}" placeholder="${timeInputPlaceholder()}">
         </div>
       </div>
 
@@ -566,6 +566,12 @@ function openTaskModal({ task = null, users = [], reminder = null } = {}, contai
           if (parsed) input.value = formatDateInput(parsed);
         });
       });
+      panel.querySelectorAll('.js-time-input').forEach((input) => {
+        input.addEventListener('blur', () => {
+          const parsed = parseTimeInput(input.value);
+          if (parsed) input.value = formatTimeInput(parsed);
+        });
+      });
 
       // Form-Events
       panel.querySelector('#task-form')
@@ -614,11 +620,20 @@ async function handleFormSubmit(e, container) {
     priority:        form.priority.value,
     category:        form.category.value,
     due_date:        dueDate || null,
-    due_time:        form.due_time?.value || null,
     assigned_to:     form.assigned_to.value ? Number(form.assigned_to.value) : null,
     is_recurring:    rrule.is_recurring ? 1 : 0,
     recurrence_rule: rrule.recurrence_rule,
   };
+  const dueTimeRaw = form.due_time?.value || '';
+  const dueTime = parseTimeInput(dueTimeRaw);
+  if (dueTimeRaw && !dueTime) {
+    errorEl.textContent = t('calendar.invalidDate');
+    errorEl.hidden = false;
+    submitBtn.disabled = false;
+    submitBtn.textContent = originalLabel;
+    return;
+  }
+  body.due_time = dueTime || null;
   if (form.status) body.status = form.status.value;
 
   try {

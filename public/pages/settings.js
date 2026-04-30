@@ -199,7 +199,7 @@ export async function render(container, { user }) {
   let users           = [];
   let googleStatus    = { configured: false, connected: false, lastSync: null };
   let appleStatus     = { configured: false, lastSync: null };
-  let prefs           = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR', date_format: 'mdy', app_name: DEFAULT_APP_NAME };
+  let prefs           = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR', date_format: 'mdy', time_format: '24h', app_name: DEFAULT_APP_NAME };
   let categories      = [];
   let icsSubscriptions = [];
   let apiTokens       = [];
@@ -225,6 +225,9 @@ export async function render(container, { user }) {
 
   if (prefs.date_format) {
     try { localStorage.setItem('oikos-date-format', prefs.date_format); } catch (_) {}
+  }
+  if (prefs.time_format) {
+    try { localStorage.setItem('oikos-time-format', prefs.time_format); } catch (_) {}
   }
   if (prefs.app_name) {
     try { localStorage.setItem(APP_NAME_STORAGE_KEY, prefs.app_name); } catch (_) {}
@@ -337,6 +340,11 @@ export async function render(container, { user }) {
               <option value="mdy"${prefs.date_format === 'mdy' ? ' selected' : ''}>MM/DD/YYYY</option>
               <option value="dmy"${prefs.date_format === 'dmy' ? ' selected' : ''}>DD/MM/YYYY</option>
               <option value="ymd"${prefs.date_format === 'ymd' ? ' selected' : ''}>YYYY-MM-DD</option>
+            </select>
+            <label class="form-label" for="time-format-select" style="margin-top:var(--space-3)">${t('settings.timeFormatLabel')}</label>
+            <select class="form-input" id="time-format-select">
+              <option value="24h"${prefs.time_format === '24h' ? ' selected' : ''}>24 ${t('settings.timeFormatHours')}</option>
+              <option value="12h"${prefs.time_format === '12h' ? ' selected' : ''}>AM/PM</option>
             </select>
           </div>
         </section>
@@ -852,6 +860,20 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
         try { localStorage.setItem('oikos-date-format', dateFormatSelect.value); } catch (_) {}
         window.dispatchEvent(new CustomEvent('date-format-changed', { detail: { dateFormat: dateFormatSelect.value } }));
         window.oikos?.showToast(t('settings.dateFormatSavedToast'), 'success');
+      } catch (err) {
+        window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+      }
+    });
+  }
+
+  const timeFormatSelect = container.querySelector('#time-format-select');
+  if (timeFormatSelect) {
+    timeFormatSelect.addEventListener('change', async () => {
+      try {
+        await api.put('/preferences', { time_format: timeFormatSelect.value });
+        try { localStorage.setItem('oikos-time-format', timeFormatSelect.value); } catch (_) {}
+        window.dispatchEvent(new CustomEvent('time-format-changed', { detail: { timeFormat: timeFormatSelect.value } }));
+        window.oikos?.showToast(t('settings.timeFormatSavedToast'), 'success');
       } catch (err) {
         window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
       }
