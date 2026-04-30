@@ -453,9 +453,9 @@
   gap: var(--space-2);
   min-height: 148px;
   padding: var(--space-5);
-  border: 1.5px dashed color-mix(in srgb, var(--module-calendar) 48%, var(--color-border));
+  border: 1.5px dashed color-mix(in srgb, var(--module-accent) 48%, var(--color-border));
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--module-calendar) 7%, var(--color-surface));
+  background: color-mix(in srgb, var(--module-accent) 7%, var(--color-surface));
   color: var(--color-text-secondary);
   text-align: center;
   cursor: pointer;
@@ -464,8 +464,8 @@
 
 .document-dropzone:hover,
 .document-dropzone--active {
-  border-color: var(--module-calendar);
-  background: color-mix(in srgb, var(--module-calendar) 12%, var(--color-surface));
+  border-color: var(--module-accent);
+  background: color-mix(in srgb, var(--module-accent) 12%, var(--color-surface));
 }
 
 .document-dropzone--active {
@@ -479,8 +479,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-md);
-  color: var(--module-calendar);
-  background: color-mix(in srgb, var(--module-calendar) 15%, transparent);
+  color: var(--module-accent);
+  background: color-mix(in srgb, var(--module-accent) 15%, transparent);
 }
 
 .document-dropzone__icon svg {
@@ -502,7 +502,7 @@
 }
 
 .document-dropzone__file {
-  color: var(--module-calendar);
+  color: var(--module-accent);
   font-weight: var(--font-weight-medium);
 }
 

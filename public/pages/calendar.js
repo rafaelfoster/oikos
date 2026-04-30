@@ -1644,7 +1644,7 @@ async function saveEvent(overlay, mode, eventId, existingReminder = null, attach
     renderView();
     window.oikos?.showToast(mode === 'create' ? t('calendar.createdToast') : t('calendar.savedToast'), 'success');
   } catch (err) {
-    window.oikos?.showToast(err.data?.error ?? t('calendar.saveError'), 'error');
+    window.oikos?.showToast(err.data?.error ?? err.message ?? t('calendar.saveError'), 'error');
     saveBtn.disabled    = false;
     saveBtn.textContent = mode === 'edit' ? t('common.save') : t('common.create');
   }
