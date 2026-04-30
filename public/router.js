@@ -1130,6 +1130,9 @@ function renderError(container, err) {
  * @param {'default'|'success'|'danger'|'warning'} type
  * @param {number} duration - ms
  */
+const TOAST_SUCCESS_KEY = 'oikos:toastSuccessCount';
+const TOAST_SUCCESS_MAX = 50;
+
 const TOAST_ICONS = {
   success: '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>',
   danger:  '<svg class="toast__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
@@ -1139,6 +1142,13 @@ const TOAST_ICONS = {
 function showToast(message, type = 'default', duration = 3000, onUndo = null) {
   const container = document.getElementById('toast-container');
   if (!container) return;
+
+  // Long Loop: Success-Toasts nach TOAST_SUCCESS_MAX Aufrufen unterdrücken
+  if (type === 'success' && typeof onUndo !== 'function') {
+    const successCount = parseInt(localStorage.getItem(TOAST_SUCCESS_KEY) ?? '0', 10) + 1;
+    localStorage.setItem(TOAST_SUCCESS_KEY, String(successCount));
+    if (successCount > TOAST_SUCCESS_MAX) return;
+  }
 
   // Max. 3 gleichzeitige Toasts: ältesten entfernen falls Limit erreicht
   const existing = container.querySelectorAll('.toast');
