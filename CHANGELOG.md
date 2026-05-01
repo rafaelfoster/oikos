@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.39.1] - 2026-05-01
+
+### Added
+- **Swedish translation completed** (PR #115 by @olsson82): all previously untranslated strings in `sv.json` now have Swedish equivalents (attachment fields, API token settings, budget categories, backup hint, onboarding, offline banner).
+- **i18n gap fix**: calendar and notes colour names, `emptyHint` texts, keyboard-shortcut labels, `tasks.navLabelOverdue`, and `birthdays.photoOptional` added to all 13 non-German locale files (ar, el, en, es, fr, hi, it, ja, pt, ru, tr, uk, zh).
+
 ## [0.39.0] - 2026-04-30
 
 ### Added
