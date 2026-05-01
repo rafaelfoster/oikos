@@ -116,7 +116,7 @@ const WIDGET_IDS = ['tasks', 'calendar', 'weather', 'meals', 'shopping', 'birthd
 const WIDGET_SIZE_OPTIONS = ['1x1', '1x2', '1x3', '1x4', '2x1', '2x2', '2x3', '2x4', '3x1', '3x2', '3x3', '3x4', '4x1', '4x2', '4x3', '4x4'];
 
 function widgetSizeLabel(size) {
-  return t(`dashboard.widgetSize_${size.replace('x', '_')}`);
+  return size;
 }
 
 function defaultWidgetSize(id) {
