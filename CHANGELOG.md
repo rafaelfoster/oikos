@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.40.1] - 2026-05-01
+
+### Changed
+- **Typography tightening**: page titles and modal titles use tighter letter-spacing (`-0.5 px` / `-0.8 px` on desktop) and `text-wrap: balance` to eliminate orphaned words on wrapped headings.
+- **Warm-tinted shadows**: all elevation shadows (`sm` through `xl`) now use a warm-tinted base colour (`rgba(18, 14, 8, …)`) that matches the warm neutral palette instead of pure black.
+- **Button radius**: regular buttons use `--radius-md` (12 px) instead of `--radius-sm` (8 px), creating a clear visual distinction from text inputs.
+- **Empty-state icons**: icons in empty states pick up a 40 % tint of the current module accent colour, making them feel contextually connected to each module rather than uniformly grey.
+- **Search section labels**: category headings inside the search overlay are now sentence-case instead of all-caps, improving readability.
+
+### Fixed
+- **Tabular figures**: currency amounts (budget summary cards, transaction list, loan cards, chart rows), weather temperature, dashboard metrics, and calendar time labels now use `font-variant-numeric: tabular-nums` so digit columns remain visually aligned.
+
 ## [0.40.0] - 2026-05-01
 
 ### Added

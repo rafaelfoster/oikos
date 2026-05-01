@@ -346,6 +346,7 @@
   font-size: var(--text-xs);
   color: var(--color-text-disabled);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .week-view__columns {
@@ -420,6 +421,7 @@
 .week-event__time {
   font-size: var(--text-xs);
   opacity: 0.85;
+  font-variant-numeric: tabular-nums;
 }
 
 .event-attachment-preview {

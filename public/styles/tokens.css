@@ -262,16 +262,16 @@
    *    3 Stufen: subtle (Karten), medium (Dropdowns, Hover),
    *    elevated (Modals, FAB).
    * -------------------------------------------------------- */
-  --shadow-drop-icon: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
-  --_shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 4px rgba(0, 0, 0, 0.03);
+  --shadow-drop-icon: drop-shadow(0 2px 4px rgba(18, 14, 8, 0.16));
+  --_shadow-sm: 0 1px 2px rgba(18, 14, 8, 0.05), 0 1px 4px rgba(18, 14, 8, 0.04);
   --shadow-sm:  var(--_shadow-sm);
-  --_shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --_shadow-md: 0 2px 8px rgba(18, 14, 8, 0.09), 0 1px 2px rgba(18, 14, 8, 0.05);
   --shadow-md:  var(--_shadow-md);
-  --_shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+  --_shadow-lg: 0 8px 24px rgba(18, 14, 8, 0.13), 0 2px 6px rgba(18, 14, 8, 0.05);
   --shadow-lg:  var(--_shadow-lg);
-  --_shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --_shadow-xl: 0 16px 48px rgba(18, 14, 8, 0.19), 0 4px 12px rgba(18, 14, 8, 0.07);
   --shadow-xl:  var(--_shadow-xl);
-  --_shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.08);
+  --_shadow-xs: 0 1px 2px rgba(18, 14, 8, 0.09);
   --shadow-xs:  var(--_shadow-xs);
 
   /* --------------------------------------------------------
