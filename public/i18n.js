@@ -87,7 +87,7 @@ function isDateOnlyString(value) {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
-const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd', 'mdy_dot', 'dmy_dot', 'ymd_dot', 'ymd_slash'];
+const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd', 'mdy_dot', 'dmy_dot', 'dmy_slash', 'ymd_dot', 'ymd_slash'];
 
 function getDateFormatPreference() {
   const stored = localStorage.getItem(DATE_FORMAT_KEY);
@@ -114,9 +114,10 @@ function formatDateParts(date, useUtc = false) {
   const month = String((useUtc ? d.getUTCMonth() : d.getMonth()) + 1).padStart(2, '0');
   const day = String(useUtc ? d.getUTCDate() : d.getDate()).padStart(2, '0');
   switch (getDateFormatPreference()) {
-    case 'dmy': return `${day}/${month}/${year}`;
+    case 'dmy': return `${day}.${month}.${year}`;
     case 'mdy_dot': return `${month}.${day}.${year}`;
     case 'dmy_dot': return `${day}.${month}.${year}`;
+    case 'dmy_slash': return `${day}/${month}/${year}`;
     case 'ymd': return `${year}-${month}-${day}`;
     case 'ymd_dot': return `${year}.${month}.${day}`;
     case 'ymd_slash': return `${year}/${month}/${day}`;
@@ -145,9 +146,10 @@ export function formatDate(date) {
 
 export function dateInputPlaceholder() {
   switch (getDateFormatPreference()) {
-    case 'dmy': return 'DD/MM/YYYY';
+    case 'dmy': return 'DD.MM.YYYY';
     case 'mdy_dot': return 'MM.DD.YYYY';
     case 'dmy_dot': return 'DD.MM.YYYY';
+    case 'dmy_slash': return 'DD/MM/YYYY';
     case 'ymd': return 'YYYY-MM-DD';
     case 'ymd_dot': return 'YYYY.MM.DD';
     case 'ymd_slash': return 'YYYY/MM/DD';

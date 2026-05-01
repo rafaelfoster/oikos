@@ -20,7 +20,7 @@ const VALID_CURRENCIES = ['AED', 'AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK'
 const DEFAULT_CURRENCY = 'EUR';
 const DEFAULT_APP_NAME = 'Oikos';
 
-const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd', 'mdy_dot', 'dmy_dot', 'ymd_dot', 'ymd_slash'];
+const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd', 'mdy_dot', 'dmy_dot', 'dmy_slash', 'ymd_dot', 'ymd_slash'];
 const DEFAULT_DATE_FORMAT = 'mdy';
 const VALID_TIME_FORMATS = ['24h', '12h'];
 const DEFAULT_TIME_FORMAT = '24h';
