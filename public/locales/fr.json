@@ -112,7 +112,13 @@
     "customizeMoveUp": "Monter",
     "customizeMoveDown": "Descendre",
     "overdueTasksChip": "{{count}} tâche en retard",
-    "overdueTasksChipPlural": "{{count}} tâches en retard"
+    "overdueTasksChipPlural": "{{count}} tâches en retard",
+    "customizeManage": "Widgets",
+    "customizeExit": "Quitter la personnalisation",
+    "customizeDrag": "Faire glisser le widget",
+    "customizeSize": "Taille",
+    "customizeSizeFor": "Taille de {{widget}}",
+    "customizeHide": "Masquer {{widget}}"
   },
   "tasks": {
     "title": "Tâches",

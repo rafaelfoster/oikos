@@ -112,7 +112,13 @@
     "customizeMoveUp": "Πάνω",
     "customizeMoveDown": "Κάτω",
     "overdueTasksChip": "{{count}} εκπρόθεσμη εργασία",
-    "overdueTasksChipPlural": "{{count}} εκπρόθεσμες εργασίες"
+    "overdueTasksChipPlural": "{{count}} εκπρόθεσμες εργασίες",
+    "customizeManage": "Widget",
+    "customizeExit": "Έξοδος από προσαρμογή",
+    "customizeDrag": "Σύρετε widget",
+    "customizeSize": "Μέγεθος",
+    "customizeSizeFor": "Μέγεθος για {{widget}}",
+    "customizeHide": "Απόκρυψη {{widget}}"
   },
   "tasks": {
     "title": "Εργασίες",

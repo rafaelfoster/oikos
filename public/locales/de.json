@@ -118,7 +118,13 @@
     "customizeMoveUp": "Nach oben",
     "customizeMoveDown": "Nach unten",
     "overdueTasksChip": "{{count}} überfällige Aufgabe",
-    "overdueTasksChipPlural": "{{count}} überfällige Aufgaben"
+    "overdueTasksChipPlural": "{{count}} überfällige Aufgaben",
+    "customizeManage": "Widgets",
+    "customizeExit": "Anpassung beenden",
+    "customizeDrag": "Widget ziehen",
+    "customizeSize": "Größe",
+    "customizeSizeFor": "Größe für {{widget}}",
+    "customizeHide": "{{widget}} ausblenden"
   },
   "tasks": {
     "title": "Aufgaben",

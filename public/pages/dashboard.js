@@ -113,7 +113,52 @@ function showOnboarding(appContainer) {
 // NEU — primäre Inhalte (tasks, calendar) ganz oben
 const WIDGET_IDS = ['tasks', 'calendar', 'weather', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
 
-const DEFAULT_WIDGET_CONFIG = WIDGET_IDS.map((id, i) => ({ id, visible: true, order: i }));
+const WIDGET_SIZE_OPTIONS = ['1x1', '2x1', '2x2', '3x1', '3x2', '4x1', '4x2'];
+const WIDGET_SIZE_LABELS = {
+  '1x1': '1x1',
+  '2x1': '2x1',
+  '2x2': '2x2',
+  '3x1': '3x1',
+  '3x2': '3x2',
+  '4x1': '4x1',
+  '4x2': '4x2',
+};
+
+function defaultWidgetSize(id) {
+  if (['tasks', 'calendar'].includes(id)) return '2x2';
+  if (['weather', 'shopping'].includes(id)) return '2x1';
+  if (id === 'notes') return '2x1';
+  return '1x1';
+}
+
+const DEFAULT_WIDGET_CONFIG = WIDGET_IDS.map((id, i) => ({ id, visible: true, order: i, size: defaultWidgetSize(id) }));
+
+function normalizeDashboardConfig(input) {
+  const valid = Array.isArray(input)
+    ? input
+      .filter((w) => w && typeof w === 'object' && WIDGET_IDS.includes(w.id))
+      .map((w, i) => ({
+        id: w.id,
+        visible: w.visible !== false,
+        order: Number.isFinite(Number(w.order)) ? Number(w.order) : i,
+        size: WIDGET_SIZE_OPTIONS.includes(w.size) ? w.size : defaultWidgetSize(w.id),
+      }))
+    : [];
+  const presentIds = new Set(valid.map((w) => w.id));
+  for (const id of WIDGET_IDS) {
+    if (!presentIds.has(id)) {
+      valid.push({ id, visible: true, order: valid.length, size: defaultWidgetSize(id) });
+    }
+  }
+  return valid
+    .sort((a, b) => a.order - b.order)
+    .map((w, i) => ({ ...w, order: i }));
+}
+
+function setHtml(element, html) {
+  element.replaceChildren();
+  element.insertAdjacentHTML('afterbegin', html);
+}
 
 function widgetLabel(id) {
   const map = {
@@ -523,7 +568,7 @@ function renderQuickAction({ route, label, icon, tone = '' }) {
 }
 
 
-function renderDashboardOverview(user) {
+function renderDashboardOverview(user, editing = false) {
   const dateLabel = formatDate(new Date());
 
   const actions = [
@@ -541,10 +586,21 @@ function renderDashboardOverview(user) {
           <h1 class="dashboard-overview__title">${greeting(user.display_name)}</h1>
         </div>
         <div class="dashboard-overview__tools">
-          <div class="dashboard-overview__actions">${actions}</div>
+          ${editing ? `
+          <div class="dashboard-customize-toolbar" role="toolbar" aria-label="${t('dashboard.customizeTitle')}">
+            <button class="btn btn--secondary" id="dashboard-manage-widgets">
+              <i data-lucide="sliders-horizontal" aria-hidden="true"></i>
+              ${t('dashboard.customizeManage')}
+            </button>
+            <button class="btn btn--ghost" id="dashboard-customize-reset">${t('dashboard.customizeReset')}</button>
+            <button class="btn btn--secondary" id="dashboard-customize-cancel">${t('common.cancel')}</button>
+            <button class="btn btn--primary" id="dashboard-customize-save">${t('common.save')}</button>
+          </div>` : `<div class="dashboard-overview__actions">${actions}</div>`}
           <button class="dashboard-icon-btn" id="dashboard-customize-btn"
-                  aria-label="${t('dashboard.customize')}" title="${t('dashboard.customize')}">
-            <i data-lucide="settings-2" aria-hidden="true"></i>
+                  aria-label="${editing ? t('dashboard.customizeExit') : t('dashboard.customize')}"
+                  title="${editing ? t('dashboard.customizeExit') : t('dashboard.customize')}"
+                  aria-pressed="${editing ? 'true' : 'false'}">
+            <i data-lucide="${editing ? 'x' : 'settings-2'}" aria-hidden="true"></i>
           </button>
         </div>
       </div>
@@ -552,17 +608,34 @@ function renderDashboardOverview(user) {
   `;
 }
 
-function widgetTileClass(id) {
-  // Primär: immer 2 Spalten breit (die wichtigsten Inhalte)
-  const primaryIds = ['tasks', 'calendar'];
-  // Sekundär: 2 Spalten ab 3-Spalten-Breakpoint (1024px)
-  const secondaryIds = ['weather', 'shopping'];
-  if (primaryIds.includes(id))   return 'widget--wide';
-  if (secondaryIds.includes(id)) return 'widget--secondary';
-  return '';
+function widgetSizeClass(size) {
+  return WIDGET_SIZE_OPTIONS.includes(size) ? `widget-size--${size}` : 'widget-size--1x1';
 }
 
-function renderDashboardLayout(cfg, data, weather, currency) {
+function renderWidgetCustomizeControls(w) {
+  const sizeOptions = WIDGET_SIZE_OPTIONS.map((size) => `
+    <option value="${size}" ${w.size === size ? 'selected' : ''}>${WIDGET_SIZE_LABELS[size]}</option>
+  `).join('');
+
+  return `
+    <div class="widget-edit-controls" data-widget-controls>
+      <button type="button" class="widget-edit-controls__handle" data-widget-drag-handle aria-label="${t('dashboard.customizeDrag')}">
+        <i data-lucide="grip-vertical" aria-hidden="true"></i>
+      </button>
+      <label class="widget-edit-controls__size">
+        <span>${t('dashboard.customizeSize')}</span>
+        <select class="widget-edit-controls__select" data-widget-size="${esc(w.id)}" aria-label="${t('dashboard.customizeSizeFor', { widget: widgetLabel(w.id) })}">
+          ${sizeOptions}
+        </select>
+      </label>
+      <button type="button" class="widget-edit-controls__hide" data-widget-hide="${esc(w.id)}" aria-label="${t('dashboard.customizeHide', { widget: widgetLabel(w.id) })}">
+        <i data-lucide="eye-off" aria-hidden="true"></i>
+      </button>
+    </div>
+  `;
+}
+
+function renderDashboardLayout(cfg, data, weather, currency, { editing = false } = {}) {
   const widgetById = {
     tasks: () => renderUrgentTasks(data.urgentTasks ?? []),
     calendar: () => renderUpcomingEvents(data.upcomingEvents ?? []),
@@ -580,11 +653,15 @@ function renderDashboardLayout(cfg, data, weather, currency) {
     .map((w) => {
       const html = widgetById[w.id]();
       if (!html) return '';
-      return `<div class="widget-wrapper ${widgetTileClass(w.id)}">${html}</div>`;
+      return `<div class="widget-wrapper ${widgetSizeClass(w.size)} ${editing ? 'widget-wrapper--editing' : ''}"
+                   data-widget-id="${esc(w.id)}" ${editing ? 'draggable="true"' : ''}>
+        ${editing ? renderWidgetCustomizeControls(w) : ''}
+        ${html}
+      </div>`;
     })
     .join('');
 
-  return `<div class="dashboard__grid">${tiles}</div>`;
+  return `<div class="dashboard__grid ${editing ? 'dashboard__grid--editing' : ''}" id="dashboard-widget-grid">${tiles}</div>`;
 }
 
 function renderDashboardSkeleton() {
@@ -800,6 +877,9 @@ function openCustomizeModal(currentConfig, onSave) {
     return draft.map((w, i) => {
       const isFirst = i === 0;
       const isLast  = i === draft.length - 1;
+      const sizeOptions = WIDGET_SIZE_OPTIONS.map((size) => `
+        <option value="${size}" ${w.size === size ? 'selected' : ''}>${WIDGET_SIZE_LABELS[size]}</option>
+      `).join('');
       return `
         <div class="customize-row" data-id="${esc(w.id)}" style="view-transition-name: widget-row-${esc(w.id)}">
           <label class="customize-row__toggle">
@@ -809,6 +889,12 @@ function openCustomizeModal(currentConfig, onSave) {
           </label>
           <i data-lucide="${widgetIcon(w.id)}" class="customize-row__icon" aria-hidden="true"></i>
           <span class="customize-row__name">${widgetLabel(w.id)}</span>
+          <label class="customize-row__size">
+            <span>${t('dashboard.customizeSize')}</span>
+            <select class="form-input customize-row__select" data-size-id="${esc(w.id)}" aria-label="${t('dashboard.customizeSizeFor', { widget: widgetLabel(w.id) })}">
+              ${sizeOptions}
+            </select>
+          </label>
           <div class="customize-row__actions">
             <button class="customize-row__btn" data-move="up" data-id="${w.id}"
                     ${isFirst ? 'disabled' : ''} aria-label="${t('dashboard.customizeMoveUp')}">
@@ -877,6 +963,13 @@ function openCustomizeModal(currentConfig, onSave) {
             }
             draft.forEach((w, i) => { w.order = i; });
             rebuildList();
+          });
+        });
+
+        list.querySelectorAll('[data-size-id]').forEach((select) => {
+          select.addEventListener('change', () => {
+            const entry = draft.find((w) => w.id === select.dataset.sizeId);
+            if (entry && WIDGET_SIZE_OPTIONS.includes(select.value)) entry.size = select.value;
           });
         });
 
@@ -975,9 +1068,10 @@ function openTaskQuickAction(taskId, taskTitle, rerender) {
 // Navigations-Links verdrahten
 // --------------------------------------------------------
 
-function wireLinks(container, rerender) {
+function wireLinks(container, rerender, { editing = false } = {}) {
   container.querySelectorAll('[data-route]').forEach((el) => {
     if (el.id === 'fab-main' || el.closest('#fab-actions')) return;
+    if (editing && el.closest('.widget-wrapper--editing')) return;
     const go = () => window.oikos.navigate(el.dataset.route);
     if (el.tagName === 'A') {
       el.addEventListener('click', (e) => { e.preventDefault(); go(); });
@@ -990,6 +1084,7 @@ function wireLinks(container, rerender) {
   });
 
   // Task-Items öffnen Quick-Action-Modal statt direkt zu navigieren
+  if (editing) return;
   container.querySelectorAll('.task-item[data-task-id]').forEach((el) => {
     const show = () => openTaskQuickAction(el.dataset.taskId, el.dataset.taskTitle, rerender);
     el.addEventListener('click', show);
@@ -997,6 +1092,21 @@ function wireLinks(container, rerender) {
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); show(); }
     });
   });
+}
+
+function reorderWidgetConfig(config, fromId, toId) {
+  const fromIdx = config.findIndex((w) => w.id === fromId);
+  const toIdx = config.findIndex((w) => w.id === toId);
+  if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return config;
+  const next = config.map((w) => ({ ...w }));
+  const [moved] = next.splice(fromIdx, 1);
+  next.splice(toIdx, 0, moved);
+  return next.map((w, i) => ({ ...w, order: i }));
+}
+
+function updateWidgetConfig(config, id, patch) {
+  return config.map((w) => w.id === id ? { ...w, ...patch } : w)
+    .map((w, i) => ({ ...w, order: i }));
 }
 
 // --------------------------------------------------------
@@ -1007,7 +1117,7 @@ export async function render(container, { user }) {
   _fabController?.abort();
   _fabController = new AbortController();
 
-  container.innerHTML = `
+  setHtml(container, `
     <div class="dashboard">
       <h1 class="sr-only">${t('dashboard.title')}</h1>
       <div class="dashboard-shell" id="dashboard-shell">
@@ -1015,11 +1125,13 @@ export async function render(container, { user }) {
       </div>
     </div>
     ${renderFab()}
-  `;
+  `);
 
   let data         = { upcomingEvents: [], urgentTasks: [], todayMeals: [], pinnedNotes: [], shoppingLists: [], birthdays: [], users: [], budget: {} };
   let weather      = null;
   let widgetConfig = DEFAULT_WIDGET_CONFIG;
+  let savedWidgetConfig = DEFAULT_WIDGET_CONFIG;
+  let isCustomizing = false;
   let currency     = 'EUR';
   try {
     const [dashRes, weatherRes, prefsRes] = await Promise.all([
@@ -1029,8 +1141,8 @@ export async function render(container, { user }) {
     ]);
     data         = dashRes;
     weather      = weatherRes.data ?? null;
-    const raw = prefsRes.data?.dashboard_widgets ?? DEFAULT_WIDGET_CONFIG;
-    widgetConfig = raw.map((w, i) => ({ order: i, ...w })).sort((a, b) => a.order - b.order);
+    widgetConfig = normalizeDashboardConfig(prefsRes.data?.dashboard_widgets ?? DEFAULT_WIDGET_CONFIG);
+    savedWidgetConfig = widgetConfig.map((w) => ({ ...w }));
     currency     = prefsRes.data?.currency ?? 'EUR';
   } catch (err) {
     console.error('[Dashboard] Ladefehler:', err.message, 'Status:', err.status ?? 'network');
@@ -1039,26 +1151,116 @@ export async function render(container, { user }) {
 
   const rerender = () => render(container, { user });
 
+  async function saveDashboardConfig() {
+    try {
+      await api.put('/preferences', { dashboard_widgets: widgetConfig });
+      savedWidgetConfig = widgetConfig.map((w) => ({ ...w }));
+      isCustomizing = false;
+      rebuildDashboard(widgetConfig);
+      window.oikos?.showToast(t('dashboard.customizeSaved'), 'success', 1500);
+    } catch {
+      window.oikos?.showToast(t('common.errorGeneric'), 'error');
+    }
+  }
+
+  function cancelDashboardConfig() {
+    widgetConfig = savedWidgetConfig.map((w) => ({ ...w }));
+    isCustomizing = false;
+    rebuildDashboard(widgetConfig);
+  }
+
+  function resetDashboardConfig() {
+    widgetConfig = DEFAULT_WIDGET_CONFIG.map((w) => ({ ...w }));
+    rebuildDashboard(widgetConfig);
+  }
+
+  function wireDashboardEditMode() {
+    if (!isCustomizing) return;
+    const grid = container.querySelector('#dashboard-widget-grid');
+    if (!grid) return;
+    let draggedId = '';
+
+    grid.querySelectorAll('.widget-wrapper[data-widget-id]').forEach((wrapper) => {
+      wrapper.addEventListener('dragstart', (event) => {
+        draggedId = wrapper.dataset.widgetId;
+        event.dataTransfer.effectAllowed = 'move';
+        event.dataTransfer.setData('text/plain', draggedId);
+        wrapper.classList.add('widget-wrapper--dragging');
+      });
+      wrapper.addEventListener('dragend', () => {
+        draggedId = '';
+        wrapper.classList.remove('widget-wrapper--dragging');
+        grid.querySelectorAll('.widget-wrapper--drag-over').forEach((el) => el.classList.remove('widget-wrapper--drag-over'));
+      });
+      wrapper.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        if (draggedId && draggedId !== wrapper.dataset.widgetId) {
+          wrapper.classList.add('widget-wrapper--drag-over');
+          event.dataTransfer.dropEffect = 'move';
+        }
+      });
+      wrapper.addEventListener('dragleave', () => {
+        wrapper.classList.remove('widget-wrapper--drag-over');
+      });
+      wrapper.addEventListener('drop', (event) => {
+        event.preventDefault();
+        wrapper.classList.remove('widget-wrapper--drag-over');
+        const fromId = event.dataTransfer.getData('text/plain') || draggedId;
+        const toId = wrapper.dataset.widgetId;
+        widgetConfig = reorderWidgetConfig(widgetConfig, fromId, toId);
+        rebuildDashboard(widgetConfig);
+      });
+    });
+
+    grid.querySelectorAll('[data-widget-size]').forEach((select) => {
+      select.addEventListener('change', () => {
+        if (!WIDGET_SIZE_OPTIONS.includes(select.value)) return;
+        widgetConfig = updateWidgetConfig(widgetConfig, select.dataset.widgetSize, { size: select.value });
+        rebuildDashboard(widgetConfig);
+      });
+    });
+
+    grid.querySelectorAll('[data-widget-hide]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        widgetConfig = updateWidgetConfig(widgetConfig, btn.dataset.widgetHide, { visible: false });
+        rebuildDashboard(widgetConfig);
+      });
+    });
+  }
+
   function rebuildDashboard(cfg) {
     const shell = container.querySelector('#dashboard-shell');
     if (!shell) return;
-    shell.replaceChildren();
-    shell.insertAdjacentHTML('beforeend', `
-      ${renderDashboardOverview(user)}
-      ${renderDashboardLayout(cfg, data, weather, currency)}
+    setHtml(shell, `
+      ${renderDashboardOverview(user, isCustomizing)}
+      ${renderDashboardLayout(cfg, data, weather, currency, { editing: isCustomizing })}
     `);
-    wireLinks(container, rerender);
+    wireLinks(container, rerender, { editing: isCustomizing });
     if (window.lucide) window.lucide.createIcons();
     wireWeatherRefresh(container, (updatedWeather) => {
       weather = updatedWeather;
       rebuildDashboard(cfg);
     });
     container.querySelector('#dashboard-customize-btn')?.addEventListener('click', () => {
+      isCustomizing = !isCustomizing;
+      if (!isCustomizing) {
+        cancelDashboardConfig();
+        return;
+      }
+      rebuildDashboard(widgetConfig);
+    }, { signal: _fabController.signal });
+    container.querySelector('#dashboard-manage-widgets')?.addEventListener('click', () => {
       openCustomizeModal(widgetConfig, (newConfig) => {
-        widgetConfig = newConfig;
+        widgetConfig = normalizeDashboardConfig(newConfig);
+        savedWidgetConfig = widgetConfig.map((w) => ({ ...w }));
+        isCustomizing = false;
         rebuildDashboard(widgetConfig);
       });
     }, { signal: _fabController.signal });
+    container.querySelector('#dashboard-customize-save')?.addEventListener('click', saveDashboardConfig, { signal: _fabController.signal });
+    container.querySelector('#dashboard-customize-cancel')?.addEventListener('click', cancelDashboardConfig, { signal: _fabController.signal });
+    container.querySelector('#dashboard-customize-reset')?.addEventListener('click', resetDashboardConfig, { signal: _fabController.signal });
+    wireDashboardEditMode();
   }
 
   rebuildDashboard(widgetConfig);
@@ -1094,7 +1296,11 @@ function wireWeatherRefresh(container, onUpdated = null) {
       const res = await api.get('/weather').catch(() => ({ data: null }));
       const wWidget = container.querySelector('#weather-widget');
       if (wWidget) {
-        wWidget.outerHTML = renderWeatherWidget(res.data ?? null);
+        const wrapper = wWidget.closest('.widget-wrapper');
+        if (wrapper) {
+          wrapper.querySelector('.widget')?.remove();
+          wrapper.insertAdjacentHTML('beforeend', renderWeatherWidget(res.data ?? null));
+        }
         const newWidget = container.querySelector('#weather-widget');
         if (newWidget && window.lucide) window.lucide.createIcons({ el: newWidget });
         onUpdated?.(res.data ?? null);

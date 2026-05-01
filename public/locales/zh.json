@@ -112,7 +112,13 @@
     "customizeMoveUp": "上移",
     "customizeMoveDown": "下移",
     "overdueTasksChip": "{{count}} 个逾期任务",
-    "overdueTasksChipPlural": "{{count}} 个逾期任务"
+    "overdueTasksChipPlural": "{{count}} 个逾期任务",
+    "customizeManage": "小组件",
+    "customizeExit": "退出自定义",
+    "customizeDrag": "拖动小组件",
+    "customizeSize": "大小",
+    "customizeSizeFor": "{{widget}} 的大小",
+    "customizeHide": "隐藏 {{widget}}"
   },
   "tasks": {
     "title": "任务",

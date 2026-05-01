@@ -112,7 +112,13 @@
     "customizeMoveUp": "Перемістити вгору",
     "customizeMoveDown": "Перемістити вниз",
     "overdueTasksChip": "{{count}} прострочене завдання",
-    "overdueTasksChipPlural": "{{count}} прострочених завдань"
+    "overdueTasksChipPlural": "{{count}} прострочених завдань",
+    "customizeManage": "Віджети",
+    "customizeExit": "Вийти з налаштування",
+    "customizeDrag": "Перетягнути віджет",
+    "customizeSize": "Розмір",
+    "customizeSizeFor": "Розмір для {{widget}}",
+    "customizeHide": "Приховати {{widget}}"
   },
   "tasks": {
     "title": "Завдання",

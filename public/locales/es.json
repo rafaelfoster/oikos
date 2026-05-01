@@ -112,7 +112,13 @@
     "customizeMoveUp": "Subir",
     "customizeMoveDown": "Bajar",
     "overdueTasksChip": "{{count}} tarea vencida",
-    "overdueTasksChipPlural": "{{count}} tareas vencidas"
+    "overdueTasksChipPlural": "{{count}} tareas vencidas",
+    "customizeManage": "Widgets",
+    "customizeExit": "Salir de personalización",
+    "customizeDrag": "Arrastrar widget",
+    "customizeSize": "Tamaño",
+    "customizeSizeFor": "Tamaño de {{widget}}",
+    "customizeHide": "Ocultar {{widget}}"
   },
   "tasks": {
     "title": "Tareas",

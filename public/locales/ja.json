@@ -112,7 +112,13 @@
     "customizeMoveUp": "上へ",
     "customizeMoveDown": "下へ",
     "overdueTasksChip": "期限超過のタスク {{count}} 件",
-    "overdueTasksChipPlural": "期限超過のタスク {{count}} 件"
+    "overdueTasksChipPlural": "期限超過のタスク {{count}} 件",
+    "customizeManage": "ウィジェット",
+    "customizeExit": "カスタマイズを終了",
+    "customizeDrag": "ウィジェットをドラッグ",
+    "customizeSize": "サイズ",
+    "customizeSizeFor": "{{widget}} のサイズ",
+    "customizeHide": "{{widget}} を非表示"
   },
   "tasks": {
     "title": "タスク",

@@ -112,7 +112,13 @@
     "customizeMoveUp": "للأعلى",
     "customizeMoveDown": "للأسفل",
     "overdueTasksChip": "{{count}} مهمة متأخرة",
-    "overdueTasksChipPlural": "{{count}} مهام متأخرة"
+    "overdueTasksChipPlural": "{{count}} مهام متأخرة",
+    "customizeManage": "الأدوات",
+    "customizeExit": "إنهاء التخصيص",
+    "customizeDrag": "اسحب الأداة",
+    "customizeSize": "الحجم",
+    "customizeSizeFor": "حجم {{widget}}",
+    "customizeHide": "إخفاء {{widget}}"
   },
   "tasks": {
     "title": "المهام",

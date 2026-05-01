@@ -112,7 +112,13 @@
     "customizeMoveUp": "Вверх",
     "customizeMoveDown": "Вниз",
     "overdueTasksChip": "{{count}} просроченная задача",
-    "overdueTasksChipPlural": "{{count}} просроченных задач"
+    "overdueTasksChipPlural": "{{count}} просроченных задач",
+    "customizeManage": "Виджеты",
+    "customizeExit": "Выйти из настройки",
+    "customizeDrag": "Перетащить виджет",
+    "customizeSize": "Размер",
+    "customizeSizeFor": "Размер для {{widget}}",
+    "customizeHide": "Скрыть {{widget}}"
   },
   "tasks": {
     "title": "Задачи",

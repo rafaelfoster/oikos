@@ -112,7 +112,13 @@
     "customizeMoveUp": "Flytta upp",
     "customizeMoveDown": "Flytta ner",
     "overdueTasksChip": "{{count}} förfallen uppgift",
-    "overdueTasksChipPlural": "{{count}} förfallna uppgifter"
+    "overdueTasksChipPlural": "{{count}} förfallna uppgifter",
+    "customizeManage": "Widgetar",
+    "customizeExit": "Avsluta anpassning",
+    "customizeDrag": "Dra widget",
+    "customizeSize": "Storlek",
+    "customizeSizeFor": "Storlek för {{widget}}",
+    "customizeHide": "Dölj {{widget}}"
   },
   "tasks": {
     "title": "Uppgifter",

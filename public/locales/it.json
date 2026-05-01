@@ -112,7 +112,13 @@
     "customizeMoveUp": "Su",
     "customizeMoveDown": "Giù",
     "overdueTasksChip": "{{count}} compito scaduto",
-    "overdueTasksChipPlural": "{{count}} compiti scaduti"
+    "overdueTasksChipPlural": "{{count}} compiti scaduti",
+    "customizeManage": "Widget",
+    "customizeExit": "Esci dalla personalizzazione",
+    "customizeDrag": "Trascina widget",
+    "customizeSize": "Dimensione",
+    "customizeSizeFor": "Dimensione di {{widget}}",
+    "customizeHide": "Nascondi {{widget}}"
   },
   "tasks": {
     "title": "Compiti",

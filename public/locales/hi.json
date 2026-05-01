@@ -112,7 +112,13 @@
     "customizeMoveUp": "ऊपर ले जाएं",
     "customizeMoveDown": "नीचे ले जाएं",
     "overdueTasksChip": "{{count}} विलंबित कार्य",
-    "overdueTasksChipPlural": "{{count}} विलंबित कार्य"
+    "overdueTasksChipPlural": "{{count}} विलंबित कार्य",
+    "customizeManage": "विजेट",
+    "customizeExit": "अनुकूलन से बाहर निकलें",
+    "customizeDrag": "विजेट खींचें",
+    "customizeSize": "आकार",
+    "customizeSizeFor": "{{widget}} का आकार",
+    "customizeHide": "{{widget}} छिपाएँ"
   },
   "tasks": {
     "title": "कार्य",

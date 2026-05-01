@@ -112,7 +112,13 @@
     "customizeMoveUp": "Move up",
     "customizeMoveDown": "Move down",
     "overdueTasksChip": "{{count}} overdue task",
-    "overdueTasksChipPlural": "{{count}} overdue tasks"
+    "overdueTasksChipPlural": "{{count}} overdue tasks",
+    "customizeManage": "Widgets",
+    "customizeExit": "Exit customization",
+    "customizeDrag": "Drag widget",
+    "customizeSize": "Size",
+    "customizeSizeFor": "Size for {{widget}}",
+    "customizeHide": "Hide {{widget}}"
   },
   "tasks": {
     "title": "Tasks",

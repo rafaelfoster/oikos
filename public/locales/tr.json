@@ -112,7 +112,13 @@
     "customizeMoveUp": "Yukarı",
     "customizeMoveDown": "Aşağı",
     "overdueTasksChip": "{{count}} gecikmiş görev",
-    "overdueTasksChipPlural": "{{count}} gecikmiş görev"
+    "overdueTasksChipPlural": "{{count}} gecikmiş görev",
+    "customizeManage": "Widgetlar",
+    "customizeExit": "Özelleştirmeden çık",
+    "customizeDrag": "Widgetı sürükle",
+    "customizeSize": "Boyut",
+    "customizeSizeFor": "{{widget}} boyutu",
+    "customizeHide": "{{widget}} gizle"
   },
   "tasks": {
     "title": "Görevler",
