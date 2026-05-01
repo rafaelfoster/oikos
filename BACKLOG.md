@@ -103,3 +103,19 @@ New suggestion? → [Open an issue](https://github.com/ulsklyc/oikos/issues/new?
 | - | UX: `friendlyError()` helper — unhandled promise rejections show status-code-aware messages instead of raw error text | v0.36.0 |
 | - | Date input: default format changed to DMY with dot separator; dot-separated dates accepted everywhere | v0.36.1 |
 | - | Microinteraction long loops: FAB entry animation stops after 5 views; keyboard shortcut hint hides after first use; success toasts suppressed after 50 saves; empty-state CTA delayed fade-in | v0.38.0 |
+| - | Calendar: recurring events with `FREQ=WEEKLY;INTERVAL=N;BYDAY` now correctly skip N−1 weeks between occurrences | v0.38.2 |
+| - | Dashboard portrait mode on mobile: horizontal scrollbar and overflow bugs fixed | v0.38.3 / v0.38.4 |
+| - | Settings: 24-hour / AM·PM time format toggle, persisted globally; calendar remembers last selected view | v0.39.0 |
+| - | Swedish (sv) translation completed by @olsson82; i18n gap-fill for 13 non-German locales | v0.39.1 |
+| - | Budget date picker: native `type="date"` input on iOS and Android instead of plain text field | v0.39.2 |
+| - | Budget loans tracker: instalment-based loans, per-payment records, remaining balance, auto-close when paid off (PR #117 by @rafaelfoster) | v0.40.0 |
+| - | Dashboard: configurable widget sizes via named presets (Tiny, Narrow, Standard, Large, Full), persisted in user preferences | v0.40.0 |
+| - | Settings: four additional date formats — MM.DD.YYYY, YYYY.MM.DD, YYYY/MM/DD, DD/MM/YYYY | v0.40.0 |
+| - | Typography: tighter letter-spacing on page/modal titles, `text-wrap: balance`; warm-tinted shadows; larger button radius (--radius-md); module-accent empty-state icons; sentence-case search section labels | v0.40.1 |
+| - | Tabular figures: `font-variant-numeric: tabular-nums` on all numeric displays (budget, weather, dashboard, calendar) | v0.40.1 |
+| - | Birthdays: nav badge when any family member has a birthday within the next 3 days | v0.41.0 |
+| - | Tasks: up to three recently-used filter chips, persisted in localStorage | v0.41.0 |
+| - | Calendar: live keyword search in the icon picker; icons grouped into labelled categories | v0.41.0 |
+| - | Calendar: repeat indicator icon on recurring events in month and week views | v0.41.0 |
+| - | Calendar: 3-day week view on screens narrower than 640 px | v0.41.0 |
+| - | Forms: required-field asterisk via `.required-marker` CSS class; enlarged modal drag-handle hit area (44 px); budget tab minimum height 40 px | v0.41.0 |

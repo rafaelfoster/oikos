@@ -281,6 +281,32 @@ Allowlist for `visibility = 'restricted'` documents — only listed users can se
 | user_id | INTEGER | FK → Users (CASCADE delete), NOT NULL |
 | PRIMARY KEY | | (document_id, user_id) |
 
+### Budget Loans
+Instalment-based loans with per-payment tracking. Active loans show remaining balance and due months; paid-off loans are automatically closed.
+
+| Column | Type | Constraint |
+|--------|------|-----------|
+| title | TEXT | NOT NULL |
+| borrower | TEXT | NOT NULL |
+| total_amount | REAL | NOT NULL CHECK(> 0) |
+| installment_count | INTEGER | NOT NULL CHECK(> 0) |
+| start_month | TEXT | YYYY-MM, NOT NULL |
+| notes | TEXT | nullable |
+| status | TEXT | 'active' (default) or 'paid' |
+| created_by | INTEGER | FK → Users (CASCADE delete), NOT NULL |
+
+### Budget Loan Payments
+Individual payment records for a budget loan. Each installment number is unique per loan.
+
+| Column | Type | Constraint |
+|--------|------|-----------|
+| loan_id | INTEGER | FK → Budget Loans (CASCADE delete), NOT NULL |
+| installment_number | INTEGER | NOT NULL CHECK(> 0), UNIQUE per loan |
+| amount | REAL | NOT NULL CHECK(> 0) |
+| paid_date | TEXT | DATE, NOT NULL |
+| budget_entry_id | INTEGER | FK → Budget Entries (SET NULL on delete), nullable |
+| created_by | INTEGER | FK → Users (CASCADE delete), NOT NULL |
+
 ### Sync Config
 Key-value table for OAuth tokens and CalDAV credentials.
 
@@ -305,6 +331,8 @@ Responsive grid: 1 column on mobile, 2 on tablet, 3 on desktop.
 - Today's meals: meals for the current day
 - Pinboard preview: 2–3 pinned notes
 - FAB (quick actions): + Task, + Event, + Shopping list item, + Note
+
+**Widget sizes:** each widget has a configurable size using named presets (Tiny, Narrow, Standard, Large, Full) that map to `columns × rows` in the CSS grid. Sizes are persisted in user preferences and survive page reloads.
 
 Skeleton loading instead of spinners. Clicking any widget navigates to that module.
 
@@ -428,7 +456,7 @@ User management and app configuration. Logged-in users only.
 - **Language:** System (follows `navigator.language`), German, English, Spanish, French, Italian, Swedish, Greek, Russian, Turkish, Chinese, Japanese, Arabic, Hindi, Portuguese - via `oikos-locale-picker` web component; switch without page reload
 - **API Tokens (admin):** create named Bearer / X-API-Key tokens for external integrations; the full token value is shown only once immediately after creation; tokens can be revoked at any time; support optional expiry and track last-used timestamp
 - **Backup Management (admin):** download the current database as a file (`GET /api/v1/backup/database`) or restore from a backup file (`POST /api/v1/backup/restore`, drag-and-drop supported). Validates that the uploaded file is a valid Oikos database. A rollback copy is created automatically before restore.
-- **Tab navigation:** Settings is organized in eight tabs (General, Meals, Budget, Shopping, Calendar, Family, API Tokens, Account). Admin-only tabs: Family, API Tokens, Backup. Sticky tab bar, active tab persists in sessionStorage, Calendar tab auto-activates after OAuth callbacks.
+- **Tab navigation:** Settings is organized in nine tabs (General, Meals, Budget, Shopping, Calendar, Family, API Tokens, Backup, Account). Admin-only tabs: Family, API Tokens, Backup. Sticky tab bar, active tab persists in sessionStorage, Calendar tab auto-activates after OAuth callbacks.
 - **Family management (admin):** assign a `family_role` (Dad, Mom, Parent, Child, Grandparent, Relative, Other) to each user, and set per-member phone, email, and birthday — automatically synced to Contacts and Birthdays. Displayed in the family member list and profile views.
 - **Profile picture:** users can upload a personal avatar (PNG/JPEG/WebP/GIF, ≤ 5 MB), stored as a Base64 data URL in `avatar_data`. Displayed alongside display name across the app.
 - **App info:** version, license
@@ -445,7 +473,9 @@ User management and app configuration. Logged-in users only.
 - Recurring entries
 - Monthly comparison (current vs. previous month)
 - CSV export includes a subcategory column and English column headers
+- **Loans tab:** create instalment-based loans (borrower, total amount, number of instalments, start month); record individual payments; remaining balance and due months shown automatically; paid-off loans marked as closed; filter budget transactions by loan
 - API: `GET /api/v1/budget/categories`, `GET /api/v1/budget/categories/:key/subcategories` (optional `?lang=` localisation), `POST /api/v1/budget/categories`, `POST /api/v1/budget/categories/:key/subcategories`
+- Loans API: `GET /api/v1/budget/loans`, `POST /api/v1/budget/loans`, `GET /api/v1/budget/loans/:id`, `PUT /api/v1/budget/loans/:id`, `DELETE /api/v1/budget/loans/:id`, `GET /api/v1/budget/loans/:id/payments`, `POST /api/v1/budget/loans/:id/payments`, `DELETE /api/v1/budget/loans/:id/payments/:paymentId`
 
 ### Birthdays (`/birthdays`)
 
