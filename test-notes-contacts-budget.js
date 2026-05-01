@@ -307,6 +307,40 @@ test('Index idx_budget_date genutzt', () => {
   assert(usesIndex, JSON.stringify(plan));
 });
 
+test('Empréstimo com parcelas calcula restante', () => {
+  const loan = db.prepare(`
+    INSERT INTO budget_loans (title, borrower, total_amount, installment_count, start_month, created_by)
+    VALUES ('Empréstimo Lais', 'Lais', 1000, 5, '2026-03', ?)
+  `).run(uid);
+  const loanId = loan.lastInsertRowid;
+
+  const entry = db.prepare(`
+    INSERT INTO budget_entries (title, amount, category, date, created_by)
+    VALUES ('Loan repayment: Lais', 200, 'Geschenke & Transfers', '2026-03-05', ?)
+  `).run(uid);
+  db.prepare(`
+    INSERT INTO budget_loan_payments
+      (loan_id, installment_number, amount, paid_date, budget_entry_id, created_by)
+    VALUES (?, 1, 200, '2026-03-05', ?, ?)
+  `).run(loanId, entry.lastInsertRowid, uid);
+
+  const totals = db.prepare(`
+    SELECT l.total_amount,
+           l.installment_count,
+           COUNT(p.id) AS paid_installments,
+           COALESCE(SUM(p.amount), 0) AS paid_amount
+    FROM budget_loans l
+    LEFT JOIN budget_loan_payments p ON p.loan_id = l.id
+    WHERE l.id = ?
+    GROUP BY l.id
+  `).get(loanId);
+
+  assert(totals.paid_installments === 1, `Parcelas pagas: ${totals.paid_installments}`);
+  assert(Math.abs(totals.paid_amount - 200) < 0.01, `Pago: ${totals.paid_amount}`);
+  assert(Math.abs((totals.total_amount - totals.paid_amount) - 800) < 0.01, 'Restante deve ser 800');
+  assert(totals.installment_count - totals.paid_installments === 4, 'Devem restar 4 parcelas');
+});
+
 // --------------------------------------------------------
 // Ergebnis
 // --------------------------------------------------------

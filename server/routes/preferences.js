@@ -20,13 +20,26 @@ const VALID_CURRENCIES = ['AED', 'AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK'
 const DEFAULT_CURRENCY = 'EUR';
 const DEFAULT_APP_NAME = 'Oikos';
 
-const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd'];
+const VALID_DATE_FORMATS = ['mdy', 'dmy', 'ymd', 'mdy_dot', 'dmy_dot', 'dmy_slash', 'ymd_dot', 'ymd_slash'];
 const DEFAULT_DATE_FORMAT = 'mdy';
 const VALID_TIME_FORMATS = ['24h', '12h'];
 const DEFAULT_TIME_FORMAT = '24h';
 
-const VALID_WIDGET_IDS = ['tasks', 'calendar', 'birthdays', 'budget', 'family', 'weather', 'shopping', 'meals', 'notes'];
-const DEFAULT_WIDGET_CONFIG = JSON.stringify(VALID_WIDGET_IDS.map((id) => ({ id, visible: true })));
+const VALID_WIDGET_IDS = ['tasks', 'calendar', 'weather', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
+const VALID_WIDGET_SIZES = ['1x1', '1x2', '1x3', '1x4', '2x1', '2x2', '2x3', '2x4', '3x1', '3x2', '3x3', '3x4', '4x1', '4x2', '4x3', '4x4'];
+
+function defaultWidgetSize(id) {
+  if (['tasks', 'calendar'].includes(id)) return '2x2';
+  if (['weather', 'shopping', 'notes'].includes(id)) return '2x1';
+  return '1x1';
+}
+
+const DEFAULT_WIDGET_CONFIG = JSON.stringify(VALID_WIDGET_IDS.map((id, order) => ({
+  id,
+  visible: true,
+  order,
+  size: defaultWidgetSize(id),
+})));
 
 // --------------------------------------------------------
 // Hilfsfunktionen
@@ -67,15 +80,24 @@ function normalizeWidgetConfig(input) {
   const valid = Array.isArray(input)
     ? input
       .filter((w) => w && typeof w === 'object' && VALID_WIDGET_IDS.includes(w.id))
-      .map((w) => ({ id: w.id, visible: Boolean(w.visible) }))
+      .map((w, order) => ({
+        id: w.id,
+        visible: w.visible !== false,
+        order: Number.isFinite(Number(w.order)) ? Number(w.order) : order,
+        size: VALID_WIDGET_SIZES.includes(w.size) ? w.size : defaultWidgetSize(w.id),
+      }))
     : [];
 
   // Fehlende Widget-IDs am Ende ergänzen
   const presentIds = new Set(valid.map((w) => w.id));
   for (const id of VALID_WIDGET_IDS) {
-    if (!presentIds.has(id)) valid.push({ id, visible: true });
+    if (!presentIds.has(id)) {
+      valid.push({ id, visible: true, order: valid.length, size: defaultWidgetSize(id) });
+    }
   }
-  return valid;
+  return valid
+    .sort((a, b) => a.order - b.order)
+    .map((w, order) => ({ ...w, order }));
 }
 
 // --------------------------------------------------------

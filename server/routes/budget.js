@@ -9,7 +9,7 @@ import express from 'express';
 import { readFileSync } from 'node:fs';
 import path from 'path';
 import * as db from '../db.js';
-import { str, oneOf, date as validateDate, num, rrule, collectErrors, MAX_TITLE, MAX_SHORT, MONTH_RE } from '../middleware/validate.js';
+import { str, oneOf, date as validateDate, month as validateMonth, num, rrule, collectErrors, MAX_TITLE, MAX_SHORT, MONTH_RE } from '../middleware/validate.js';
 
 const log = createLogger('Budget');
 
@@ -228,6 +228,87 @@ function validateSubcategory(category, subcategory) {
   return row ? subcategory : null;
 }
 
+function addMonths(ym, n) {
+  const [y, m] = ym.split('-').map(Number);
+  const d = new Date(y, m - 1 + n, 1);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+}
+
+function cents(value) {
+  return Math.round(Number(value || 0) * 100) / 100;
+}
+
+function loanSummaryRow(loan) {
+  const payments = db.get().prepare(`
+    SELECT p.*, u.display_name AS creator_name,
+           b.title AS entry_title,
+           b.category AS entry_category,
+           b.subcategory AS entry_subcategory,
+           b.is_recurring AS entry_is_recurring,
+           b.recurrence_parent_id AS entry_recurrence_parent_id
+    FROM budget_loan_payments p
+    LEFT JOIN users u ON u.id = p.created_by
+    LEFT JOIN budget_entries b ON b.id = p.budget_entry_id
+    WHERE p.loan_id = ?
+    ORDER BY p.installment_number ASC
+  `).all(loan.id);
+  const paidAmount = cents(payments.reduce((sum, p) => sum + Number(p.amount || 0), 0));
+  const paidInstallments = payments.length;
+  const remainingAmount = Math.max(0, cents(loan.total_amount - paidAmount));
+  const remainingInstallments = Math.max(0, loan.installment_count - paidInstallments);
+  const installmentAmount = cents(loan.total_amount / loan.installment_count);
+
+  return {
+    ...loan,
+    total_amount: cents(loan.total_amount),
+    installment_amount: installmentAmount,
+    paid_amount: paidAmount,
+    paid_installments: paidInstallments,
+    remaining_amount: remainingAmount,
+    remaining_installments: remainingInstallments,
+    next_installment_number: remainingInstallments > 0 ? paidInstallments + 1 : null,
+    next_due_month: remainingInstallments > 0 ? addMonths(loan.start_month, paidInstallments) : null,
+    payments,
+  };
+}
+
+function loadLoan(id) {
+  const loan = db.get().prepare(`
+    SELECT l.*, u.display_name AS creator_name
+    FROM budget_loans l
+    LEFT JOIN users u ON u.id = l.created_by
+    WHERE l.id = ?
+  `).get(id);
+  return loan ? loanSummaryRow(loan) : null;
+}
+
+function refreshLoanStatus(loanId) {
+  const loan = loadLoan(loanId);
+  if (!loan) return null;
+  const status = loan.remaining_installments === 0 || loan.remaining_amount <= 0.005 ? 'paid' : 'active';
+  if (status !== loan.status) {
+    db.get().prepare('UPDATE budget_loans SET status = ? WHERE id = ?').run(status, loanId);
+    return loadLoan(loanId);
+  }
+  return loan;
+}
+
+function entryWithLoanMeta(id) {
+  return db.get().prepare(`
+    SELECT b.*, u.display_name AS creator_name,
+           p.id AS loan_payment_id,
+           p.loan_id AS loan_id,
+           p.installment_number AS loan_installment_number,
+           l.title AS loan_title,
+           l.borrower AS loan_borrower
+    FROM budget_entries b
+    LEFT JOIN users u ON u.id = b.created_by
+    LEFT JOIN budget_loan_payments p ON p.budget_entry_id = b.id
+    LEFT JOIN budget_loans l ON l.id = p.loan_id
+    WHERE b.id = ?
+  `).get(id);
+}
+
 // --------------------------------------------------------
 // Statische Routen vor /:id
 // --------------------------------------------------------
@@ -391,6 +472,240 @@ router.get('/categories/:categoryKey/subcategories', (req, res) => {
   }
 });
 
+router.get('/loans', (req, res) => {
+  try {
+    const loans = db.get().prepare(`
+      SELECT l.*, u.display_name AS creator_name
+      FROM budget_loans l
+      LEFT JOIN users u ON u.id = l.created_by
+      ORDER BY CASE l.status WHEN 'active' THEN 0 ELSE 1 END,
+               l.start_month ASC,
+               l.created_at DESC
+    `).all().map(loanSummaryRow);
+    const active = loans.filter((loan) => loan.status === 'active');
+    const totals = loans.reduce((acc, loan) => {
+      acc.total_amount += loan.total_amount;
+      acc.paid_amount += loan.paid_amount;
+      acc.remaining_amount += loan.remaining_amount;
+      acc.remaining_installments += loan.remaining_installments;
+      return acc;
+    }, { total_amount: 0, paid_amount: 0, remaining_amount: 0, remaining_installments: 0 });
+
+    res.json({
+      data: {
+        loans,
+        summary: {
+          active_count: active.length,
+          total_count: loans.length,
+          total_amount: cents(totals.total_amount),
+          paid_amount: cents(totals.paid_amount),
+          remaining_amount: cents(totals.remaining_amount),
+          remaining_installments: totals.remaining_installments,
+        },
+      },
+    });
+  } catch (err) {
+    log.error('GET /loans error:', err);
+    res.status(500).json({ error: 'Internal error', code: 500 });
+  }
+});
+
+router.post('/loans', (req, res) => {
+  try {
+    const vTitle = str(req.body.title || req.body.borrower, 'Title', { max: MAX_TITLE });
+    const vBorrower = str(req.body.borrower, 'Borrower', { max: MAX_SHORT });
+    const vAmount = num(req.body.total_amount, 'Amount', { required: true });
+    const vStartMonth = validateMonth(req.body.start_month, 'Start month');
+    const vNotes = str(req.body.notes, 'Notes', { max: 1000, required: false });
+    const installmentCount = parseInt(req.body.installment_count, 10);
+    const errors = collectErrors([vTitle, vBorrower, vAmount, vStartMonth, vNotes]);
+    if (!Number.isInteger(installmentCount) || installmentCount < 1 || installmentCount > 240) {
+      errors.push('Installment count must be between 1 and 240.');
+    }
+    if (vAmount.value !== null && vAmount.value <= 0) errors.push('Amount must be greater than zero.');
+    if (!vStartMonth.value) errors.push('Start month is required.');
+    if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+
+    const result = db.get().prepare(`
+      INSERT INTO budget_loans (title, borrower, total_amount, installment_count, start_month, notes, created_by)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      vTitle.value,
+      vBorrower.value,
+      cents(vAmount.value),
+      installmentCount,
+      vStartMonth.value,
+      vNotes.value,
+      req.session.userId
+    );
+
+    res.status(201).json({ data: loadLoan(result.lastInsertRowid) });
+  } catch (err) {
+    log.error('POST /loans error:', err);
+    res.status(500).json({ error: 'Internal error', code: 500 });
+  }
+});
+
+router.put('/loans/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const loan = db.get().prepare('SELECT * FROM budget_loans WHERE id = ?').get(id);
+    if (!loan) return res.status(404).json({ error: 'Loan not found.', code: 404 });
+
+    const checks = [];
+    if (req.body.title !== undefined) checks.push(str(req.body.title, 'Title', { max: MAX_TITLE }));
+    if (req.body.borrower !== undefined) checks.push(str(req.body.borrower, 'Borrower', { max: MAX_SHORT }));
+    if (req.body.total_amount !== undefined) checks.push(num(req.body.total_amount, 'Amount'));
+    if (req.body.start_month !== undefined) checks.push(validateMonth(req.body.start_month, 'Start month'));
+    if (req.body.notes !== undefined) checks.push(str(req.body.notes, 'Notes', { max: 1000, required: false }));
+    const errors = collectErrors(checks);
+    const installmentCount = req.body.installment_count === undefined ? null : parseInt(req.body.installment_count, 10);
+    if (req.body.installment_count !== undefined && (!Number.isInteger(installmentCount) || installmentCount < 1 || installmentCount > 240)) {
+      errors.push('Installment count must be between 1 and 240.');
+    }
+    const paidCount = db.get().prepare('SELECT COUNT(*) AS c FROM budget_loan_payments WHERE loan_id = ?').get(id).c;
+    if (installmentCount !== null && installmentCount < paidCount) {
+      errors.push('Installment count cannot be lower than paid installments.');
+    }
+    if (req.body.total_amount !== undefined && Number(req.body.total_amount) <= 0) errors.push('Amount must be greater than zero.');
+    if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+
+    db.get().prepare(`
+      UPDATE budget_loans
+      SET title = COALESCE(?, title),
+          borrower = COALESCE(?, borrower),
+          total_amount = COALESCE(?, total_amount),
+          installment_count = COALESCE(?, installment_count),
+          start_month = COALESCE(?, start_month),
+          notes = ?
+      WHERE id = ?
+    `).run(
+      req.body.title?.trim() ?? null,
+      req.body.borrower?.trim() ?? null,
+      req.body.total_amount !== undefined ? cents(req.body.total_amount) : null,
+      installmentCount,
+      req.body.start_month ?? null,
+      req.body.notes !== undefined ? (req.body.notes?.trim() || null) : loan.notes,
+      id
+    );
+
+    res.json({ data: refreshLoanStatus(id) });
+  } catch (err) {
+    log.error('PUT /loans/:id error:', err);
+    res.status(500).json({ error: 'Internal error', code: 500 });
+  }
+});
+
+router.post('/loans/:id/payments', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const loan = loadLoan(id);
+    if (!loan) return res.status(404).json({ error: 'Loan not found.', code: 404 });
+    if (loan.remaining_installments <= 0) return res.status(409).json({ error: 'Loan is already paid.', code: 409 });
+
+    const installmentNumber = req.body.installment_number === undefined
+      ? loan.next_installment_number
+      : parseInt(req.body.installment_number, 10);
+    const defaultAmount = installmentNumber === loan.installment_count
+      ? loan.remaining_amount
+      : Math.min(loan.installment_amount, loan.remaining_amount);
+    const vAmount = num(req.body.amount ?? defaultAmount, 'Amount', { required: true });
+    const vDate = validateDate(req.body.paid_date, 'Paid date', true);
+    const errors = collectErrors([vAmount, vDate]);
+    if (!Number.isInteger(installmentNumber) || installmentNumber < 1 || installmentNumber > loan.installment_count) {
+      errors.push('Installment number is invalid.');
+    }
+    if (vAmount.value !== null && vAmount.value <= 0) errors.push('Amount must be greater than zero.');
+    if (vAmount.value !== null && vAmount.value - loan.remaining_amount > 0.005) {
+      errors.push('Amount cannot be greater than the remaining loan amount.');
+    }
+    if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+
+    const existing = db.get().prepare(`
+      SELECT 1 FROM budget_loan_payments WHERE loan_id = ? AND installment_number = ?
+    `).get(id, installmentNumber);
+    if (existing) return res.status(409).json({ error: 'Installment already paid.', code: 409 });
+
+    const paymentAmount = cents(vAmount.value);
+    const tx = db.get().transaction(() => {
+      const budgetResult = db.get().prepare(`
+        INSERT INTO budget_entries (title, amount, category, subcategory, date, is_recurring, created_by)
+        VALUES (?, ?, ?, '', ?, 0, ?)
+      `).run(
+        `Loan repayment: ${loan.borrower}`,
+        paymentAmount,
+        'Geschenke & Transfers',
+        vDate.value,
+        req.session.userId
+      );
+      const paymentResult = db.get().prepare(`
+        INSERT INTO budget_loan_payments
+          (loan_id, installment_number, amount, paid_date, budget_entry_id, created_by)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(id, installmentNumber, paymentAmount, vDate.value, budgetResult.lastInsertRowid, req.session.userId);
+      return paymentResult.lastInsertRowid;
+    });
+
+    const paymentId = tx();
+    res.status(201).json({
+      data: {
+        payment: db.get().prepare('SELECT * FROM budget_loan_payments WHERE id = ?').get(paymentId),
+        loan: refreshLoanStatus(id),
+      },
+    });
+  } catch (err) {
+    log.error('POST /loans/:id/payments error:', err);
+    res.status(500).json({ error: 'Internal error', code: 500 });
+  }
+});
+
+router.delete('/loans/:id/payments/:paymentId', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const paymentId = parseInt(req.params.paymentId, 10);
+    const payment = db.get().prepare(`
+      SELECT * FROM budget_loan_payments WHERE id = ? AND loan_id = ?
+    `).get(paymentId, id);
+    if (!payment) return res.status(404).json({ error: 'Payment not found.', code: 404 });
+
+    const tx = db.get().transaction(() => {
+      db.get().prepare('DELETE FROM budget_loan_payments WHERE id = ?').run(paymentId);
+      if (payment.budget_entry_id) {
+        db.get().prepare('DELETE FROM budget_entries WHERE id = ?').run(payment.budget_entry_id);
+      }
+    });
+    tx();
+    refreshLoanStatus(id);
+    res.status(204).end();
+  } catch (err) {
+    log.error('DELETE /loans/:id/payments/:paymentId error:', err);
+    res.status(500).json({ error: 'Internal error', code: 500 });
+  }
+});
+
+router.delete('/loans/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const loan = db.get().prepare('SELECT * FROM budget_loans WHERE id = ?').get(id);
+    if (!loan) return res.status(404).json({ error: 'Loan not found.', code: 404 });
+
+    const payments = db.get().prepare('SELECT budget_entry_id FROM budget_loan_payments WHERE loan_id = ?').all(id);
+    const tx = db.get().transaction(() => {
+      db.get().prepare('DELETE FROM budget_loans WHERE id = ?').run(id);
+      for (const payment of payments) {
+        if (payment.budget_entry_id) {
+          db.get().prepare('DELETE FROM budget_entries WHERE id = ?').run(payment.budget_entry_id);
+        }
+      }
+    });
+    tx();
+    res.status(204).end();
+  } catch (err) {
+    log.error('DELETE /loans/:id error:', err);
+    res.status(500).json({ error: 'Internal error', code: 500 });
+  }
+});
+
 router.post('/categories', (req, res) => {
   try {
     const vName = str(req.body.name, 'Name', { max: MAX_SHORT });
@@ -468,21 +783,36 @@ router.get('/', (req, res) => {
   try {
     const today = new Date().toISOString().slice(0, 7);
     const month = req.query.month || today;
+    const loanId = req.query.loan_id ? parseInt(req.query.loan_id, 10) : null;
 
-    if (!MONTH_RE.test(month))
+    if (!loanId && !MONTH_RE.test(month))
       return res.status(400).json({ error: 'month muss YYYY-MM sein', code: 400 });
 
-    generateRecurringInstances(db.get(), month);
+    if (!loanId) generateRecurringInstances(db.get(), month);
 
     const from   = `${month}-01`;
     const to     = `${month}-31`;
     let sql      = `
-      SELECT b.*, u.display_name AS creator_name
+      SELECT b.*, u.display_name AS creator_name,
+             p.id AS loan_payment_id,
+             p.loan_id AS loan_id,
+             p.installment_number AS loan_installment_number,
+             l.title AS loan_title,
+             l.borrower AS loan_borrower
       FROM budget_entries b
       LEFT JOIN users u ON u.id = b.created_by
-      WHERE b.date BETWEEN ? AND ?
+      LEFT JOIN budget_loan_payments p ON p.budget_entry_id = b.id
+      LEFT JOIN budget_loans l ON l.id = p.loan_id
     `;
-    const params = [from, to];
+    const params = [];
+
+    if (loanId) {
+      sql += ' WHERE p.loan_id = ?';
+      params.push(loanId);
+    } else {
+      sql += ' WHERE b.date BETWEEN ? AND ?';
+      params.push(from, to);
+    }
 
     if (req.query.category && validCategoryKeys().includes(req.query.category)) {
       sql += ' AND b.category = ?';
@@ -529,11 +859,7 @@ router.post('/', (req, res) => {
       req.session.userId
     );
 
-    const entry = db.get().prepare(`
-      SELECT b.*, u.display_name AS creator_name
-      FROM budget_entries b LEFT JOIN users u ON u.id = b.created_by
-      WHERE b.id = ?
-    `).get(result.lastInsertRowid);
+    const entry = entryWithLoanMeta(result.lastInsertRowid);
 
     res.status(201).json({ data: entry });
   } catch (err) {
@@ -563,6 +889,23 @@ router.put('/:id', (req, res) => {
     const errors = collectErrors(checks);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
     const { title, amount, category, subcategory: requestedSubcategory, date, is_recurring, recurrence_rule } = req.body;
+    const linkedPayment = db.get().prepare(`
+      SELECT * FROM budget_loan_payments WHERE budget_entry_id = ?
+    `).get(id);
+    if (linkedPayment && amount !== undefined && Number(amount) <= 0) {
+      return res.status(400).json({ error: 'Loan repayment entries must remain income.', code: 400 });
+    }
+    if (linkedPayment && amount !== undefined) {
+      const loan = db.get().prepare('SELECT total_amount FROM budget_loans WHERE id = ?').get(linkedPayment.loan_id);
+      const otherPaid = db.get().prepare(`
+        SELECT COALESCE(SUM(amount), 0) AS total
+        FROM budget_loan_payments
+        WHERE loan_id = ? AND id != ?
+      `).get(linkedPayment.loan_id, linkedPayment.id).total;
+      if (Number(amount) - (Number(loan?.total_amount || 0) - Number(otherPaid || 0)) > 0.005) {
+        return res.status(400).json({ error: 'Amount cannot be greater than the remaining loan amount.', code: 400 });
+      }
+    }
     const nextCategory = category ?? entry.category;
     const subcategory = requestedSubcategory !== undefined || category !== undefined
       ? validateSubcategory(nextCategory, requestedSubcategory ?? entry.subcategory)
@@ -571,31 +914,45 @@ router.put('/:id', (req, res) => {
       return res.status(400).json({ error: 'Invalid subcategory.', code: 400 });
     }
 
-    db.get().prepare(`
-      UPDATE budget_entries
-      SET title           = COALESCE(?, title),
-          amount          = COALESCE(?, amount),
-          category        = COALESCE(?, category),
-          subcategory     = COALESCE(?, subcategory),
-          date            = COALESCE(?, date),
-          is_recurring    = COALESCE(?, is_recurring),
-          recurrence_rule = ?
-      WHERE id = ?
-    `).run(
-      title?.trim() ?? null,
-      amount !== undefined ? Number(amount) : null,
-      category ?? null,
-      subcategory !== undefined ? subcategory : null,
-      date ?? null,
-      is_recurring !== undefined ? (is_recurring ? 1 : 0) : null,
-      recurrence_rule !== undefined ? (recurrence_rule || null) : entry.recurrence_rule,
-      id
-    );
+    const tx = db.get().transaction(() => {
+      db.get().prepare(`
+        UPDATE budget_entries
+        SET title           = COALESCE(?, title),
+            amount          = COALESCE(?, amount),
+            category        = COALESCE(?, category),
+            subcategory     = COALESCE(?, subcategory),
+            date            = COALESCE(?, date),
+            is_recurring    = COALESCE(?, is_recurring),
+            recurrence_rule = ?
+        WHERE id = ?
+      `).run(
+        title?.trim() ?? null,
+        amount !== undefined ? Number(amount) : null,
+        category ?? null,
+        subcategory !== undefined ? subcategory : null,
+        date ?? null,
+        is_recurring !== undefined ? (is_recurring ? 1 : 0) : null,
+        recurrence_rule !== undefined ? (recurrence_rule || null) : entry.recurrence_rule,
+        id
+      );
 
-    const updated = db.get().prepare(`
-      SELECT b.*, u.display_name AS creator_name
-      FROM budget_entries b LEFT JOIN users u ON u.id = b.created_by WHERE b.id = ?
-    `).get(id);
+      if (linkedPayment) {
+        db.get().prepare(`
+          UPDATE budget_loan_payments
+          SET amount = COALESCE(?, amount),
+              paid_date = COALESCE(?, paid_date)
+          WHERE id = ?
+        `).run(
+          amount !== undefined ? cents(amount) : null,
+          date ?? null,
+          linkedPayment.id
+        );
+        refreshLoanStatus(linkedPayment.loan_id);
+      }
+    });
+    tx();
+
+    const updated = entryWithLoanMeta(id);
 
     res.json({ data: updated });
   } catch (err) {
@@ -615,7 +972,18 @@ router.delete('/:id', (req, res) => {
     const entry = db.get().prepare('SELECT * FROM budget_entries WHERE id = ?').get(id);
     if (!entry) return res.status(404).json({ error: 'Entry not found', code: 404 });
 
-    db.get().prepare('DELETE FROM budget_entries WHERE id = ?').run(id);
+    const linkedPayment = db.get().prepare(`
+      SELECT * FROM budget_loan_payments WHERE budget_entry_id = ?
+    `).get(id);
+
+    const tx = db.get().transaction(() => {
+      if (linkedPayment) {
+        db.get().prepare('DELETE FROM budget_loan_payments WHERE id = ?').run(linkedPayment.id);
+      }
+      db.get().prepare('DELETE FROM budget_entries WHERE id = ?').run(id);
+      if (linkedPayment) refreshLoanStatus(linkedPayment.loan_id);
+    });
+    tx();
 
     // Wenn eine Instanz gelöscht wird: Monat als übersprungen markieren
     if (entry.recurrence_parent_id) {
