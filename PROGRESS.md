@@ -1,6 +1,6 @@
 # CardDAV Contacts Implementation - Fortschritt
 
-**Stand:** 2026-05-04, Session pausiert bei ~82k Tokens
+**Stand:** 2026-05-04, Session pausiert bei ~75k Tokens (nach API Routes Design)
 
 ## Abgeschlossene Tasks
 
@@ -13,53 +13,70 @@
   - Spec Review: ✅ PASSED
   - Code Quality: ✅ APPROVED
 
-### 🔄 Task #2: Add tests for cardav-sync service
-- **Status:** IN PROGRESS (needs final fix)
+### ✅ Task #2: Add tests for cardav-sync service
+- **Status:** COMPLETED
 - **Commits:**
   - 96b4f43: Added 9 new tests (55 total)
   - a38c2c8: Fixed test interdependencies and removed duplicate suite (54 tests)
+  - (uncommitted): Fixed final 4 interdependent tests via suite-level `before` hook
 - **Reviews:**
   - Spec Review: ✅ PASSED
-  - Code Quality: ❌ NEEDS FIX - 4 verbleibende interdependente Tests
+  - Code Quality: ✅ APPROVED - All tests isolated via `before()` hook
+- **Final State:** 54 tests, all passing, full test isolation achieved
 
-**VERBLEIBENDE ARBEIT für Task #2:**
-4 Tests in "Contact Merge Logic (DB)" suite sind noch interdependent:
-- Test 2 (line 968): "should add multiple phones to contact" - depends on Alice Smith
-- Test 3 (line 987): "should add multiple emails to contact" - depends on Alice Smith  
-- Test 4 (line 1006): "should add multiple addresses to contact" - depends on Alice Smith
-- Test 5 (line 1022): "should preserve primary entries" - depends on Alice Smith
-
-**Fix erforderlich:** Jeder Test muss seinen eigenen Contact erstellen, oder Suite-level `before` hook nutzen.
+### ✅ Task #3 Design Phase: API Routes Implementation Design
+- **Status:** DESIGN COMPLETED, ready for implementation
+- **Commits:**
+  - bb961a4: Implementation design spec created
+  - 8b8ac08: REPLACEMENT semantics clarified for PUT multi-values
+- **Design Doc:** `docs/designs/2026-05-04-cardav-api-routes-implementation.md`
+- **Entscheidungen:**
+  - Route-Organisation: `server/routes/cardav.js` (neu) + `server/routes/contacts.js` (erweitern)
+  - Implementierungs-Reihenfolge: User Flow (Account → Discovery → Sync → Contacts)
+  - Architektur: Route-Level Validation mit Service Delegation
+  - Error Handling: Einfaches Fallback (500 + error.message)
+- **Scope:** 11 API Routes (8 CardDAV Management + 3 Extended Contacts)
 
 ## Ausstehende Tasks (3-10)
 
-- Task #3: Implement CardDAV management API routes
-- Task #4: Extend contacts API routes for multiple values
-- Task #5: Add API route tests
+### 🔄 Task #3-5: API Routes Implementation (NEXT)
+- **Task #3:** Implement CardDAV management API routes (`server/routes/cardav.js`)
+  - 8 routes: Account CRUD, Addressbook Discovery/Toggle, Sync
+- **Task #4:** Extend contacts API routes for multiple values (`server/routes/contacts.js`)
+  - 3 routes: GET/POST/PUT mit phones/emails/addresses
+- **Task #5:** Add API route tests (erweitere `test-carddav.js`)
+  - 4 Test-Suites mit ~15 Tests total
+
+### ⏳ Task #6-10: UI & Integration (Later)
 - Task #6: Extend Settings UI with Contacts Sync section
 - Task #7: Add source badges to contact list
 - Task #8: Extend contact modal with new fields and multiple values
 - Task #9: Add UI interaction tests
 - Task #10: Integrate CardDAV sync into cron job
 
-## Nächste Schritte beim Fortsetzen
+## Nächste Schritte beim Fortsetzen (Frische Session)
 
-1. Task #2 abschließen: Verbleibende 4 interdependente Tests fixen
-2. Code Quality Re-Review für Task #2
-3. Task #2 als completed markieren
-4. Mit Task #3 (API Routes) fortfahren
+1. ✅ Task #2 Final Fix committed
+2. ✅ API Routes Design abgeschlossen & approved
+3. 🎯 **NEXT:** Invoke `writing-plans` skill → Implementation Plan für Tasks #3-5 erstellen
+4. 🎯 **THEN:** TDD Approach → Tests schreiben, dann Implementation
 
 ## Wichtige Dateien
 
-- Design Doc: `docs/designs/2026-05-04-cardav-contacts-design.md`
-- Service: `server/services/cardav-sync.js` (849 lines)
-- Tests: `test-carddav.js` (54 tests, 4 need fixing)
-- Migration: `server/db.js` (Migration 30)
+- **Feature Design:** `docs/designs/2026-05-04-cardav-contacts-design.md`
+- **Implementation Design:** `docs/designs/2026-05-04-cardav-api-routes-implementation.md`
+- **Service:** `server/services/cardav-sync.js` (873 lines, 10 exported functions)
+- **Tests:** `test-carddav.js` (54 tests, all passing)
+- **Migration:** `server/db.js` (Migration 30)
 
 ## Git Status
 
 Branch: `feature/cardav-contacts`
 Basis: `main` (commit 6cc7267)
-Aktuell: commit a38c2c8
+Latest: commit 8b8ac08 (API Routes Design)
 
-Uncommitted changes: keine (außer dieser PROGRESS.md)
+Commits since Task #2:
+- bb961a4: Implementation design spec created
+- 8b8ac08: REPLACEMENT semantics clarified
+
+Uncommitted changes: test-carddav.js (Test isolation fixes), PROGRESS.md (this file)

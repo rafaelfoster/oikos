@@ -926,16 +926,19 @@ END:VCARD`;
   });
 
   describe('Contact Merge Logic (DB)', () => {
-    it('should create new contact from vCard', () => {
-      // Create own account first
+    let aliceContact;
+    let accountId;
+
+    before(() => {
+      // Create account
       testDb.prepare(`
         INSERT INTO carddav_accounts (name, carddav_url, username, password)
         VALUES (?, ?, ?, ?)
       `).run('Account For vCard', 'https://vcard.example.com', 'user@vcard.com', 'pass');
 
-      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Account For vCard').id;
+      accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Account For vCard').id;
 
-      // Simulate parsed vCard data
+      // Create Alice Smith
       testDb.prepare(`
         INSERT INTO contacts (
           name, category, organization, job_title, birthday, website,
@@ -957,26 +960,27 @@ END:VCARD`;
         'https://vcard.example.com/addressbooks/personal'
       );
 
-      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
-      assert.ok(contact);
-      assert.strictEqual(contact.organization, 'Tech Corp');
-      assert.strictEqual(contact.job_title, 'Developer');
-      assert.strictEqual(contact.birthday, '1990-01-15');
-      assert.strictEqual(contact.carddav_uid, 'urn:uuid:alice-123');
+      aliceContact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
+    });
+
+    it('should create new contact from vCard', () => {
+      assert.ok(aliceContact);
+      assert.strictEqual(aliceContact.organization, 'Tech Corp');
+      assert.strictEqual(aliceContact.job_title, 'Developer');
+      assert.strictEqual(aliceContact.birthday, '1990-01-15');
+      assert.strictEqual(aliceContact.carddav_uid, 'urn:uuid:alice-123');
     });
 
     it('should add multiple phones to contact', () => {
-      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
-
       testDb.prepare(`
         INSERT INTO contact_phones (contact_id, label, value, is_primary)
         VALUES (?, ?, ?, ?), (?, ?, ?, ?)
       `).run(
-        contact.id, 'mobile', '+1234567890', 1,
-        contact.id, 'work', '+0987654321', 0
+        aliceContact.id, 'mobile', '+1234567890', 1,
+        aliceContact.id, 'work', '+0987654321', 0
       );
 
-      const phones = testDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(contact.id);
+      const phones = testDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(aliceContact.id);
       assert.strictEqual(phones.length, 2);
 
       const primary = phones.find(p => p.is_primary === 1);
@@ -985,17 +989,15 @@ END:VCARD`;
     });
 
     it('should add multiple emails to contact', () => {
-      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
-
       testDb.prepare(`
         INSERT INTO contact_emails (contact_id, label, value, is_primary)
         VALUES (?, ?, ?, ?), (?, ?, ?, ?)
       `).run(
-        contact.id, 'home', 'alice@home.com', 1,
-        contact.id, 'work', 'alice@work.com', 0
+        aliceContact.id, 'home', 'alice@home.com', 1,
+        aliceContact.id, 'work', 'alice@work.com', 0
       );
 
-      const emails = testDb.prepare('SELECT * FROM contact_emails WHERE contact_id = ?').all(contact.id);
+      const emails = testDb.prepare('SELECT * FROM contact_emails WHERE contact_id = ?').all(aliceContact.id);
       assert.strictEqual(emails.length, 2);
 
       const primary = emails.find(e => e.is_primary === 1);
@@ -1004,39 +1006,35 @@ END:VCARD`;
     });
 
     it('should add multiple addresses to contact', () => {
-      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
-
       testDb.prepare(`
         INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `).run(
-        contact.id, 'home', '123 Main St', 'Springfield', 'IL', '62701', 'USA', 1
+        aliceContact.id, 'home', '123 Main St', 'Springfield', 'IL', '62701', 'USA', 1
       );
 
-      const addresses = testDb.prepare('SELECT * FROM contact_addresses WHERE contact_id = ?').all(contact.id);
+      const addresses = testDb.prepare('SELECT * FROM contact_addresses WHERE contact_id = ?').all(aliceContact.id);
       assert.strictEqual(addresses.length, 1);
       assert.strictEqual(addresses[0].street, '123 Main St');
       assert.strictEqual(addresses[0].is_primary, 1);
     });
 
     it('should preserve primary entries when updating multi-values', () => {
-      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
-
       // Mark first phone as primary (manually set)
       testDb.prepare('UPDATE contact_phones SET is_primary = 1 WHERE contact_id = ? AND label = ?')
-        .run(contact.id, 'mobile');
+        .run(aliceContact.id, 'mobile');
 
       // Delete non-primary phones (simulating sync update)
       testDb.prepare('DELETE FROM contact_phones WHERE contact_id = ? AND is_primary = 0')
-        .run(contact.id);
+        .run(aliceContact.id);
 
       // Add new phones from vCard
       testDb.prepare(`
         INSERT INTO contact_phones (contact_id, label, value, is_primary)
         VALUES (?, ?, ?, ?)
-      `).run(contact.id, 'home', '+9999999999', 0);
+      `).run(aliceContact.id, 'home', '+9999999999', 0);
 
-      const phones = testDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(contact.id);
+      const phones = testDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(aliceContact.id);
 
       // Should have primary mobile + new home phone
       assert.strictEqual(phones.length, 2);
