@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.0] - 2026-05-04
+
+### Added
+- **Settings UX overhaul**: renamed Calendar tab to Synchronization with dedicated sections for Calendar Sync and Contact Sync. Improved information architecture with visual tab grouping using CSS separators between functional areas (module settings, synchronization, personal, administration).
+- **CardDAV UI**: complete user interface for CardDAV contact synchronization in Settings. Add/delete CardDAV accounts (iCloud, Nextcloud, Radicale, Baikal), enable/disable individual addressbooks, manual sync trigger, real-time status indicators. Empty state onboarding for first-time setup.
+- **Status badges**: visual sync status indicators (success, error, syncing) with animated spinner for active syncs across CalDAV and CardDAV integrations.
+
+### Changed
+- **Settings navigation**: Calendar tab replaced by unified Synchronization tab containing both calendar and contact sync options. Existing CalDAV calendar accounts remain accessible in the Calendar Sync section.
+
 ## [0.46.0] - 2026-05-04
 
 ### Added
