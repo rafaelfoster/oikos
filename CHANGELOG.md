@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.44.0] - 2026-05-04
+
+### Added
+- **Generic CalDAV multi-account sync** (#90): replaced single Apple CalDAV integration with a generic multi-account CalDAV solution. Connect multiple CalDAV servers (iCloud, Nextcloud, Radicale, Baikal) simultaneously. Per-account calendar selection via checkboxes in Settings → Calendar. Bidirectional sync with optional outbound target selection per event. Existing Apple CalDAV data is automatically migrated on upgrade. New database tables: `caldav_accounts`, `caldav_calendar_selection`. New service: `server/services/caldav-sync.js`. New API routes: `/calendar/caldav/*`. Enhanced UI in Settings and Calendar event modal.
+
+### Changed
+- **Calendar feature description**: README.md and docs/SPEC.md updated to reflect multi-account CalDAV support instead of single Apple CalDAV integration.
+
 ## [0.43.0] - 2026-05-04
 
 ### Added
