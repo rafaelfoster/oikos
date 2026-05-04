@@ -1227,3 +1227,243 @@ END:VCARD`;
     });
   });
 });
+
+// ========================================
+// Multi-Value Validators
+// ========================================
+
+describe('Multi-Value Validators', () => {
+  let validatePhones, validateEmails, validateAddresses;
+
+  before(async () => {
+    const validators = await import('./server/routes/contacts.js');
+    validatePhones = validators.validatePhones;
+    validateEmails = validators.validateEmails;
+    validateAddresses = validators.validateAddresses;
+  });
+
+  describe('validatePhones', () => {
+    it('should reject non-array input', () => {
+      const result = validatePhones('not-an-array');
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phones must be an array');
+    });
+
+    it('should reject null element', () => {
+      const result = validatePhones([null]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phone entry must be an object');
+    });
+
+    it('should reject primitive element', () => {
+      const result = validatePhones(['string']);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phone entry must be an object');
+    });
+
+    it('should reject phone without label', () => {
+      const result = validatePhones([{ value: '+123' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phone requires label and value');
+    });
+
+    it('should reject phone with whitespace-only label', () => {
+      const result = validatePhones([{ label: '   ', value: '+123' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phone label invalid or too long');
+    });
+
+    it('should reject phone with whitespace-only value', () => {
+      const result = validatePhones([{ label: 'mobile', value: '   ' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phone value invalid or too long');
+    });
+
+    it('should reject phone with too long label', () => {
+      const result = validatePhones([{ label: 'x'.repeat(51), value: '+123' }]);
+      assert.strictEqual(result.valid, false);
+      assert.ok(result.error.includes('Phone label invalid or too long'));
+    });
+
+    it('should reject non-boolean isPrimary', () => {
+      const result = validatePhones([{ label: 'mobile', value: '+123', isPrimary: 'true' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Phone isPrimary must be boolean');
+    });
+
+    it('should reject array exceeding max length', () => {
+      const phones = Array(21).fill({ label: 'mobile', value: '+123' });
+      const result = validatePhones(phones);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Too many phone entries (max 20)');
+    });
+
+    it('should accept valid phones array', () => {
+      const result = validatePhones([
+        { label: 'mobile', value: '+1234567890', isPrimary: true },
+        { label: 'work', value: '+0987654321' }
+      ]);
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('should accept phones at max array length', () => {
+      const phones = Array(20).fill({ label: 'mobile', value: '+123' });
+      const result = validatePhones(phones);
+      assert.strictEqual(result.valid, true);
+    });
+  });
+
+  describe('validateEmails', () => {
+    it('should reject non-array input', () => {
+      const result = validateEmails('not-an-array');
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Emails must be an array');
+    });
+
+    it('should reject null element', () => {
+      const result = validateEmails([null]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email entry must be an object');
+    });
+
+    it('should reject primitive element', () => {
+      const result = validateEmails([42]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email entry must be an object');
+    });
+
+    it('should reject email without value', () => {
+      const result = validateEmails([{ label: 'work' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email requires label and value');
+    });
+
+    it('should reject email with whitespace-only label', () => {
+      const result = validateEmails([{ label: '  ', value: 'test@example.com' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email label invalid or too long');
+    });
+
+    it('should reject email with whitespace-only value', () => {
+      const result = validateEmails([{ label: 'work', value: '   ' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email value invalid or too long');
+    });
+
+    it('should reject invalid email format', () => {
+      const result = validateEmails([{ label: 'work', value: 'notanemail' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email value must be a valid email address');
+    });
+
+    it('should reject email with too long value', () => {
+      const result = validateEmails([{ label: 'work', value: 'x'.repeat(256) }]);
+      assert.strictEqual(result.valid, false);
+      assert.ok(result.error.includes('Email value invalid or too long'));
+    });
+
+    it('should reject non-boolean isPrimary', () => {
+      const result = validateEmails([{ label: 'work', value: 'test@example.com', isPrimary: 1 }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Email isPrimary must be boolean');
+    });
+
+    it('should reject array exceeding max length', () => {
+      const emails = Array(21).fill({ label: 'work', value: 'test@example.com' });
+      const result = validateEmails(emails);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Too many email entries (max 20)');
+    });
+
+    it('should accept valid emails array', () => {
+      const result = validateEmails([
+        { label: 'work', value: 'john@work.com', isPrimary: true },
+        { label: 'home', value: 'john@home.com' }
+      ]);
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('should accept emails at max array length', () => {
+      const emails = Array(20).fill({ label: 'work', value: 'test@example.com' });
+      const result = validateEmails(emails);
+      assert.strictEqual(result.valid, true);
+    });
+  });
+
+  describe('validateAddresses', () => {
+    it('should reject non-array input', () => {
+      const result = validateAddresses('not-an-array');
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Addresses must be an array');
+    });
+
+    it('should reject null element', () => {
+      const result = validateAddresses([null]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Address entry must be an object');
+    });
+
+    it('should reject undefined element', () => {
+      const result = validateAddresses([undefined]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Address entry must be an object');
+    });
+
+    it('should reject address without label', () => {
+      const result = validateAddresses([{ street: '123 Main St' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Address requires label');
+    });
+
+    it('should reject address with whitespace-only label', () => {
+      const result = validateAddresses([{ label: '\t\n  ', street: '123 Main St' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Address label invalid or too long');
+    });
+
+    it('should reject address with too long street', () => {
+      const result = validateAddresses([{ label: 'home', street: 'x'.repeat(256) }]);
+      assert.strictEqual(result.valid, false);
+      assert.ok(result.error.includes('Address street invalid or too long'));
+    });
+
+    it('should reject non-boolean isPrimary', () => {
+      const result = validateAddresses([{ label: 'home', street: '123 Main', isPrimary: 'yes' }]);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Address isPrimary must be boolean');
+    });
+
+    it('should reject array exceeding max length', () => {
+      const addresses = Array(21).fill({ label: 'home' });
+      const result = validateAddresses(addresses);
+      assert.strictEqual(result.valid, false);
+      assert.strictEqual(result.error, 'Too many address entries (max 20)');
+    });
+
+    it('should accept valid addresses array', () => {
+      const result = validateAddresses([
+        {
+          label: 'home',
+          street: '123 Main St',
+          city: 'Springfield',
+          state: 'IL',
+          postalCode: '62701',
+          country: 'USA',
+          isPrimary: true
+        },
+        {
+          label: 'work',
+          street: '456 Office Blvd',
+          city: 'Metropolis'
+        }
+      ]);
+      assert.strictEqual(result.valid, true);
+    });
+
+    it('should accept addresses at max array length', () => {
+      const addresses = Array(20).fill({ label: 'home' });
+      const result = validateAddresses(addresses);
+      assert.strictEqual(result.valid, true);
+    });
+  });
+});

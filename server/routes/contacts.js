@@ -17,6 +17,93 @@ const VALID_CATEGORIES = ['Arzt', 'Schule/Kita', 'Behörde', 'Versicherung',
                            'Handwerker', 'Notfall', 'Sonstiges'];
 
 /**
+ * Validates phones array for multi-value contact fields.
+ * @param {Array} phones - Array of { label, value, isPrimary? }
+ * @returns {{ valid: boolean, error?: string }}
+ */
+function validatePhones(phones) {
+  if (!Array.isArray(phones)) return { valid: false, error: 'Phones must be an array' };
+  if (phones.length > 20) return { valid: false, error: 'Too many phone entries (max 20)' };
+  for (const p of phones) {
+    if (!p || typeof p !== 'object') return { valid: false, error: 'Phone entry must be an object' };
+    if (!p.label || !p.value) return { valid: false, error: 'Phone requires label and value' };
+    if (typeof p.label !== 'string' || p.label.trim().length === 0 || p.label.length > 50) {
+      return { valid: false, error: 'Phone label invalid or too long' };
+    }
+    if (typeof p.value !== 'string' || p.value.trim().length === 0 || p.value.length > 50) {
+      return { valid: false, error: 'Phone value invalid or too long' };
+    }
+    if (p.isPrimary !== undefined && typeof p.isPrimary !== 'boolean') {
+      return { valid: false, error: 'Phone isPrimary must be boolean' };
+    }
+  }
+  return { valid: true };
+}
+
+/**
+ * Validates emails array for multi-value contact fields.
+ * @param {Array} emails - Array of { label, value, isPrimary? }
+ * @returns {{ valid: boolean, error?: string }}
+ */
+function validateEmails(emails) {
+  if (!Array.isArray(emails)) return { valid: false, error: 'Emails must be an array' };
+  if (emails.length > 20) return { valid: false, error: 'Too many email entries (max 20)' };
+  for (const e of emails) {
+    if (!e || typeof e !== 'object') return { valid: false, error: 'Email entry must be an object' };
+    if (!e.label || !e.value) return { valid: false, error: 'Email requires label and value' };
+    if (typeof e.label !== 'string' || e.label.trim().length === 0 || e.label.length > 50) {
+      return { valid: false, error: 'Email label invalid or too long' };
+    }
+    if (typeof e.value !== 'string' || e.value.trim().length === 0 || e.value.length > 255) {
+      return { valid: false, error: 'Email value invalid or too long' };
+    }
+    if (!/^.+@.+$/.test(e.value)) {
+      return { valid: false, error: 'Email value must be a valid email address' };
+    }
+    if (e.isPrimary !== undefined && typeof e.isPrimary !== 'boolean') {
+      return { valid: false, error: 'Email isPrimary must be boolean' };
+    }
+  }
+  return { valid: true };
+}
+
+/**
+ * Validates addresses array for multi-value contact fields.
+ * @param {Array} addresses - Array of { label, street?, city?, state?, postalCode?, country?, isPrimary? }
+ * @returns {{ valid: boolean, error?: string }}
+ */
+function validateAddresses(addresses) {
+  if (!Array.isArray(addresses)) return { valid: false, error: 'Addresses must be an array' };
+  if (addresses.length > 20) return { valid: false, error: 'Too many address entries (max 20)' };
+  for (const a of addresses) {
+    if (!a || typeof a !== 'object') return { valid: false, error: 'Address entry must be an object' };
+    if (!a.label) return { valid: false, error: 'Address requires label' };
+    if (typeof a.label !== 'string' || a.label.trim().length === 0 || a.label.length > 50) {
+      return { valid: false, error: 'Address label invalid or too long' };
+    }
+    if (a.street !== undefined && (typeof a.street !== 'string' || a.street.length > 255)) {
+      return { valid: false, error: 'Address street invalid or too long' };
+    }
+    if (a.city !== undefined && (typeof a.city !== 'string' || a.city.length > 255)) {
+      return { valid: false, error: 'Address city invalid or too long' };
+    }
+    if (a.state !== undefined && (typeof a.state !== 'string' || a.state.length > 255)) {
+      return { valid: false, error: 'Address state invalid or too long' };
+    }
+    if (a.postalCode !== undefined && (typeof a.postalCode !== 'string' || a.postalCode.length > 255)) {
+      return { valid: false, error: 'Address postalCode invalid or too long' };
+    }
+    if (a.country !== undefined && (typeof a.country !== 'string' || a.country.length > 255)) {
+      return { valid: false, error: 'Address country invalid or too long' };
+    }
+    if (a.isPrimary !== undefined && typeof a.isPrimary !== 'boolean') {
+      return { valid: false, error: 'Address isPrimary must be boolean' };
+    }
+  }
+  return { valid: true };
+}
+
+/**
  * GET /api/v1/contacts
  * Alle Kontakte, optional nach Kategorie gefiltert und nach Name gesucht.
  * Query: ?category=<cat>&q=<search>
@@ -208,3 +295,4 @@ router.get('/:id/vcard', (req, res) => {
 });
 
 export default router;
+export { validatePhones, validateEmails, validateAddresses };
