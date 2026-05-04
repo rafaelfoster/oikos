@@ -53,98 +53,178 @@ function getAllAccounts() {
 }
 
 // --------------------------------------------------------
-// Account CRUD Operations
+// Connection Testing
 // --------------------------------------------------------
 
-/**
- * Create a new CalDAV account
- * @param {string} label - User-friendly label
- * @param {string} url - CalDAV server URL
- * @param {string} username - Account username
- * @param {string} password - Account password
- * @returns {number} Account ID
- */
-function createAccount(label, url, username, password) {
-  if (!label || !url || !username || !password) {
-    throw new Error('All fields required: label, url, username, password');
+async function testConnection(caldavUrl, username, password) {
+  try {
+    const { createDAVClient } = await import('tsdav');
+    const client = await createDAVClient({
+      serverUrl:          caldavUrl,
+      credentials:        { username, password },
+      authMethod:         'Basic',
+      defaultAccountType: 'caldav',
+    });
+
+    const calendars = await client.fetchCalendars();
+    if (!calendars.length) {
+      throw new Error('Connected, but no calendars found.');
+    }
+
+    return { ok: true, calendars };
+  } catch (err) {
+    log.error('Connection test failed:', err.message);
+    throw new Error(`CalDAV connection failed: ${err.message}`);
   }
-
-  const result = db.get().prepare(`
-    INSERT INTO caldav_accounts (label, url, username, password)
-    VALUES (?, ?, ?, ?)
-  `).run(label, url, username, password);
-
-  log.info('CalDAV account created', { id: result.lastInsertRowid, label });
-  return result.lastInsertRowid;
 }
 
-/**
- * Update an existing CalDAV account
- * @param {number} accountId - Account ID
- * @param {object} updates - Fields to update
- * @returns {void}
- */
-function updateAccount(accountId, updates) {
+// --------------------------------------------------------
+// Account Management
+// --------------------------------------------------------
+
+async function addAccount(name, caldavUrl, username, password) {
+  // Validate inputs
+  if (!name || !caldavUrl || !username || !password) {
+    throw new Error('All fields required: name, caldavUrl, username, password');
+  }
+
+  // Test connection first
+  const { calendars } = await testConnection(caldavUrl, username, password);
+
+  // Check for duplicate
+  const existing = db.get().prepare(
+    'SELECT id FROM caldav_accounts WHERE caldav_url = ? AND username = ?'
+  ).get(caldavUrl, username);
+
+  if (existing) {
+    throw new Error('Account with this URL and username already exists.');
+  }
+
+  // Warn if DB_ENCRYPTION_KEY not set
+  if (!process.env.DB_ENCRYPTION_KEY) {
+    log.warn('WARNING: DB_ENCRYPTION_KEY is not set - CalDAV credentials will be stored unencrypted.');
+  }
+
+  // Insert account
+  const result = db.get().prepare(`
+    INSERT INTO caldav_accounts (name, caldav_url, username, password)
+    VALUES (?, ?, ?, ?)
+  `).run(name, caldavUrl, username, password);
+
+  const accountId = result.lastInsertRowid;
+
+  // Insert calendar selections (all enabled by default)
+  const calendarData = [];
+  for (const cal of calendars) {
+    const calColor = normalizeCalColor(cal.calendarColor) || '#4A90E2';
+    const calName = cal.displayName || 'Unnamed Calendar';
+
+    db.get().prepare(`
+      INSERT INTO caldav_calendar_selection (account_id, calendar_url, calendar_name, calendar_color, enabled)
+      VALUES (?, ?, ?, ?, 1)
+    `).run(accountId, cal.url, calName, calColor);
+
+    calendarData.push({ url: cal.url, name: calName, color: calColor, enabled: true });
+  }
+
+  log.info(`Added CalDAV account "${name}" with ${calendars.length} calendars.`);
+
+  return { accountId, calendars: calendarData };
+}
+
+function listAccounts() {
+  const accounts = db.get().prepare(`
+    SELECT id, name, caldav_url, username, created_at, last_sync
+    FROM caldav_accounts
+    ORDER BY created_at DESC
+  `).all();
+
+  // Do NOT return password (security)
+  return accounts.map(acc => ({
+    id: acc.id,
+    name: acc.name,
+    caldavUrl: acc.caldav_url,
+    username: acc.username,
+    createdAt: acc.created_at,
+    lastSync: acc.last_sync,
+  }));
+}
+
+async function updateAccount(accountId, { name, caldavUrl, username, password }) {
   const account = getAccountById(accountId);
   if (!account) {
-    throw new Error(`CalDAV account not found: ${accountId}`);
+    throw new Error(`Account ${accountId} not found.`);
   }
 
-  const { label, url, username, password } = updates;
-  const fields = [];
+  // If credentials changed, test connection
+  const credentialsChanged =
+    (caldavUrl && caldavUrl !== account.caldav_url) ||
+    (username && username !== account.username) ||
+    (password && password !== account.password);
+
+  if (credentialsChanged) {
+    const testUrl = caldavUrl || account.caldav_url;
+    const testUser = username || account.username;
+    const testPwd = password || account.password;
+
+    const { calendars } = await testConnection(testUrl, testUser, testPwd);
+
+    // If credentials changed, refresh calendar list
+    if (calendars) {
+      // Delete old selections
+      db.get().prepare('DELETE FROM caldav_calendar_selection WHERE account_id = ?').run(accountId);
+
+      // Insert new selections
+      for (const cal of calendars) {
+        const calColor = normalizeCalColor(cal.calendarColor) || '#4A90E2';
+        const calName = cal.displayName || 'Unnamed Calendar';
+
+        db.get().prepare(`
+          INSERT INTO caldav_calendar_selection (account_id, calendar_url, calendar_name, calendar_color, enabled)
+          VALUES (?, ?, ?, ?, 1)
+        `).run(accountId, cal.url, calName, calColor);
+      }
+    }
+  }
+
+  // Update account
+  const updates = [];
   const values = [];
 
-  if (label !== undefined) {
-    fields.push('label = ?');
-    values.push(label);
-  }
-  if (url !== undefined) {
-    fields.push('url = ?');
-    values.push(url);
-  }
-  if (username !== undefined) {
-    fields.push('username = ?');
-    values.push(username);
-  }
-  if (password !== undefined) {
-    fields.push('password = ?');
-    values.push(password);
-  }
+  if (name) { updates.push('name = ?'); values.push(name); }
+  if (caldavUrl) { updates.push('caldav_url = ?'); values.push(caldavUrl); }
+  if (username) { updates.push('username = ?'); values.push(username); }
+  if (password) { updates.push('password = ?'); values.push(password); }
 
-  if (fields.length === 0) {
-    throw new Error('No fields to update');
+  if (updates.length === 0) {
+    throw new Error('No fields to update.');
   }
 
   values.push(accountId);
 
   db.get().prepare(`
-    UPDATE caldav_accounts
-    SET ${fields.join(', ')}
-    WHERE id = ?
+    UPDATE caldav_accounts SET ${updates.join(', ')} WHERE id = ?
   `).run(...values);
 
-  log.info('CalDAV account updated', { id: accountId, fields: Object.keys(updates) });
+  log.info(`Updated CalDAV account ${accountId}.`);
+
+  return { success: true };
 }
 
-/**
- * Delete a CalDAV account and all associated data
- * @param {number} accountId - Account ID
- * @returns {void}
- */
 function deleteAccount(accountId) {
   const account = getAccountById(accountId);
   if (!account) {
-    throw new Error(`CalDAV account not found: ${accountId}`);
+    throw new Error(`Account ${accountId} not found.`);
   }
 
-  // Foreign key constraints will cascade delete:
-  // - caldav_selected_calendars
-  // - external_calendars (via source)
-  // - calendar_events (via external_calendar_id)
-
+  // CASCADE will delete caldav_calendar_selection entries
   db.get().prepare('DELETE FROM caldav_accounts WHERE id = ?').run(accountId);
 
-  log.info('CalDAV account deleted', { id: accountId, label: account.label });
+  // Events with calendar_ref_id to deleted account remain (orphaned but visible)
+
+  log.info(`Deleted CalDAV account ${accountId} ("${account.name}").`);
+
+  return { success: true };
 }
 
 // --------------------------------------------------------
@@ -152,9 +232,8 @@ function deleteAccount(accountId) {
 // --------------------------------------------------------
 
 export {
-  createAccount,
+  addAccount,
+  listAccounts,
   updateAccount,
-  deleteAccount,
-  getAccountById,
-  getAllAccounts
+  deleteAccount
 };
