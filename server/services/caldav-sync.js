@@ -12,9 +12,6 @@ import * as db from '../db.js';
 // Reused functions from apple-calendar.js
 import {
   parseICS,
-  buildICS,
-  escapeICS,
-  unescapeICS,
   formatICSDate,
   tzLocalToUTC,
   applyDuration
