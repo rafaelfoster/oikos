@@ -125,7 +125,7 @@
 - Mock: `_mockSyncAccount()` für Tests hinzugefügt (Pattern wie `_mockTestConnection`)
 
 ### ✅ Task 11: GET /contacts/:id - With Multi-Value Fields
-**Commit:** [wird gesetzt nach commit]
+**Commit:** fe8af33
 
 - Implementiert: GET /contacts/:id Route in `server/routes/contacts.js`
 - Queries: Separate Abfragen für `contact_phones`, `contact_emails`, `contact_addresses`
