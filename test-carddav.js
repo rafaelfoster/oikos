@@ -1844,5 +1844,55 @@ describe('CardDAV API Routes', () => {
       assert.ok(Array.isArray(res.data.data));
       assert.strictEqual(res.data.data.length, 0);
     });
+
+    it('POST /accounts/:id/addressbooks/refresh - should refresh addressbooks', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      // Create account first
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Refresh Test Account',
+          cardavUrl: 'https://example.com/carddav-refresh',
+          username: 'testuser-refresh',
+          password: 'testpass'
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postAccountHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postAccountHandler(createReq, createRes);
+      const accountId = createRes.data.data.account.id;
+
+      // Refresh addressbooks
+      const req = {
+        params: { id: String(accountId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const refreshHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/addressbooks/refresh' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(refreshHandler, 'POST /accounts/:id/addressbooks/refresh handler should exist');
+      await refreshHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(Array.isArray(res.data.data));
+    });
   });
 });

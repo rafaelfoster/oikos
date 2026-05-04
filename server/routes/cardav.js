@@ -127,4 +127,33 @@ router.get('/accounts/:id/addressbooks', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/v1/contacts/cardav/accounts/:id/addressbooks/refresh
+ * Addressbooks neu discovern (PROPFIND).
+ * Response: { data: Addressbook[] }
+ */
+router.post('/accounts/:id/addressbooks/refresh', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id || id < 1) return res.status(400).json({ error: 'Invalid ID', code: 400 });
+
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(id);
+    if (!account) return res.status(404).json({ error: 'Account nicht gefunden', code: 404 });
+
+    await CardDAVSync.discoverAddressbooks(id);
+
+    const addressbooks = db.get().prepare(`
+      SELECT id, addressbook_url as url, addressbook_name as name, enabled
+      FROM carddav_addressbook_selection
+      WHERE account_id = ?
+      ORDER BY addressbook_name
+    `).all(id);
+
+    res.json({ data: addressbooks });
+  } catch (err) {
+    log.error('Error refreshing addressbooks:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
 export default router;
