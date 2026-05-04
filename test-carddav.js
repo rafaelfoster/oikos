@@ -741,6 +741,147 @@ END:VCARD`;
     });
   });
 
+  describe('Account Management Operations', () => {
+    it('should add account with plain text password storage', () => {
+      testDb.prepare(`
+        INSERT INTO carddav_accounts (name, carddav_url, username, password)
+        VALUES (?, ?, ?, ?)
+      `).run('iCloud Account', 'https://contacts.icloud.com', 'test@icloud.com', 'my-secret-password');
+
+      const account = testDb.prepare('SELECT * FROM carddav_accounts WHERE name = ?').get('iCloud Account');
+      assert.ok(account);
+      assert.strictEqual(account.name, 'iCloud Account');
+      assert.strictEqual(account.carddav_url, 'https://contacts.icloud.com');
+      assert.strictEqual(account.username, 'test@icloud.com');
+      assert.strictEqual(account.password, 'my-secret-password');
+    });
+
+    it('should reject duplicate accounts (same URL + username)', () => {
+      testDb.prepare(`
+        INSERT INTO carddav_accounts (name, carddav_url, username, password)
+        VALUES (?, ?, ?, ?)
+      `).run('Nextcloud', 'https://nextcloud.example.com/dav', 'user@example.com', 'pass1');
+
+      // Attempt to insert duplicate
+      assert.throws(() => {
+        testDb.prepare(`
+          INSERT INTO carddav_accounts (name, carddav_url, username, password)
+          VALUES (?, ?, ?, ?)
+        `).run('Nextcloud 2', 'https://nextcloud.example.com/dav', 'user@example.com', 'pass2');
+      }, 'UNIQUE constraint should prevent duplicate carddav_url+username');
+    });
+
+    it('should delete account and set carddav_account_id = NULL on contacts', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Nextcloud').id;
+
+      // Create contact linked to this account
+      testDb.prepare(`
+        INSERT INTO contacts (name, category, carddav_account_id, carddav_uid)
+        VALUES (?, ?, ?, ?)
+      `).run('Test Contact', 'Sonstiges', accountId, 'urn:uuid:test-contact');
+
+      const contactId = testDb.prepare('SELECT id FROM contacts WHERE name = ?').get('Test Contact').id;
+
+      // Verify contact is linked
+      const beforeDelete = testDb.prepare('SELECT carddav_account_id FROM contacts WHERE id = ?').get(contactId);
+      assert.strictEqual(beforeDelete.carddav_account_id, accountId);
+
+      // Delete account
+      testDb.prepare('DELETE FROM carddav_accounts WHERE id = ?').run(accountId);
+
+      // Contact should remain but carddav_account_id should be NULL
+      const afterDelete = testDb.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+      assert.ok(afterDelete, 'Contact should still exist');
+      assert.strictEqual(afterDelete.carddav_account_id, null, 'carddav_account_id should be SET NULL');
+    });
+
+    it('should retrieve password correctly from database', () => {
+      const account = testDb.prepare('SELECT * FROM carddav_accounts WHERE name = ?').get('iCloud Account');
+      assert.strictEqual(account.password, 'my-secret-password', 'Password should be retrievable');
+    });
+  });
+
+  describe('Addressbook Discovery UPSERT', () => {
+    it('should insert new addressbook for account', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('iCloud Account').id;
+
+      testDb.prepare(`
+        INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
+        VALUES (?, ?, ?, ?)
+      `).run(accountId, 'https://contacts.icloud.com/123456/personal', 'Personal', 1);
+
+      const addressbook = testDb.prepare(`
+        SELECT * FROM carddav_addressbook_selection
+        WHERE account_id = ? AND addressbook_url = ?
+      `).get(accountId, 'https://contacts.icloud.com/123456/personal');
+
+      assert.ok(addressbook);
+      assert.strictEqual(addressbook.addressbook_name, 'Personal');
+      assert.strictEqual(addressbook.enabled, 1);
+    });
+
+    it('should update existing addressbook name while preserving enabled state', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('iCloud Account').id;
+
+      // Get existing addressbook
+      const existing = testDb.prepare(`
+        SELECT id, enabled FROM carddav_addressbook_selection
+        WHERE account_id = ? AND addressbook_url = ?
+      `).get(accountId, 'https://contacts.icloud.com/123456/personal');
+
+      // Disable it
+      testDb.prepare('UPDATE carddav_addressbook_selection SET enabled = 0 WHERE id = ?').run(existing.id);
+
+      // Update name (simulating rediscovery)
+      testDb.prepare(`
+        UPDATE carddav_addressbook_selection
+        SET addressbook_name = ?
+        WHERE id = ?
+      `).run('Personal Contacts', existing.id);
+
+      const updated = testDb.prepare('SELECT * FROM carddav_addressbook_selection WHERE id = ?').get(existing.id);
+      assert.strictEqual(updated.addressbook_name, 'Personal Contacts', 'Name should be updated');
+      assert.strictEqual(updated.enabled, 0, 'Enabled state should be preserved');
+    });
+
+    it('should not insert duplicate addressbook for same account+url', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('iCloud Account').id;
+
+      assert.throws(() => {
+        testDb.prepare(`
+          INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
+          VALUES (?, ?, ?, ?)
+        `).run(accountId, 'https://contacts.icloud.com/123456/personal', 'Duplicate', 1);
+      }, 'UNIQUE constraint should prevent duplicate account_id+addressbook_url');
+    });
+  });
+
+  describe('Addressbook Toggle', () => {
+    it('should toggle addressbook enabled state', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('iCloud Account').id;
+
+      const addressbook = testDb.prepare(`
+        SELECT * FROM carddav_addressbook_selection
+        WHERE account_id = ? AND addressbook_url = ?
+      `).get(accountId, 'https://contacts.icloud.com/123456/personal');
+
+      // Initially disabled (from previous test)
+      assert.strictEqual(addressbook.enabled, 0);
+
+      // Enable it
+      testDb.prepare('UPDATE carddav_addressbook_selection SET enabled = 1 WHERE id = ?').run(addressbook.id);
+
+      const enabled = testDb.prepare('SELECT * FROM carddav_addressbook_selection WHERE id = ?').get(addressbook.id);
+      assert.strictEqual(enabled.enabled, 1);
+
+      // Disable it again
+      testDb.prepare('UPDATE carddav_addressbook_selection SET enabled = 0 WHERE id = ?').run(addressbook.id);
+
+      const disabled = testDb.prepare('SELECT * FROM carddav_addressbook_selection WHERE id = ?').get(addressbook.id);
+      assert.strictEqual(disabled.enabled, 0);
+    });
+  });
+
   describe('Contact Merge Logic (DB)', () => {
     it('should create new contact from vCard', () => {
       const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Test Account').id;
@@ -964,6 +1105,72 @@ END:VCARD`;
 
       // organization should remain unchanged
       assert.strictEqual(updated.organization, 'Local Company');
+    });
+
+    it('should update existing contact when cardav_uid matches', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('iCloud Account').id;
+
+      // Create initial contact from CardDAV
+      testDb.prepare(`
+        INSERT INTO contacts (
+          name, category, organization, job_title,
+          carddav_account_id, carddav_uid, carddav_addressbook_url
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        'John Sync',
+        'Sonstiges',
+        'SyncCorp',
+        'Engineer',
+        accountId,
+        'urn:uuid:sync-test-123',
+        'https://contacts.icloud.com/123456/personal'
+      );
+
+      const contactId = testDb.prepare('SELECT id FROM contacts WHERE name = ?').get('John Sync').id;
+
+      // User manually sets birthday
+      testDb.prepare('UPDATE contacts SET birthday = ? WHERE id = ?').run('1990-05-15', contactId);
+
+      // Simulate sync update (only update NULL fields)
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+
+      const updates = [];
+      const values = [];
+
+      // website is NULL, should update
+      if (contact.website === null) {
+        updates.push('website = ?');
+        values.push('https://john.example.com');
+      }
+
+      // birthday is NOT NULL (user set it), should not update
+      if (contact.birthday === null) {
+        updates.push('birthday = ?');
+        values.push('1985-01-01');
+      }
+
+      // organization is NOT NULL, should not update
+      if (contact.organization === null) {
+        updates.push('organization = ?');
+        values.push('Different Corp');
+      }
+
+      if (updates.length > 0) {
+        values.push(contactId);
+        testDb.prepare(`UPDATE contacts SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+      }
+
+      const updated = testDb.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+
+      // website should be updated (was NULL)
+      assert.strictEqual(updated.website, 'https://john.example.com');
+
+      // birthday should remain unchanged (user's manual value)
+      assert.strictEqual(updated.birthday, '1990-05-15');
+
+      // organization should remain unchanged
+      assert.strictEqual(updated.organization, 'SyncCorp');
     });
   });
 });
