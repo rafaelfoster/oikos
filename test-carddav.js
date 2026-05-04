@@ -1651,5 +1651,79 @@ describe('CardDAV API Routes', () => {
       assert.strictEqual(res.statusCode, 400);
       assert.ok(res.data.error.includes('Name'));
     });
+
+    it('DELETE /accounts/:id - should delete account and cascade addressbooks', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      // First create an account to delete
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Account to Delete',
+          cardavUrl: 'https://example.com/carddav',
+          username: 'deleteuser',
+          password: 'deletepass'
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(createReq, createRes);
+      const accountId = createRes.data.data.account.id;
+
+      // Now delete it
+      const req = {
+        params: { id: String(accountId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const deleteHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id' && layer.route.methods.delete
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(deleteHandler, 'DELETE /accounts/:id handler should exist');
+      await deleteHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.strictEqual(res.data.data.deleted, true);
+    });
+
+    it('DELETE /accounts/:id - should return 400 for invalid ID', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = {
+        params: { id: 'invalid' },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const deleteHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id' && layer.route.methods.delete
+      )?.route?.stack[0]?.handle;
+
+      await deleteHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 400);
+      assert.ok(res.data.error.includes('Invalid ID'));
+    });
   });
 });

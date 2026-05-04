@@ -57,4 +57,23 @@ router.post('/accounts', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/v1/contacts/cardav/accounts/:id
+ * CardDAV Account löschen (CASCADE löscht addressbooks + contacts).
+ * Response: { data: { deleted: true } }
+ */
+router.delete('/accounts/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id || id < 1) return res.status(400).json({ error: 'Invalid ID', code: 400 });
+
+    await CardDAVSync.deleteAccount(id);
+
+    res.json({ data: { deleted: true } });
+  } catch (err) {
+    log.error('Error deleting CardDAV account:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
 export default router;
