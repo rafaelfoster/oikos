@@ -1523,6 +1523,13 @@ describe('CardDAV API Routes', () => {
         { url: 'https://example.com/carddav/addressbook2', displayName: 'Work' }
       ]
     }));
+
+    // Mock syncAccount for API route tests
+    cardavSync._mockSyncAccount(async () => ({
+      synced: true,
+      contactsAdded: 5,
+      contactsUpdated: 3
+    }));
   });
 
   after(async () => {
@@ -1533,6 +1540,9 @@ describe('CardDAV API Routes', () => {
     // Reset testConnection mock
     const cardavSync = await import('./server/services/cardav-sync.js');
     cardavSync._mockTestConnection(null);
+
+    // Reset syncAccount mock
+    cardavSync._mockSyncAccount(null);
   });
 
   describe('Account Management', () => {
@@ -1994,6 +2004,84 @@ describe('CardDAV API Routes', () => {
 
       assert.strictEqual(res.statusCode, 400);
       assert.ok(res.data.error.includes('enabled'));
+    });
+  });
+
+  describe('Sync', () => {
+    it('POST /accounts/:id/sync - should sync all enabled addressbooks', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      // Create account (which creates addressbooks)
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Sync Test Account',
+          cardavUrl: 'https://example.com/carddav-sync',
+          username: 'testuser-sync',
+          password: 'testpass'
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postAccountHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postAccountHandler(createReq, createRes);
+      const accountId = createRes.data.data.account.id;
+
+      // Sync the account
+      const req = {
+        params: { id: String(accountId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const syncHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/sync' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(syncHandler, 'POST /accounts/:id/sync handler should exist');
+      await syncHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok('synced' in res.data.data);
+      assert.ok('contactsAdded' in res.data.data);
+      assert.ok('contactsUpdated' in res.data.data);
+    });
+
+    it('POST /accounts/:id/sync - should return 404 for non-existent account', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = {
+        params: { id: '99999' },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const syncHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/sync' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await syncHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 404);
+      assert.ok(res.data.error);
     });
   });
 });

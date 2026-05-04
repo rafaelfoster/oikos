@@ -467,6 +467,11 @@ function toggleAddressbook(addressbookId, enabled) {
  * @returns {Promise<Object>} { synced, errors }
  */
 async function syncAccount(accountId) {
+  // Use mock if set (for testing)
+  if (_syncAccountMock) {
+    return _syncAccountMock(accountId);
+  }
+
   try {
     const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(accountId);
     if (!account) {
@@ -884,6 +889,7 @@ export {
   // Helpers (exported for testing)
   parseVCard,
   _mockTestConnection,
+  _mockSyncAccount,
 };
 
 // --------------------------------------------------------
@@ -891,6 +897,7 @@ export {
 // --------------------------------------------------------
 
 let _testConnectionMock = null;
+let _syncAccountMock = null;
 
 /**
  * ONLY FOR TESTING: Mock testConnection for unit tests
@@ -898,4 +905,12 @@ let _testConnectionMock = null;
  */
 function _mockTestConnection(mockFn) {
   _testConnectionMock = mockFn;
+}
+
+/**
+ * ONLY FOR TESTING: Mock syncAccount for unit tests
+ * @param {Function|null} mockFn - Mock function or null to reset
+ */
+function _mockSyncAccount(mockFn) {
+  _syncAccountMock = mockFn;
 }

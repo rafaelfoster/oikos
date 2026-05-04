@@ -1,6 +1,6 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 9 von 15
+**Stand:** 2026-05-04, nach Task 10 von 15
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
 
 ## Abgeschlossene Tasks
@@ -112,7 +112,18 @@
 - Tests: 2 Tests (success case mit toggle, validation failure für invalid enabled)
 - bool Validator verwendet
 
-## Offene Tasks (10-15)
+### ✅ Task 10: POST /accounts/:id/sync - Sync Account
+**Commit:** (pending)
+
+- Implementiert: POST /accounts/:id/sync Route in server/routes/cardav.js
+- Validierung: ID muss positive Ganzzahl sein
+- Lädt Account aus DB (404 wenn nicht gefunden)
+- Delegiert an: `CardDAVSync.syncAccount(accountId)`
+- Response: 200 mit `{ synced, contactsAdded, contactsUpdated }`
+- Tests: 2 Tests (success case, 404 für non-existent account)
+- Mock: `_mockSyncAccount()` für Tests hinzugefügt (Pattern wie `_mockTestConnection`)
+
+## Offene Tasks (11-15)
 
 ### 🔄 Task 10: POST /accounts/:id/sync
 - Sync Account (alle enabled addressbooks)
@@ -196,9 +207,9 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 
 ## Test-Status
 
-- **Gesamt:** 99 Tests, alle bestehen
-- **Suites:** 15 Suites
-- **CardDAV API Routes Suite:** 12 Tests
+- **Gesamt:** 101 Tests, alle bestehen
+- **Suites:** 16 Suites
+- **CardDAV API Routes Suite:** 14 Tests
   - Account Management (6 Tests):
     - GET /accounts (empty)
     - GET /accounts (populated with shape)
@@ -214,6 +225,9 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
   - Addressbook Management (2 Tests):
     - PUT /addressbooks/:id (toggle enabled/disabled)
     - PUT /addressbooks/:id (validation failure)
+  - Sync (2 Tests):
+    - POST /accounts/:id/sync (success)
+    - POST /accounts/:id/sync (404 for non-existent account)
 
 ## Branch & Remote
 
@@ -234,7 +248,7 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 #7. [completed] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
 #8. [completed] Task 8: Add bool validator to validate.js
 #9. [completed] Task 9: PUT /addressbooks/:id - Toggle Addressbook
-#10. [pending] Task 10: POST /accounts/:id/sync - Sync Account
+#10. [completed] Task 10: POST /accounts/:id/sync - Sync Account
 #11. [pending] Task 11: GET /contacts/:id - With Multi-Values
 #12. [pending] Task 12: POST /contacts - Create With Multi-Values
 #13. [pending] Task 13: PUT /contacts/:id - Update With Multi-Values

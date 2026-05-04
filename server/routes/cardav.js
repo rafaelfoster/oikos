@@ -180,4 +180,26 @@ router.put('/addressbooks/:id', async (req, res) => {
   }
 });
 
+/**
+ * POST /api/v1/contacts/cardav/accounts/:id/sync
+ * Sync all enabled addressbooks for account.
+ * Response: { data: { synced: boolean, contactsAdded: number, contactsUpdated: number } }
+ */
+router.post('/accounts/:id/sync', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id || id < 1) return res.status(400).json({ error: 'Invalid ID', code: 400 });
+
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(id);
+    if (!account) return res.status(404).json({ error: 'Account nicht gefunden', code: 404 });
+
+    const result = await CardDAVSync.syncAccount(id);
+
+    res.json({ data: result });
+  } catch (err) {
+    log.error('Error syncing account:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
 export default router;
