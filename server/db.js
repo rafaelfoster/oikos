@@ -1180,6 +1180,15 @@ const MIGRATIONS = [
       CREATE INDEX idx_contact_addresses_contact ON contact_addresses(contact_id);
     `,
   },
+  {
+    version: 31,
+    description: 'Advanced reminder options for birthdays',
+    up: `
+      ALTER TABLE birthdays ADD COLUMN reminder_offset TEXT;
+      ALTER TABLE birthdays ADD COLUMN reminder_custom_amount INTEGER;
+      ALTER TABLE birthdays ADD COLUMN reminder_custom_unit TEXT;
+    `,
+  },
 ];
 
 /**

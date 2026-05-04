@@ -75,9 +75,18 @@ router.post('/', (req, res) => {
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
 
     const result = db.get().prepare(`
-      INSERT INTO birthdays (name, birth_date, notes, photo_data, created_by)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(vName.value, vBirthDate.value, vNotes.value, vPhoto.value ?? null, req.authUserId || req.session.userId);
+      INSERT INTO birthdays (name, birth_date, notes, photo_data, created_by, reminder_offset, reminder_custom_amount, reminder_custom_unit)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      vName.value,
+      vBirthDate.value,
+      vNotes.value,
+      vPhoto.value ?? null,
+      req.authUserId || req.session.userId,
+      req.body.reminder_offset ?? null,
+      req.body.reminder_custom_amount ?? null,
+      req.body.reminder_custom_unit ?? null
+    );
 
     const birthday = loadBirthday(result.lastInsertRowid);
     const synced = db.transaction(() => syncBirthdayArtifacts(db.get(), birthday));
@@ -111,6 +120,9 @@ router.put('/:id', (req, res) => {
           birth_date = COALESCE(?, birth_date),
           notes = ?,
           photo_data = ?,
+          reminder_offset = ?,
+          reminder_custom_amount = ?,
+          reminder_custom_unit = ?,
           updated_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')
       WHERE id = ?
     `).run(
@@ -118,6 +130,9 @@ router.put('/:id', (req, res) => {
       req.body.birth_date ?? null,
       req.body.notes !== undefined ? (req.body.notes?.trim() || null) : existing.notes,
       req.body.photo_data !== undefined ? (vPhoto.value ?? null) : existing.photo_data,
+      req.body.reminder_offset !== undefined ? req.body.reminder_offset : existing.reminder_offset,
+      req.body.reminder_custom_amount !== undefined ? req.body.reminder_custom_amount : existing.reminder_custom_amount,
+      req.body.reminder_custom_unit !== undefined ? req.body.reminder_custom_unit : existing.reminder_custom_unit,
       id,
     );
 

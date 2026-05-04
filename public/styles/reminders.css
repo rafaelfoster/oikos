@@ -92,3 +92,11 @@
 .reminder-fields .modal-grid {
   align-items: end;
 }
+
+.reminder-custom {
+  margin-top: var(--space-3);
+}
+
+.reminder-custom[hidden] {
+  display: none !important;
+}

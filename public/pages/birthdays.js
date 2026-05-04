@@ -20,6 +20,50 @@ function initials(name) {
     .join('') || '?';
 }
 
+const REMINDER_OFFSETS = () => [
+  { value: '',     label: t('reminders.offsetNone')   },
+  { value: '0',    label: t('reminders.offsetAtTime') },
+  { value: '15',   label: t('reminders.offset15min')  },
+  { value: '60',   label: t('reminders.offset1hour')  },
+  { value: '1440', label: t('reminders.offset1day')   },
+  { value: '2880', label: t('reminders.offset2days')  },
+  { value: '10080', label: t('reminders.offset1week') },
+  { value: '20160', label: t('reminders.offset2weeks') },
+  { value: 'custom', label: t('reminders.offsetCustom') },
+];
+
+function renderBirthdayReminderSection(birthday = null) {
+  const currentOffset = birthday?.reminder_offset ?? '0';
+  const customAmount = birthday?.reminder_custom_amount || 1;
+  const customUnit = birthday?.reminder_custom_unit || 'days';
+  return `
+    <div class="reminder-section">
+      <div class="form-group" style="margin:0">
+        <label class="form-label" for="bd-reminder-offset">${t('reminders.offsetLabel')}</label>
+        <select class="form-input" id="bd-reminder-offset" style="min-height:44px">
+          ${REMINDER_OFFSETS().map((o) =>
+            `<option value="${o.value}" ${currentOffset === o.value ? 'selected' : ''}>${esc(o.label)}</option>`
+          ).join('')}
+        </select>
+      </div>
+      <div class="modal-grid modal-grid--2 reminder-custom" id="bd-reminder-custom" ${currentOffset === 'custom' ? '' : 'hidden'}>
+        <div class="form-group" style="margin:0">
+          <label class="form-label" for="bd-reminder-custom-amount">${t('reminders.customAmountLabel')}</label>
+          <input class="form-input" type="number" id="bd-reminder-custom-amount" min="1" max="999" value="${customAmount}">
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label" for="bd-reminder-custom-unit">${t('reminders.customUnitLabel')}</label>
+          <select class="form-input" id="bd-reminder-custom-unit">
+            <option value="minutes" ${customUnit === 'minutes' ? 'selected' : ''}>${t('reminders.customMinutes')}</option>
+            <option value="hours" ${customUnit === 'hours' ? 'selected' : ''}>${t('reminders.customHours')}</option>
+            <option value="days" ${customUnit === 'days' ? 'selected' : ''}>${t('reminders.customDays')}</option>
+            <option value="weeks" ${customUnit === 'weeks' ? 'selected' : ''}>${t('reminders.customWeeks')}</option>
+          </select>
+        </div>
+      </div>
+    </div>`;
+}
+
 function ageNote(birthday) {
   if (birthday.days_until === 0) return t('birthdays.ageNoteToday', { age: birthday.next_age });
   if (birthday.days_until === 1) return t('birthdays.ageNoteTomorrow', { age: birthday.next_age });
@@ -327,6 +371,7 @@ function openBirthdayModal({ mode, birthday = null }) {
           <label class="form-label" for="bd-notes">${t('birthdays.notesLabel')}</label>
           <textarea class="form-input" id="bd-notes" rows="3" placeholder="${t('birthdays.notesPlaceholder')}">${esc(birthday?.notes || '')}</textarea>
         </div>
+        ${renderBirthdayReminderSection(birthday)}
         <div class="birthday-modal__hint">${t('birthdays.calendarHint')}</div>
         <div class="modal-panel__footer" style="border:none;padding:0;margin-top:var(--space-4)">
           ${isEdit ? `<button class="btn btn--danger" id="bd-delete">${t('common.delete')}</button>` : '<div></div>'}
@@ -365,6 +410,13 @@ function openBirthdayModal({ mode, birthday = null }) {
         if (fileInput) fileInput.value = '';
         renderPreview();
       });
+
+      const reminderOffset = panel.querySelector('#bd-reminder-offset');
+      const reminderCustom = panel.querySelector('#bd-reminder-custom');
+      reminderOffset?.addEventListener('change', () => {
+        if (reminderCustom) reminderCustom.hidden = reminderOffset.value !== 'custom';
+      });
+
       panel.querySelector('#bd-cancel').addEventListener('click', closeModal);
       panel.querySelector('#bd-delete')?.addEventListener('click', async () => {
         closeModal();
@@ -379,6 +431,9 @@ function openBirthdayModal({ mode, birthday = null }) {
           birth_date: birthDate,
           notes: panel.querySelector('#bd-notes').value.trim(),
           photo_data: photoData,
+          reminder_offset: panel.querySelector('#bd-reminder-offset').value,
+          reminder_custom_amount: panel.querySelector('#bd-reminder-custom-amount').value,
+          reminder_custom_unit: panel.querySelector('#bd-reminder-custom-unit').value,
         };
 
         if (!body.name || !body.birth_date || !isDateInputValid(birthDateRaw)) {
