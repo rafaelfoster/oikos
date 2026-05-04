@@ -2297,4 +2297,152 @@ describe('Contacts API - Multi-Value Fields', () => {
       assert.strictEqual(contact.addresses.length, 0, 'addresses should be empty');
     });
   });
+
+  describe('POST /contacts', () => {
+    it('should create contact with multi-value fields', async () => {
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      const req = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Dr. Schmidt',
+          category: 'Arzt',
+          notes: 'Hausarzt',
+          phones: [
+            { label: 'Praxis', value: '+4930123456', isPrimary: true },
+            { label: 'Mobil', value: '+491701234567', isPrimary: false }
+          ],
+          emails: [
+            { label: 'Praxis', value: 'praxis@schmidt.de', isPrimary: true }
+          ],
+          addresses: [
+            { 
+              label: 'Praxis', 
+              street: 'Hauptstraße 10', 
+              city: 'Berlin', 
+              postalCode: '10115', 
+              country: 'Deutschland',
+              isPrimary: true 
+            }
+          ]
+        }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(postHandler, 'POST /contacts handler should exist');
+      await postHandler(req, res);
+
+      // Verify response
+      assert.strictEqual(res.statusCode, 201);
+      assert.ok(res.data.data, 'Response should have data field');
+
+      const contact = res.data.data;
+      assert.strictEqual(contact.name, 'Dr. Schmidt');
+      assert.strictEqual(contact.category, 'Arzt');
+
+      // Verify multi-value fields were created
+      assert.ok(Array.isArray(contact.phones), 'phones should be in response');
+      assert.strictEqual(contact.phones.length, 2);
+      
+      const praxisPhone = contact.phones.find(p => p.label === 'Praxis');
+      assert.ok(praxisPhone, 'Should have Praxis phone');
+      assert.strictEqual(praxisPhone.value, '+4930123456');
+      assert.strictEqual(praxisPhone.isPrimary, true);
+
+      assert.ok(Array.isArray(contact.emails), 'emails should be in response');
+      assert.strictEqual(contact.emails.length, 1);
+      assert.strictEqual(contact.emails[0].value, 'praxis@schmidt.de');
+
+      assert.ok(Array.isArray(contact.addresses), 'addresses should be in response');
+      assert.strictEqual(contact.addresses.length, 1);
+      assert.strictEqual(contact.addresses[0].street, 'Hauptstraße 10');
+      assert.strictEqual(contact.addresses[0].city, 'Berlin');
+
+      // Verify data persisted in database
+      const contactId = contact.id;
+      const dbPhones = contactsApiDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(contactId);
+      assert.strictEqual(dbPhones.length, 2, 'Should have 2 phones in DB');
+
+      const dbEmails = contactsApiDb.prepare('SELECT * FROM contact_emails WHERE contact_id = ?').all(contactId);
+      assert.strictEqual(dbEmails.length, 1, 'Should have 1 email in DB');
+
+      const dbAddresses = contactsApiDb.prepare('SELECT * FROM contact_addresses WHERE contact_id = ?').all(contactId);
+      assert.strictEqual(dbAddresses.length, 1, 'Should have 1 address in DB');
+    });
+
+    it('should validate phones array and return 400 on invalid data', async () => {
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      const req = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Test Contact',
+          phones: [
+            { label: 'Invalid' } // missing value
+          ]
+        }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 400);
+      assert.ok(res.data.error, 'Should have error message');
+      assert.ok(res.data.error.includes('Phone'), 'Error should mention Phone');
+    });
+
+    it('should create contact without multi-value fields (backwards compatible)', async () => {
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      const req = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Simple Contact',
+          category: 'Sonstiges'
+        }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 201);
+      const contact = res.data.data;
+      assert.strictEqual(contact.name, 'Simple Contact');
+      
+      // Should have empty arrays
+      assert.ok(Array.isArray(contact.phones));
+      assert.strictEqual(contact.phones.length, 0);
+      assert.ok(Array.isArray(contact.emails));
+      assert.strictEqual(contact.emails.length, 0);
+      assert.ok(Array.isArray(contact.addresses));
+      assert.strictEqual(contact.addresses.length, 0);
+    });
+  });
 });

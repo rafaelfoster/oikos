@@ -17,6 +17,53 @@ const VALID_CATEGORIES = ['Arzt', 'Schule/Kita', 'Behörde', 'Versicherung',
                            'Handwerker', 'Notfall', 'Sonstiges'];
 
 /**
+ * Loads multi-value fields (phones, emails, addresses) for a contact.
+ * @param {number} contactId - Contact ID
+ * @returns {{ phones: Array, emails: Array, addresses: Array }}
+ */
+function loadMultiValueFields(contactId) {
+  const phones = db.get().prepare(`
+    SELECT id, label, value, is_primary FROM contact_phones
+    WHERE contact_id = ?
+    ORDER BY is_primary DESC, id ASC
+  `).all(contactId).map(p => ({
+    id: p.id,
+    label: p.label,
+    value: p.value,
+    isPrimary: p.is_primary === 1
+  }));
+
+  const emails = db.get().prepare(`
+    SELECT id, label, value, is_primary FROM contact_emails
+    WHERE contact_id = ?
+    ORDER BY is_primary DESC, id ASC
+  `).all(contactId).map(e => ({
+    id: e.id,
+    label: e.label,
+    value: e.value,
+    isPrimary: e.is_primary === 1
+  }));
+
+  const addresses = db.get().prepare(`
+    SELECT id, label, street, city, state, postal_code, country, is_primary
+    FROM contact_addresses
+    WHERE contact_id = ?
+    ORDER BY is_primary DESC, id ASC
+  `).all(contactId).map(a => ({
+    id: a.id,
+    label: a.label,
+    street: a.street,
+    city: a.city,
+    state: a.state,
+    postalCode: a.postal_code,
+    country: a.country,
+    isPrimary: a.is_primary === 1
+  }));
+
+  return { phones, emails, addresses };
+}
+
+/**
  * Validates phones array for multi-value contact fields.
  * @param {Array} phones - Array of { label, value, isPrimary? }
  * @returns {{ valid: boolean, error?: string }}
@@ -140,7 +187,7 @@ router.get('/', (req, res) => {
 /**
  * POST /api/v1/contacts
  * Neuen Kontakt anlegen.
- * Body: { name, category?, phone?, email?, address?, notes? }
+ * Body: { name, category?, phone?, email?, address?, notes?, phones?, emails?, addresses? }
  * Response: { data: Contact }
  */
 router.post('/', (req, res) => {
@@ -154,14 +201,95 @@ router.post('/', (req, res) => {
     const errors   = collectErrors([vName, vCat, vPhone, vEmail, vAddress, vNotes]);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
 
-    const result = db.get().prepare(`
-      INSERT INTO contacts (name, category, phone, email, address, notes)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(vName.value, vCat.value || 'Sonstiges', vPhone.value, vEmail.value,
-           vAddress.value, vNotes.value);
+    // Validate multi-value fields if provided
+    if (req.body.phones !== undefined) {
+      const phonesValidation = validatePhones(req.body.phones);
+      if (!phonesValidation.valid) {
+        return res.status(400).json({ error: phonesValidation.error, code: 400 });
+      }
+    }
 
-    const contact = db.get().prepare('SELECT * FROM contacts WHERE id = ?').get(result.lastInsertRowid);
-    res.status(201).json({ data: contact });
+    if (req.body.emails !== undefined) {
+      const emailsValidation = validateEmails(req.body.emails);
+      if (!emailsValidation.valid) {
+        return res.status(400).json({ error: emailsValidation.error, code: 400 });
+      }
+    }
+
+    if (req.body.addresses !== undefined) {
+      const addressesValidation = validateAddresses(req.body.addresses);
+      if (!addressesValidation.valid) {
+        return res.status(400).json({ error: addressesValidation.error, code: 400 });
+      }
+    }
+
+    // Insert contact and multi-value fields in a transaction
+    const transaction = db.get().transaction(() => {
+      const result = db.get().prepare(`
+        INSERT INTO contacts (name, category, phone, email, address, notes)
+        VALUES (?, ?, ?, ?, ?, ?)
+      `).run(vName.value, vCat.value || 'Sonstiges', vPhone.value, vEmail.value,
+             vAddress.value, vNotes.value);
+
+      const contactId = result.lastInsertRowid;
+
+      // Insert phones
+      if (req.body.phones && Array.isArray(req.body.phones)) {
+        const insertPhone = db.get().prepare(`
+          INSERT INTO contact_phones (contact_id, label, value, is_primary)
+          VALUES (?, ?, ?, ?)
+        `);
+        for (const phone of req.body.phones) {
+          insertPhone.run(contactId, phone.label, phone.value, phone.isPrimary ? 1 : 0);
+        }
+      }
+
+      // Insert emails
+      if (req.body.emails && Array.isArray(req.body.emails)) {
+        const insertEmail = db.get().prepare(`
+          INSERT INTO contact_emails (contact_id, label, value, is_primary)
+          VALUES (?, ?, ?, ?)
+        `);
+        for (const email of req.body.emails) {
+          insertEmail.run(contactId, email.label, email.value, email.isPrimary ? 1 : 0);
+        }
+      }
+
+      // Insert addresses
+      if (req.body.addresses && Array.isArray(req.body.addresses)) {
+        const insertAddress = db.get().prepare(`
+          INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        for (const address of req.body.addresses) {
+          insertAddress.run(
+            contactId,
+            address.label,
+            address.street || null,
+            address.city || null,
+            address.state || null,
+            address.postalCode || null,
+            address.country || null,
+            address.isPrimary ? 1 : 0
+          );
+        }
+      }
+
+      return contactId;
+    });
+
+    const contactId = transaction();
+
+    // Query the created contact with multi-value fields
+    const contact = db.get().prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+    const multiValueFields = loadMultiValueFields(contactId);
+
+    res.status(201).json({
+      data: {
+        ...contact,
+        ...multiValueFields
+      }
+    });
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
@@ -267,52 +395,13 @@ router.get('/:id', (req, res) => {
     const contact = db.get().prepare('SELECT * FROM contacts WHERE id = ?').get(id);
     if (!contact) return res.status(404).json({ error: 'Kontakt nicht gefunden', code: 404 });
 
-    // Query multi-value fields
-    const phones = db.get().prepare(`
-      SELECT id, label, value, is_primary FROM contact_phones
-      WHERE contact_id = ?
-      ORDER BY is_primary DESC, id ASC
-    `).all(id).map(p => ({
-      id: p.id,
-      label: p.label,
-      value: p.value,
-      isPrimary: p.is_primary === 1
-    }));
+    // Load multi-value fields
+    const multiValueFields = loadMultiValueFields(id);
 
-    const emails = db.get().prepare(`
-      SELECT id, label, value, is_primary FROM contact_emails
-      WHERE contact_id = ?
-      ORDER BY is_primary DESC, id ASC
-    `).all(id).map(e => ({
-      id: e.id,
-      label: e.label,
-      value: e.value,
-      isPrimary: e.is_primary === 1
-    }));
-
-    const addresses = db.get().prepare(`
-      SELECT id, label, street, city, state, postal_code, country, is_primary
-      FROM contact_addresses
-      WHERE contact_id = ?
-      ORDER BY is_primary DESC, id ASC
-    `).all(id).map(a => ({
-      id: a.id,
-      label: a.label,
-      street: a.street,
-      city: a.city,
-      state: a.state,
-      postalCode: a.postal_code,
-      country: a.country,
-      isPrimary: a.is_primary === 1
-    }));
-
-    // Combine contact with multi-value fields
     res.json({
       data: {
         ...contact,
-        phones,
-        emails,
-        addresses
+        ...multiValueFields
       }
     });
   } catch (err) {
