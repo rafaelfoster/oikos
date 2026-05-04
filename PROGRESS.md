@@ -66,7 +66,17 @@
 - Tests: 2 Tests (success case mit cascade, invalid ID → 400)
 - CASCADE-Verhalten: Foreign Key Constraints löschen addressbooks + contacts automatisch
 
-## Offene Tasks (5-15)
+### ✅ Task 5: POST /accounts/:id/test - Test Connection
+**Commit:** dd5ac88
+
+- Implementiert: POST /accounts/:id/test mit ID-Validierung
+- Lädt Account aus DB (404 wenn nicht gefunden)
+- Delegiert an: `CardDAVSync.testConnection(url, username, password)`
+- Response: 200 mit `{ ok, addressbooks }`
+- Test: 1 Test (success case mit addressbooks)
+- Verwendet gemockten testConnection für konsistente Test-Results
+
+## Offene Tasks (6-15)
 
 ### 🔄 Task 5: POST /accounts/:id/test
 - Test Connection Endpoint (nutzt existierende testConnection Funktion)
@@ -148,6 +158,7 @@ cf68bff feat(cardav): create cardav router with GET /accounts
 930800e fix(cardav): improve router security and test coverage
 f7eb73b feat(cardav): implement POST /accounts endpoint
 ca92cb2 feat(cardav): implement DELETE /accounts/:id endpoint
+dd5ac88 feat(cardav): implement POST /accounts/:id/test endpoint
 ```
 
 ## Test-Status
@@ -174,7 +185,7 @@ ca92cb2 feat(cardav): implement DELETE /accounts/:id endpoint
 #2. [completed] Task 2: CardDAV Router Setup
 #3. [completed] Task 3: POST /accounts - Create Account
 #4. [completed] Task 4: DELETE /accounts/:id - Delete Account
-#5. [pending] Task 5: POST /accounts/:id/test - Test Connection
+#5. [completed] Task 5: POST /accounts/:id/test - Test Connection
 #6. [pending] Task 6: GET /accounts/:id/addressbooks - List Addressbooks
 #7. [pending] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
 #8. [pending] Task 8: Add bool validator to validate.js
