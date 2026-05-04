@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.45.0] - 2026-05-04
+
+### Added
+- **CardDAV contacts integration** (#122): generic multi-account CardDAV sync for contacts. Connect multiple CardDAV servers (Nextcloud, iCloud, Radicale, Baikal) simultaneously. 8 new API routes for account management (`/api/v1/contacts/cardav/*`): create/delete accounts, test connections, discover/refresh addressbooks, toggle addressbook selection, sync contacts. Per-addressbook enable/disable via checkboxes. New service: `server/services/cardav-sync.js`. New router: `server/routes/cardav.js`. Database tables: `carddav_accounts`, `carddav_addressbook_selection`.
+- **Multi-value contact fields**: contacts now support multiple phones, emails, and addresses per contact. Each entry has a label (e.g., "mobile", "work", "home"), value, and optional `isPrimary` flag. Extends existing contact routes: `GET /contacts/:id`, `POST /contacts`, `PUT /contacts/:id`. Database tables: `contact_phones`, `contact_emails`, `contact_addresses`. Atomic transactions with replacement semantics on update. Backward compatible with legacy single-field contacts. Array validators: `validatePhones()`, `validateEmails()`, `validateAddresses()` with length limits, format checks, and type validation.
+
 ## [0.44.1] - 2026-05-04
 
 ### Fixed
