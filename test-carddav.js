@@ -1895,4 +1895,105 @@ describe('CardDAV API Routes', () => {
       assert.ok(Array.isArray(res.data.data));
     });
   });
+
+  describe('Addressbook Management', () => {
+    it('PUT /addressbooks/:id - should toggle addressbook enabled/disabled', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      // First create an account (which creates addressbooks)
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Toggle Test Account',
+          cardavUrl: 'https://example.com/carddav-toggle',
+          username: 'testuser-toggle',
+          password: 'testpass'
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postAccountHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postAccountHandler(createReq, createRes);
+      const accountId = createRes.data.data.account.id;
+
+      // Get addressbooks with IDs via GET /accounts/:id/addressbooks
+      const getReq = {
+        params: { id: String(accountId) },
+        query: {},
+        body: {}
+      };
+      const getRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getAddressbooksHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/addressbooks' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      await getAddressbooksHandler(getReq, getRes);
+
+      const addressbooks = getRes.data.data;
+      assert.ok(addressbooks.length > 0, 'Should have at least one addressbook');
+
+      const addressbookId = addressbooks[0].id;
+      const initialEnabled = addressbooks[0].enabled;
+
+      // Toggle the addressbook
+      const req = {
+        params: { id: String(addressbookId) },
+        query: {},
+        body: { enabled: !initialEnabled }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const putHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/addressbooks/:id' && layer.route.methods.put
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(putHandler, 'PUT /addressbooks/:id handler should exist');
+      await putHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.strictEqual(res.data.data.updated, true);
+      assert.strictEqual(res.data.data.enabled, !initialEnabled);
+    });
+
+    it('PUT /addressbooks/:id - should return 400 for invalid enabled value', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = {
+        params: { id: '1' },
+        query: {},
+        body: { enabled: 'invalid' }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const putHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/addressbooks/:id' && layer.route.methods.put
+      )?.route?.stack[0]?.handle;
+
+      await putHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 400);
+      assert.ok(res.data.error.includes('enabled'));
+    });
+  });
 });

@@ -8,7 +8,7 @@ import { createLogger } from '../logger.js';
 import express from 'express';
 import * as db from '../db.js';
 import * as CardDAVSync from '../services/cardav-sync.js';
-import { str, collectErrors, MAX_TITLE } from '../middleware/validate.js';
+import { str, bool, collectErrors, MAX_TITLE } from '../middleware/validate.js';
 
 const log = createLogger('CardDAV');
 const MAX_URL = 500;
@@ -152,6 +152,30 @@ router.post('/accounts/:id/addressbooks/refresh', async (req, res) => {
     res.json({ data: addressbooks });
   } catch (err) {
     log.error('Error refreshing addressbooks:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+/**
+ * PUT /api/v1/contacts/cardav/addressbooks/:id
+ * Toggle Addressbook enabled/disabled.
+ * Body: { enabled: boolean }
+ * Response: { data: { updated: true, enabled: boolean } }
+ */
+router.put('/addressbooks/:id', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id || id < 1) return res.status(400).json({ error: 'Invalid ID', code: 400 });
+
+    const vEnabled = bool(req.body.enabled, 'enabled');
+    const errors = collectErrors([vEnabled]);
+    if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+
+    CardDAVSync.toggleAddressbook(id, vEnabled.value);
+
+    res.json({ data: { updated: true, enabled: vEnabled.value } });
+  } catch (err) {
+    log.error('Error toggling addressbook:', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
   }
 });

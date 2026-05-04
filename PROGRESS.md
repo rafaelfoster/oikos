@@ -1,6 +1,6 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 8 von 15 (Session pausiert bei ~88k tokens, frische Session startet bei Task 9)
+**Stand:** 2026-05-04, nach Task 9 von 15
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
 
 ## Abgeschlossene Tasks
@@ -102,23 +102,17 @@
 - Exportiert: bool in export statement
 - Keine Tests (wird in Task 9 verwendet)
 
-## Offene Tasks (9-15)
+### ✅ Task 9: PUT /addressbooks/:id - Toggle Addressbook
+**Commit:** (pending)
 
-### 🔄 Task 5: POST /accounts/:id/test
-- Test Connection Endpoint (nutzt existierende testConnection Funktion)
+- Implementiert: PUT /addressbooks/:id Route in server/routes/cardav.js
+- Validierung: ID muss positive Ganzzahl sein, enabled muss boolean sein
+- Delegiert an: `CardDAVSync.toggleAddressbook(id, enabled)`
+- Response: 200 mit `{ updated: true, enabled: boolean }`
+- Tests: 2 Tests (success case mit toggle, validation failure für invalid enabled)
+- bool Validator verwendet
 
-### 🔄 Task 6: GET /accounts/:id/addressbooks
-- Liste Addressbooks für Account
-
-### 🔄 Task 7: POST /accounts/:id/addressbooks/refresh
-- Re-discover Addressbooks
-
-### 🔄 Task 8: bool Validator
-- `bool()` Validator zu `server/middleware/validate.js` hinzufügen
-- Export ergänzen
-
-### 🔄 Task 9: PUT /addressbooks/:id
-- Toggle Addressbook enabled/disabled
+## Offene Tasks (10-15)
 
 ### 🔄 Task 10: POST /accounts/:id/sync
 - Sync Account (alle enabled addressbooks)
@@ -201,9 +195,9 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 
 ## Test-Status
 
-- **Gesamt:** 97 Tests, alle bestehen
-- **Suites:** 14 Suites
-- **CardDAV API Routes Suite:** 10 Tests
+- **Gesamt:** 99 Tests, alle bestehen
+- **Suites:** 15 Suites
+- **CardDAV API Routes Suite:** 12 Tests
   - Account Management (6 Tests):
     - GET /accounts (empty)
     - GET /accounts (populated with shape)
@@ -216,6 +210,9 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
     - GET /accounts/:id/addressbooks (success with addressbooks)
     - GET /accounts/:id/addressbooks (empty array)
     - POST /accounts/:id/addressbooks/refresh (success)
+  - Addressbook Management (2 Tests):
+    - PUT /addressbooks/:id (toggle enabled/disabled)
+    - PUT /addressbooks/:id (validation failure)
 
 ## Branch & Remote
 
@@ -235,7 +232,7 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 #6. [completed] Task 6: GET /accounts/:id/addressbooks - List Addressbooks
 #7. [completed] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
 #8. [completed] Task 8: Add bool validator to validate.js
-#9. [pending] Task 9: PUT /addressbooks/:id - Toggle Addressbook
+#9. [completed] Task 9: PUT /addressbooks/:id - Toggle Addressbook
 #10. [pending] Task 10: POST /accounts/:id/sync - Sync Account
 #11. [pending] Task 11: GET /contacts/:id - With Multi-Values
 #12. [pending] Task 12: POST /contacts - Create With Multi-Values
