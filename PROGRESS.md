@@ -103,7 +103,7 @@
 - Keine Tests (wird in Task 9 verwendet)
 
 ### ✅ Task 9: PUT /addressbooks/:id - Toggle Addressbook
-**Commit:** (pending)
+**Commit:** 9ec7fda
 
 - Implementiert: PUT /addressbooks/:id Route in server/routes/cardav.js
 - Validierung: ID muss positive Ganzzahl sein, enabled muss boolean sein
@@ -191,6 +191,7 @@ dd5ac88 feat(cardav): implement POST /accounts/:id/test endpoint
 12e8edf feat(cardav): implement GET /accounts/:id/addressbooks endpoint
 c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 362f711 feat(validate): add bool validator
+9ec7fda feat(cardav): implement PUT /addressbooks/:id endpoint
 ```
 
 ## Test-Status
