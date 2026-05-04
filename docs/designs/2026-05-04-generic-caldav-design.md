@@ -355,30 +355,40 @@ Calendar:
 
 ---
 
-## 10. Phasen-Rollout (optional)
+## 10. Implementierungsumfang
 
-Phase 1: Single Account (wie Apple) → Funktionsparität, generisch
-Phase 2: Kalenderauswahl → Löst Issue #90 Hauptproblem
-Phase 3: Multiple Accounts → Vollständig Multi-Account
-Phase 4: Outbound mit Account-Auswahl → Vollständig bidirektional
+**Dieses Design beschreibt die vollständige Implementierung aller Features in einem Release.**
 
-Empfehlung: Alle Phasen in einem Release (einfacher zu testen)
+Falls gewünscht, könnte die Implementierung theoretisch in Phasen erfolgen:
+- Phase 1: Single Account (wie Apple) → Funktionsparität, generisch
+- Phase 2: Kalenderauswahl → Löst Issue #90 Hauptproblem
+- Phase 3: Multiple Accounts → Vollständig Multi-Account
+- Phase 4: Outbound mit Account-Auswahl → Vollständig bidirektional
+
+**Gewählter Ansatz:** Alle Features in einem Release implementieren (einfacher zu testen, keine Zwischenzustände, kohärente Architektur von Anfang an)
 
 ---
 
-## 11. Offene Fragen
+## 11. Designentscheidungen
 
-- Alte Apple-Integration entfernen oder parallel (Deprecation-Phase)?
-  → Parallel laufen, später deprecated
+**Alte Apple-Integration:**
+- Bleibt parallel bestehen (nicht entfernen)
+- Später als deprecated markieren (separate Issue)
+- Ermöglicht sanfte Migration und Rollback bei Problemen
 
-- Sync-Intervall?
-  → Wie Google/Apple (SYNC_INTERVAL_MINUTES, default 15 min)
+**Sync-Intervall:**
+- Wie bestehende Google/Apple-Integration
+- Via SYNC_INTERVAL_MINUTES aus .env (default 15 Minuten)
 
-- Outbound-Standard ohne CalDAV-Target?
-  → Nur lokal (external_source='local'), kein automatischer Upload
+**Outbound-Standard:**
+- Events ohne CalDAV-Target bleiben nur lokal (external_source='local')
+- Kein automatischer Upload
+- Benutzer muss explizit CalDAV-Ziel wählen
 
-- Multi-User: Normale User eigene Accounts?
-  → Nein, nur Admin (wie Google/Apple)
+**Multi-User-Support:**
+- Nur Admin kann CalDAV-Accounts verwalten (wie Google/Apple)
+- Alle User sehen die gleichen synchronisierten Kalender
+- Normale User können keine eigenen CalDAV-Accounts hinzufügen
 
 ---
 
