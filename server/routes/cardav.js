@@ -103,4 +103,28 @@ router.post('/accounts/:id/test', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/v1/contacts/cardav/accounts/:id/addressbooks
+ * Addressbooks für Account auflisten.
+ * Response: { data: Addressbook[] }
+ */
+router.get('/accounts/:id/addressbooks', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id || id < 1) return res.status(400).json({ error: 'Invalid ID', code: 400 });
+
+    const addressbooks = db.get().prepare(`
+      SELECT id, addressbook_url as url, addressbook_name as name, enabled
+      FROM carddav_addressbook_selection
+      WHERE account_id = ?
+      ORDER BY addressbook_name
+    `).all(id);
+
+    res.json({ data: addressbooks });
+  } catch (err) {
+    log.error('Error fetching addressbooks:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
 export default router;

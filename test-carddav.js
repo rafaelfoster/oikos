@@ -1762,5 +1762,87 @@ describe('CardDAV API Routes', () => {
       assert.ok('ok' in res.data.data);
       assert.ok(Array.isArray(res.data.data.addressbooks));
     });
+
+    it('GET /accounts/:id/addressbooks - should list addressbooks', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      // Create account first
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Addressbooks Test Account',
+          cardavUrl: 'https://example.com/carddav-ab',
+          username: 'testuser-ab',
+          password: 'testpass'
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postAccountHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postAccountHandler(createReq, createRes);
+      const accountId = createRes.data.data.account.id;
+
+      // Get addressbooks
+      const req = {
+        params: { id: String(accountId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/addressbooks' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(getHandler, 'GET /accounts/:id/addressbooks handler should exist');
+      await getHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(Array.isArray(res.data.data));
+      if (res.data.data.length > 0) {
+        const ab = res.data.data[0];
+        assert.ok(ab.id);
+        assert.ok(ab.url);
+        assert.ok(ab.name);
+        assert.ok('enabled' in ab);
+      }
+    });
+
+    it('GET /accounts/:id/addressbooks - should return empty array when none', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = {
+        params: { id: '99999' },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/addressbooks' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      await getHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(Array.isArray(res.data.data));
+      assert.strictEqual(res.data.data.length, 0);
+    });
   });
 });
