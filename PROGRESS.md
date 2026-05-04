@@ -1,8 +1,8 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 13 von 15 (Session 3)
+**Stand:** 2026-05-04, alle 15 Tasks abgeschlossen ✅
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
-**Nächster Task:** Task 14 - OpenAPI Documentation
+**Status:** Implementierung vollständig, bereit für Final Review
 
 ## Abgeschlossene Tasks
 
@@ -153,7 +153,7 @@
 - TDD-Workflow eingehalten: RED → GREEN → REFACTOR → Commit
 
 ### ✅ Task 13: PUT /contacts/:id - Update With Multi-Value Fields
-**Commit:** (wird erstellt)
+**Commit:** 0dc303b
 
 - Implementiert: PUT /contacts/:id erweitert um phones, emails, addresses Arrays
 - Validierung: `validatePhones()`, `validateEmails()`, `validateAddresses()` vor Update
@@ -167,19 +167,35 @@
   - Backward Compatibility: Update ohne Multi-Values lässt sie unverändert
 - TDD-Workflow eingehalten: RED → Verify RED → GREEN → Verify GREEN → Commit
 
-## Offene Tasks (14-15)
+### ✅ Task 14: OpenAPI Documentation
+**Commit:** d0eb638
 
-### 🔄 Task 14: OpenAPI Documentation
-- Alle neuen Routes in `server/openapi.js` dokumentieren
-- CardDAV Account Management Routes
-- Addressbook Discovery Routes
-- Sync Routes
-- Contacts Multi-Value Schemas
+- Dokumentiert: Alle 8 CardDAV Management Routes in `server/openapi.js`
+  - GET /api/v1/contacts/cardav/accounts
+  - POST /api/v1/contacts/cardav/accounts
+  - DELETE /api/v1/contacts/cardav/accounts/{id}
+  - POST /api/v1/contacts/cardav/accounts/{id}/test
+  - GET /api/v1/contacts/cardav/accounts/{id}/addressbooks
+  - POST /api/v1/contacts/cardav/accounts/{id}/addressbooks/refresh
+  - PUT /api/v1/contacts/cardav/addressbooks/{id}
+  - POST /api/v1/contacts/cardav/accounts/{id}/sync
+- Aktualisiert: Bestehende Contacts-Routes mit Multi-Value-Beschreibungen
+  - POST /api/v1/contacts: "Create contact with multi-value fields"
+  - GET /api/v1/contacts/{id}: "Get contact with multi-value fields"
+  - PUT /api/v1/contacts/{id}: "Update contact with multi-value fields"
+- Alle Routes mit korrektem Tag ('Contacts'), CSRF-Header-Params für stateChanging
+- OpenAPI Schema baut ohne Fehler
 
-### 🔄 Task 15: Mount CardDAV Router
-- Router in `server/index.js` mounten unter `/api/v1/contacts/cardav`
-- Auth + CSRF Middleware werden global angewendet
-- Finale Integration Tests
+### ✅ Task 15: Mount CardDAV Router
+**Commit:** 8891097
+
+- Import hinzugefügt: `import cardavRouter from './routes/cardav.js'`
+- Router gemountet: `app.use('/api/v1/contacts/cardav', cardavRouter)`
+- Montage-Reihenfolge: CardDAV-Router VOR Contacts-Router (Express route matching order)
+- Auth-Middleware: Bereits global angewendet via `requireAuth` in index.js
+- CSRF-Middleware: Automatisch über stateChanging-Flag in OpenAPI + CSRF-Middleware
+- Integration Tests: Alle 109 Tests bestehen (20 Suites)
+- Server startet erfolgreich auf Port 3000
 
 ## Wichtige Erkenntnisse
 
@@ -201,43 +217,21 @@
 - Commits mit Co-Authored-By: Claude Sonnet 4.5
 - TDD-Workflow: Test → Run (fail) → Implement → Run (pass) → Commit
 
-## Nächste Schritte beim Fortsetzen (Session 3 - Frische Session)
+## Zusammenfassung
 
-**Aktueller Stand:** Tasks 1-10 abgeschlossen (101 Tests bestehen), Tasks 11-15 offen
+**Alle 15 Tasks vollständig implementiert:**
+- ✅ Phase 0: Setup & Validators (Tasks 1-2)
+- ✅ Phase 1: Account Management Routes (Tasks 3-4)
+- ✅ Phase 2: Connection & Discovery Routes (Tasks 5-7)
+- ✅ Phase 3: Toggle & Sync Routes (Tasks 8-10)
+- ✅ Phase 4: Extended Contacts Routes (Tasks 11-13)
+- ✅ Phase 5: OpenAPI Integration (Task 14)
+- ✅ Phase 6: Server Integration (Task 15)
 
-1. **Task 11 starten:** GET /contacts/:id - Mit Multi-Value Fields erweitern
-   - Bestehende Route in `server/routes/contacts.js` lesen
-   - Tests schreiben (TDD RED):
-     - Success case: Contact mit phones, emails, addresses
-     - Empty arrays wenn keine Multi-Values vorhanden
-   - Route erweitern:
-     - Zusätzliche Queries für `contact_phones`, `contact_emails`, `contact_addresses`
-     - JOIN oder separate Queries
-     - Response-Format: `{ ...existingFields, phones: [], emails: [], addresses: [] }`
-   - Commit
-
-2. **Task 12:** POST /contacts - Create With Multi-Values
-   - Validierung mit `validatePhones()`, `validateEmails()`, `validateAddresses()` (bereits implementiert in Task 1)
-   - Atomare Transaktionen (BEGIN/COMMIT) für Contact + Multi-Values
-   - Tests für Success + Validation
-
-3. **Task 13:** PUT /contacts/:id - Update With Multi-Values
-   - Replacement-Semantik: DELETE alle Multi-Values, dann INSERT neue
-   - Atomare Transaktionen
-
-4. **Task 14:** OpenAPI Documentation
-   - Alle CardDAV Routes in `server/openapi.js` dokumentieren
-   - Schemas für Multi-Value Arrays
-
-5. **Task 15:** Mount CardDAV Router
-   - `server/index.js` anpassen
-   - Finale Integration Tests
-
-6. **Review-Workflow beibehalten:**
-   - TDD: RED → Verify RED → GREEN → Verify GREEN → Commit
-   - PROGRESS.md nach jedem Task aktualisieren
-
-7. **Am Ende:** Final Code Review + Release Prep
+**Nächste Schritte:**
+1. Final Code Review (optional)
+2. Release Prep via `/release-prep` Skill
+3. Merge in main Branch
 
 ## Commits-Übersicht
 
@@ -255,6 +249,11 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 362f711 feat(validate): add bool validator
 9ec7fda feat(cardav): implement PUT /addressbooks/:id endpoint
 674fe79 feat(cardav): implement POST /accounts/:id/sync endpoint
+fe8af33 feat(contacts): extend GET /contacts/:id with multi-value fields
+966a6d4 feat(contacts): extend POST /contacts with multi-value fields
+0dc303b feat(contacts): extend PUT /contacts/:id with multi-value fields
+d0eb638 docs(openapi): add CardDAV routes and update contacts routes
+8891097 feat(server): mount CardDAV router at /api/v1/contacts/cardav
 ```
 
 ## Test-Status
@@ -308,6 +307,8 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 #11. [completed] Task 11: GET /contacts/:id - With Multi-Values
 #12. [completed] Task 12: POST /contacts - Create With Multi-Values
 #13. [completed] Task 13: PUT /contacts/:id - Update With Multi-Values
-#14. [pending] Task 14: Document All Routes in OpenAPI
-#15. [pending] Task 15: Mount CardDAV Router
+#14. [completed] Task 14: Document All Routes in OpenAPI
+#15. [completed] Task 15: Mount CardDAV Router
 ```
+
+**Alle 15 Tasks abgeschlossen! 🎉**
