@@ -5,7 +5,8 @@
 
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
-import { DatabaseSync } from 'node:sqlite';
+import Database from 'better-sqlite3';
+import { MIGRATIONS } from './server/db.js';
 
 const TEST_DB = ':memory:';
 
@@ -13,11 +14,12 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
   let db;
 
   before(() => {
-    // Create in-memory DB
-    db = new DatabaseSync(TEST_DB);
-    db.exec('PRAGMA foreign_keys = ON;');
+    // Create in-memory DB with better-sqlite3 to apply migrations
+    db = new Database(TEST_DB);
+    db.pragma('foreign_keys = ON');
 
-    // Create base contacts table (from Migration 1) and family_user_id (Migration 23)
+    // Create minimal schema to satisfy Migration 30 dependencies
+    // Migration 30 expects: users table and contacts table to exist
     db.exec(`
       CREATE TABLE users (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -40,106 +42,28 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
       INSERT INTO users (username) VALUES ('testuser');
     `);
 
-    // Apply Migration 30
-    db.exec(`
-      -- CardDAV Accounts
-      CREATE TABLE cardav_accounts (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        name       TEXT NOT NULL,
-        cardav_url TEXT NOT NULL,
-        username   TEXT NOT NULL,
-        password   TEXT NOT NULL,
-        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-        last_sync  TEXT,
-        UNIQUE(cardav_url, username)
-      );
+    // Find and apply Migration 30 from the MIGRATIONS array
+    const migration30 = MIGRATIONS.find(m => m.version === 30);
+    if (!migration30) {
+      throw new Error('Migration 30 not found in MIGRATIONS array');
+    }
 
-      -- CardDAV Addressbook Selection
-      CREATE TABLE cardav_addressbook_selection (
-        id              INTEGER PRIMARY KEY AUTOINCREMENT,
-        account_id      INTEGER NOT NULL,
-        addressbook_url TEXT NOT NULL,
-        addressbook_name TEXT NOT NULL,
-        enabled         INTEGER NOT NULL DEFAULT 1,
-        created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
-        UNIQUE(account_id, addressbook_url),
-        FOREIGN KEY(account_id) REFERENCES cardav_accounts(id) ON DELETE CASCADE
-      );
-
-      CREATE INDEX idx_cardav_addressbook_account
-        ON cardav_addressbook_selection(account_id, enabled);
-
-      -- Extend Contacts Table
-      ALTER TABLE contacts ADD COLUMN organization TEXT;
-      ALTER TABLE contacts ADD COLUMN job_title TEXT;
-      ALTER TABLE contacts ADD COLUMN birthday TEXT;
-      ALTER TABLE contacts ADD COLUMN website TEXT;
-      ALTER TABLE contacts ADD COLUMN photo TEXT;
-      ALTER TABLE contacts ADD COLUMN nickname TEXT;
-      ALTER TABLE contacts ADD COLUMN cardav_account_id INTEGER
-        REFERENCES cardav_accounts(id) ON DELETE SET NULL;
-      ALTER TABLE contacts ADD COLUMN cardav_uid TEXT;
-      ALTER TABLE contacts ADD COLUMN cardav_addressbook_url TEXT;
-
-      CREATE INDEX idx_contacts_cardav_uid ON contacts(cardav_uid);
-      CREATE INDEX idx_contacts_email ON contacts(email);
-
-      -- Contact Phones
-      CREATE TABLE contact_phones (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        contact_id INTEGER NOT NULL,
-        label      TEXT,
-        value      TEXT NOT NULL,
-        is_primary INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
-      );
-
-      CREATE INDEX idx_contact_phones_contact ON contact_phones(contact_id);
-      CREATE INDEX idx_contact_phones_value ON contact_phones(value);
-
-      -- Contact Emails
-      CREATE TABLE contact_emails (
-        id         INTEGER PRIMARY KEY AUTOINCREMENT,
-        contact_id INTEGER NOT NULL,
-        label      TEXT,
-        value      TEXT NOT NULL,
-        is_primary INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
-      );
-
-      CREATE INDEX idx_contact_emails_contact ON contact_emails(contact_id);
-      CREATE INDEX idx_contact_emails_value ON contact_emails(value);
-
-      -- Contact Addresses
-      CREATE TABLE contact_addresses (
-        id          INTEGER PRIMARY KEY AUTOINCREMENT,
-        contact_id  INTEGER NOT NULL,
-        label       TEXT,
-        street      TEXT,
-        city        TEXT,
-        state       TEXT,
-        postal_code TEXT,
-        country     TEXT,
-        is_primary  INTEGER NOT NULL DEFAULT 0,
-        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
-      );
-
-      CREATE INDEX idx_contact_addresses_contact ON contact_addresses(contact_id);
-    `);
+    // Apply Migration 30 (it's a string, not a function)
+    db.exec(migration30.up);
   });
 
   // ========================================
   // Table Existence Tests
   // ========================================
 
-  it('should create cardav_accounts table', () => {
-    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cardav_accounts'").get();
-    assert.ok(result, 'cardav_accounts table should exist');
+  it('should create carddav_accounts table', () => {
+    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='carddav_accounts'").get();
+    assert.ok(result, 'carddav_accounts table should exist');
   });
 
-  it('should create cardav_addressbook_selection table', () => {
-    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='cardav_addressbook_selection'").get();
-    assert.ok(result, 'cardav_addressbook_selection table should exist');
+  it('should create carddav_addressbook_selection table', () => {
+    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='carddav_addressbook_selection'").get();
+    assert.ok(result, 'carddav_addressbook_selection table should exist');
   });
 
   it('should create contact_phones table', () => {
@@ -171,18 +95,18 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
     assert.ok(colNames.includes('website'), 'Should have website column');
     assert.ok(colNames.includes('photo'), 'Should have photo column');
     assert.ok(colNames.includes('nickname'), 'Should have nickname column');
-    assert.ok(colNames.includes('cardav_account_id'), 'Should have cardav_account_id column');
-    assert.ok(colNames.includes('cardav_uid'), 'Should have cardav_uid column');
-    assert.ok(colNames.includes('cardav_addressbook_url'), 'Should have cardav_addressbook_url column');
+    assert.ok(colNames.includes('carddav_account_id'), 'Should have carddav_account_id column');
+    assert.ok(colNames.includes('carddav_uid'), 'Should have carddav_uid column');
+    assert.ok(colNames.includes('carddav_addressbook_url'), 'Should have carddav_addressbook_url column');
   });
 
   // ========================================
   // Index Tests
   // ========================================
 
-  it('should create index on contacts.cardav_uid', () => {
-    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_contacts_cardav_uid'").get();
-    assert.ok(result, 'Index on cardav_uid should exist');
+  it('should create index on contacts.carddav_uid', () => {
+    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_contacts_carddav_uid'").get();
+    assert.ok(result, 'Index on carddav_uid should exist');
   });
 
   it('should create index on contacts.email', () => {
@@ -215,42 +139,47 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
     assert.ok(result, 'Index on contact_addresses.contact_id should exist');
   });
 
+  it('should create unique index on carddav_uid per account+addressbook', () => {
+    const result = db.prepare("SELECT name FROM sqlite_master WHERE type='index' AND name='idx_contacts_carddav_uid_unique'").get();
+    assert.ok(result, 'Unique index on carddav_uid should exist');
+  });
+
   // ========================================
   // UNIQUE Constraint Tests
   // ========================================
 
-  it('should enforce UNIQUE(cardav_url, username) on cardav_accounts', () => {
+  it('should enforce UNIQUE(carddav_url, username) on carddav_accounts', () => {
     db.prepare(`
-      INSERT INTO cardav_accounts (name, cardav_url, username, password)
+      INSERT INTO carddav_accounts (name, carddav_url, username, password)
       VALUES (?, ?, ?, ?)
-    `).run('Test Account', 'https://cardav.example.com', 'user1', 'pass1');
+    `).run('Test Account', 'https://carddav.example.com', 'user1', 'pass1');
 
-    const account = db.prepare('SELECT * FROM cardav_accounts WHERE name = ?').get('Test Account');
+    const account = db.prepare('SELECT * FROM carddav_accounts WHERE name = ?').get('Test Account');
     assert.ok(account, 'Account should be inserted');
 
     // Duplicate should fail
     assert.throws(() => {
       db.prepare(`
-        INSERT INTO cardav_accounts (name, cardav_url, username, password)
+        INSERT INTO carddav_accounts (name, carddav_url, username, password)
         VALUES (?, ?, ?, ?)
-      `).run('Duplicate', 'https://cardav.example.com', 'user1', 'pass2');
-    }, 'UNIQUE constraint should prevent duplicate cardav_url+username');
+      `).run('Duplicate', 'https://carddav.example.com', 'user1', 'pass2');
+    }, 'UNIQUE constraint should prevent duplicate carddav_url+username');
   });
 
   it('should enforce UNIQUE(account_id, addressbook_url) on addressbook_selection', () => {
-    const accountId = db.prepare('SELECT id FROM cardav_accounts WHERE name = ?').get('Test Account').id;
+    const accountId = db.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Test Account').id;
 
     db.prepare(`
-      INSERT INTO cardav_addressbook_selection (account_id, addressbook_url, addressbook_name)
+      INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name)
       VALUES (?, ?, ?)
-    `).run(accountId, 'https://cardav.example.com/addressbooks/main', 'Main Addressbook');
+    `).run(accountId, 'https://carddav.example.com/addressbooks/main', 'Main Addressbook');
 
     // Duplicate should fail
     assert.throws(() => {
       db.prepare(`
-        INSERT INTO cardav_addressbook_selection (account_id, addressbook_url, addressbook_name)
+        INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name)
         VALUES (?, ?, ?)
-      `).run(accountId, 'https://cardav.example.com/addressbooks/main', 'Duplicate');
+      `).run(accountId, 'https://carddav.example.com/addressbooks/main', 'Duplicate');
     }, 'UNIQUE constraint should prevent duplicate account_id+addressbook_url');
   });
 
@@ -259,17 +188,17 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
   // ========================================
 
   it('should CASCADE delete addressbook_selection when account deleted', () => {
-    const accountId = db.prepare('SELECT id FROM cardav_accounts WHERE name = ?').get('Test Account').id;
+    const accountId = db.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Test Account').id;
 
     // Verify addressbook exists
-    const beforeDelete = db.prepare('SELECT * FROM cardav_addressbook_selection WHERE account_id = ?').get(accountId);
+    const beforeDelete = db.prepare('SELECT * FROM carddav_addressbook_selection WHERE account_id = ?').get(accountId);
     assert.ok(beforeDelete, 'Addressbook selection should exist before delete');
 
     // Delete account
-    db.prepare('DELETE FROM cardav_accounts WHERE id = ?').run(accountId);
+    db.prepare('DELETE FROM carddav_accounts WHERE id = ?').run(accountId);
 
     // Addressbook selection should be deleted
-    const afterDelete = db.prepare('SELECT * FROM cardav_addressbook_selection WHERE account_id = ?').get(accountId);
+    const afterDelete = db.prepare('SELECT * FROM carddav_addressbook_selection WHERE account_id = ?').get(accountId);
     assert.strictEqual(afterDelete, undefined, 'Addressbook selection should CASCADE delete');
   });
 
@@ -369,34 +298,34 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
     assert.strictEqual(addressesAfter.length, 0, 'Addresses should CASCADE delete');
   });
 
-  it('should SET NULL on contacts.cardav_account_id when account deleted', () => {
+  it('should SET NULL on contacts.carddav_account_id when account deleted', () => {
     // Create new account
     db.prepare(`
-      INSERT INTO cardav_accounts (name, cardav_url, username, password)
+      INSERT INTO carddav_accounts (name, carddav_url, username, password)
       VALUES (?, ?, ?, ?)
     `).run('iCloud', 'https://contacts.icloud.com', 'user@icloud.com', 'pass');
 
-    const accountId = db.prepare('SELECT id FROM cardav_accounts WHERE name = ?').get('iCloud').id;
+    const accountId = db.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('iCloud').id;
 
     // Create contact linked to account
     db.prepare(`
-      INSERT INTO contacts (name, category, cardav_account_id, cardav_uid)
+      INSERT INTO contacts (name, category, carddav_account_id, carddav_uid)
       VALUES (?, ?, ?, ?)
     `).run('Alice Cooper', 'Sonstiges', accountId, 'urn:uuid:12345');
 
     const contactId = db.prepare('SELECT id FROM contacts WHERE name = ?').get('Alice Cooper').id;
 
     // Verify link
-    const beforeDelete = db.prepare('SELECT cardav_account_id FROM contacts WHERE id = ?').get(contactId);
-    assert.strictEqual(beforeDelete.cardav_account_id, accountId, 'Contact should be linked to account');
+    const beforeDelete = db.prepare('SELECT carddav_account_id FROM contacts WHERE id = ?').get(contactId);
+    assert.strictEqual(beforeDelete.carddav_account_id, accountId, 'Contact should be linked to account');
 
     // Delete account
-    db.prepare('DELETE FROM cardav_accounts WHERE id = ?').run(accountId);
+    db.prepare('DELETE FROM carddav_accounts WHERE id = ?').run(accountId);
 
     // Contact should remain but link should be NULL
     const afterDelete = db.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
     assert.ok(afterDelete, 'Contact should still exist');
-    assert.strictEqual(afterDelete.cardav_account_id, null, 'cardav_account_id should be SET NULL');
+    assert.strictEqual(afterDelete.carddav_account_id, null, 'carddav_account_id should be SET NULL');
   });
 
   // ========================================
@@ -406,15 +335,15 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
   it('should handle enabled/disabled addressbook selection', () => {
     // Create account
     db.prepare(`
-      INSERT INTO cardav_accounts (name, cardav_url, username, password)
+      INSERT INTO carddav_accounts (name, carddav_url, username, password)
       VALUES (?, ?, ?, ?)
     `).run('Nextcloud', 'https://nextcloud.example.com/dav', 'user@example.com', 'pass');
 
-    const accountId = db.prepare('SELECT id FROM cardav_accounts WHERE name = ?').get('Nextcloud').id;
+    const accountId = db.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Nextcloud').id;
 
     // Add addressbooks
     db.prepare(`
-      INSERT INTO cardav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
+      INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
       VALUES (?, ?, ?, ?), (?, ?, ?, ?)
     `).run(
       accountId, 'https://nextcloud.example.com/dav/contacts/private', 'Private', 1,
@@ -422,12 +351,12 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
     );
 
     // Query enabled only
-    const enabled = db.prepare('SELECT * FROM cardav_addressbook_selection WHERE account_id = ? AND enabled = 1').all(accountId);
+    const enabled = db.prepare('SELECT * FROM carddav_addressbook_selection WHERE account_id = ? AND enabled = 1').all(accountId);
     assert.strictEqual(enabled.length, 1, 'Should have 1 enabled addressbook');
     assert.strictEqual(enabled[0].addressbook_name, 'Private');
 
     // Query all
-    const all = db.prepare('SELECT * FROM cardav_addressbook_selection WHERE account_id = ?').all(accountId);
+    const all = db.prepare('SELECT * FROM carddav_addressbook_selection WHERE account_id = ?').all(accountId);
     assert.strictEqual(all.length, 2, 'Should have 2 total addressbooks');
   });
 
@@ -456,14 +385,67 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
     assert.strictEqual(primary.label, 'mobile');
   });
 
-  it('should allow manual contacts (NULL cardav_account_id)', () => {
+  it('should allow manual contacts (NULL carddav_account_id)', () => {
     db.prepare(`
-      INSERT INTO contacts (name, category, phone, email, cardav_account_id)
+      INSERT INTO contacts (name, category, phone, email, carddav_account_id)
       VALUES (?, ?, ?, ?, ?)
     `).run('Manual Contact', 'Sonstiges', '+9999999999', 'manual@example.com', null);
 
     const contact = db.prepare('SELECT * FROM contacts WHERE name = ?').get('Manual Contact');
     assert.ok(contact, 'Manual contact should be created');
-    assert.strictEqual(contact.cardav_account_id, null, 'Manual contact should have NULL cardav_account_id');
+    assert.strictEqual(contact.carddav_account_id, null, 'Manual contact should have NULL carddav_account_id');
+  });
+
+  it('should enforce UNIQUE constraint on carddav_uid per account+addressbook', () => {
+    // Create account
+    db.prepare(`
+      INSERT INTO carddav_accounts (name, carddav_url, username, password)
+      VALUES (?, ?, ?, ?)
+    `).run('Test Sync Account', 'https://carddav.test.com', 'sync@test.com', 'pass');
+
+    const accountId = db.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Test Sync Account').id;
+
+    // Create first contact with CardDAV UID
+    db.prepare(`
+      INSERT INTO contacts (name, category, carddav_account_id, carddav_uid, carddav_addressbook_url)
+      VALUES (?, ?, ?, ?, ?)
+    `).run('Contact A', 'Sonstiges', accountId, 'urn:uuid:12345', 'https://carddav.test.com/addressbooks/main');
+
+    const firstContact = db.prepare('SELECT * FROM contacts WHERE name = ?').get('Contact A');
+    assert.ok(firstContact, 'First contact should be created');
+
+    // Attempt to create duplicate with same account_id, addressbook_url, and uid should fail
+    assert.throws(() => {
+      db.prepare(`
+        INSERT INTO contacts (name, category, carddav_account_id, carddav_uid, carddav_addressbook_url)
+        VALUES (?, ?, ?, ?, ?)
+      `).run('Contact B', 'Sonstiges', accountId, 'urn:uuid:12345', 'https://carddav.test.com/addressbooks/main');
+    }, 'UNIQUE constraint should prevent duplicate carddav_uid in same account+addressbook');
+
+    // But same UID in different addressbook should work
+    db.prepare(`
+      INSERT INTO contacts (name, category, carddav_account_id, carddav_uid, carddav_addressbook_url)
+      VALUES (?, ?, ?, ?, ?)
+    `).run('Contact C', 'Sonstiges', accountId, 'urn:uuid:12345', 'https://carddav.test.com/addressbooks/work');
+
+    const differentAddressbook = db.prepare('SELECT * FROM contacts WHERE name = ?').get('Contact C');
+    assert.ok(differentAddressbook, 'Same UID in different addressbook should be allowed');
+
+    // Create another account
+    db.prepare(`
+      INSERT INTO carddav_accounts (name, carddav_url, username, password)
+      VALUES (?, ?, ?, ?)
+    `).run('Another Account', 'https://other.carddav.com', 'user@other.com', 'pass');
+
+    const otherAccountId = db.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Another Account').id;
+
+    // Same UID in different account should work
+    db.prepare(`
+      INSERT INTO contacts (name, category, carddav_account_id, carddav_uid, carddav_addressbook_url)
+      VALUES (?, ?, ?, ?, ?)
+    `).run('Contact D', 'Sonstiges', otherAccountId, 'urn:uuid:12345', 'https://other.carddav.com/addressbooks/main');
+
+    const differentAccount = db.prepare('SELECT * FROM contacts WHERE name = ?').get('Contact D');
+    assert.ok(differentAccount, 'Same UID in different account should be allowed');
   });
 });
