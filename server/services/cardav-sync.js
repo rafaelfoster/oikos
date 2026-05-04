@@ -762,13 +762,17 @@ function updateContact(contactId, vcard, fillAll = false) {
  * @param {Object} vcard - Parsed vCard object
  */
 function updateContactMultiValues(contactId, vcard) {
-  // Delete non-primary entries
-  db.get().prepare('DELETE FROM contact_phones WHERE contact_id = ? AND is_primary = 0').run(contactId);
-  db.get().prepare('DELETE FROM contact_emails WHERE contact_id = ? AND is_primary = 0').run(contactId);
-  db.get().prepare('DELETE FROM contact_addresses WHERE contact_id = ? AND is_primary = 0').run(contactId);
+  const transaction = db.get().transaction(() => {
+    // Delete non-primary entries
+    db.get().prepare('DELETE FROM contact_phones WHERE contact_id = ? AND is_primary = 0').run(contactId);
+    db.get().prepare('DELETE FROM contact_emails WHERE contact_id = ? AND is_primary = 0').run(contactId);
+    db.get().prepare('DELETE FROM contact_addresses WHERE contact_id = ? AND is_primary = 0').run(contactId);
 
-  // Insert new entries from vCard
-  insertContactMultiValues(contactId, vcard);
+    // Insert new entries from vCard
+    insertContactMultiValues(contactId, vcard);
+  });
+
+  transaction();
 }
 
 /**
@@ -779,48 +783,67 @@ function updateContactMultiValues(contactId, vcard) {
 function insertContactMultiValues(contactId, vcard) {
   // Check if primary entries exist
   const hasPrimaryPhone = db.get().prepare(
-    'SELECT COUNT(*) as count FROM contact_phones WHERE contact_id = ? AND is_primary = 1'
-  ).get(contactId).count > 0;
+    'SELECT 1 FROM contact_phones WHERE contact_id = ? AND is_primary = 1'
+  ).get(contactId);
 
   const hasPrimaryEmail = db.get().prepare(
-    'SELECT COUNT(*) as count FROM contact_emails WHERE contact_id = ? AND is_primary = 1'
-  ).get(contactId).count > 0;
+    'SELECT 1 FROM contact_emails WHERE contact_id = ? AND is_primary = 1'
+  ).get(contactId);
 
   const hasPrimaryAddress = db.get().prepare(
-    'SELECT COUNT(*) as count FROM contact_addresses WHERE contact_id = ? AND is_primary = 1'
-  ).get(contactId).count > 0;
+    'SELECT 1 FROM contact_addresses WHERE contact_id = ? AND is_primary = 1'
+  ).get(contactId);
 
-  // Insert phones
-  for (let i = 0; i < vcard.phones.length; i++) {
-    const phone = vcard.phones[i];
-    const isPrimary = (!hasPrimaryPhone && i === 0) ? 1 : 0;
+  // Batch insert phones
+  if (vcard.phones && vcard.phones.length > 0) {
+    const placeholders = vcard.phones.map(() => '(?, ?, ?, ?)').join(', ');
+    const values = vcard.phones.flatMap((phone, i) => [
+      contactId,
+      phone.label || null,
+      phone.value,
+      (!hasPrimaryPhone && i === 0) ? 1 : 0
+    ]);
 
     db.get().prepare(`
       INSERT INTO contact_phones (contact_id, label, value, is_primary)
-      VALUES (?, ?, ?, ?)
-    `).run(contactId, phone.label, phone.value, isPrimary);
+      VALUES ${placeholders}
+    `).run(...values);
   }
 
-  // Insert emails
-  for (let i = 0; i < vcard.emails.length; i++) {
-    const email = vcard.emails[i];
-    const isPrimary = (!hasPrimaryEmail && i === 0) ? 1 : 0;
+  // Batch insert emails
+  if (vcard.emails && vcard.emails.length > 0) {
+    const placeholders = vcard.emails.map(() => '(?, ?, ?, ?)').join(', ');
+    const values = vcard.emails.flatMap((email, i) => [
+      contactId,
+      email.label || null,
+      email.value,
+      (!hasPrimaryEmail && i === 0) ? 1 : 0
+    ]);
 
     db.get().prepare(`
       INSERT INTO contact_emails (contact_id, label, value, is_primary)
-      VALUES (?, ?, ?, ?)
-    `).run(contactId, email.label, email.value, isPrimary);
+      VALUES ${placeholders}
+    `).run(...values);
   }
 
-  // Insert addresses
-  for (let i = 0; i < vcard.addresses.length; i++) {
-    const addr = vcard.addresses[i];
-    const isPrimary = (!hasPrimaryAddress && i === 0) ? 1 : 0;
+  // Batch insert addresses
+  if (vcard.addresses && vcard.addresses.length > 0) {
+    const placeholders = vcard.addresses.map(() => '(?, ?, ?, ?, ?, ?, ?, ?)').join(', ');
+    const values = vcard.addresses.flatMap((addr, i) => [
+      contactId,
+      addr.label || null,
+      addr.street,
+      addr.city,
+      addr.state,
+      addr.postalCode,
+      addr.country,
+      (!hasPrimaryAddress && i === 0) ? 1 : 0
+    ]);
 
     db.get().prepare(`
       INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(contactId, addr.label, addr.street, addr.city, addr.state, addr.postalCode, addr.country, isPrimary);
+      VALUES ${placeholders}
+    `).run(...values);
   }
 }
 
