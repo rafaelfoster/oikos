@@ -56,11 +56,17 @@
 **Wichtige Änderung:**
 - `addAccount()` Return-Wert geändert von `{ accountId, addressbooks }` zu `{ account: { id, name, cardavUrl, username, createdAt, lastSync }, addressbooks }`
 
-## Offene Tasks (4-15)
+### ✅ Task 4: DELETE /accounts/:id - Delete Account
+**Commit:** ca92cb2
 
-### 🔄 Task 4: DELETE /accounts/:id
-- DELETE /accounts/:id Route
-- Cascade-Delete von Addressbooks und Contacts-Verknüpfungen
+- Implementiert: DELETE /accounts/:id mit ID-Validierung
+- Validierung: ID muss positive Ganzzahl sein
+- Delegiert an: `CardDAVSync.deleteAccount(id)`
+- Response: 200 mit `{ deleted: true }`
+- Tests: 2 Tests (success case mit cascade, invalid ID → 400)
+- CASCADE-Verhalten: Foreign Key Constraints löschen addressbooks + contacts automatisch
+
+## Offene Tasks (5-15)
 
 ### 🔄 Task 5: POST /accounts/:id/test
 - Test Connection Endpoint (nutzt existierende testConnection Funktion)
@@ -141,6 +147,7 @@ a715475 feat(contacts): add multi-value array validators
 cf68bff feat(cardav): create cardav router with GET /accounts
 930800e fix(cardav): improve router security and test coverage
 f7eb73b feat(cardav): implement POST /accounts endpoint
+ca92cb2 feat(cardav): implement DELETE /accounts/:id endpoint
 ```
 
 ## Test-Status
@@ -166,7 +173,7 @@ f7eb73b feat(cardav): implement POST /accounts endpoint
 #1. [completed] Task 1: Multi-Value Array Validators
 #2. [completed] Task 2: CardDAV Router Setup
 #3. [completed] Task 3: POST /accounts - Create Account
-#4. [pending] Task 4: DELETE /accounts/:id - Delete Account
+#4. [completed] Task 4: DELETE /accounts/:id - Delete Account
 #5. [pending] Task 5: POST /accounts/:id/test - Test Connection
 #6. [pending] Task 6: GET /accounts/:id/addressbooks - List Addressbooks
 #7. [pending] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
