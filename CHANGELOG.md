@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.44.1] - 2026-05-04
+
+### Fixed
+- **CalDAV migration crash**: fixed CHECK constraint violation during v0.44.0 migration that caused container restart loop. The apple→caldav `external_source` conversion now happens during table rebuild instead of before, preventing the constraint error (#119, #120).
+
 ## [0.44.0] - 2026-05-04
 
 ### Added
