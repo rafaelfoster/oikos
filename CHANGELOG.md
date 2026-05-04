@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.46.0] - 2026-05-04
+
+### Added
+- **Flexible birthday reminders** (#123): customizable reminder offsets for birthdays with preset options (none, at time, 15min, 1h, 1d, 2d, 1w, 2w) and custom intervals (minutes, hours, days, weeks). Users can now configure exactly when to be reminded of upcoming birthdays. Database migration 31 adds `reminder_offset`, `reminder_custom_amount`, `reminder_custom_unit` columns to birthdays table. UI component integrated into birthday modal. Backend service calculates reminder time based on offset and supports disabling reminders when offset is empty.
+
+### Fixed
+- **Service worker protocol guard**: added check to skip non-HTTP protocols (e.g., chrome-extension://) in fetch handler to prevent errors with browser extensions.
+
 ## [0.45.0] - 2026-05-04
 
 ### Added
