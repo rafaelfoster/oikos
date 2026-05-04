@@ -1,82 +1,181 @@
-# CardDAV Contacts Implementation - Fortschritt
+# CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, Session pausiert bei ~75k Tokens (nach API Routes Design)
+**Stand:** 2026-05-04, nach Task 3 von 15 (Session pausiert bei ~77k tokens)
+**Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
 
 ## Abgeschlossene Tasks
 
-### ✅ Task #1: Implement server/services/cardav-sync.js
-- **Status:** COMPLETED
-- **Commits:** 
-  - 689b479: Initial implementation (850 lines service + 46 tests)
-  - c4b8b76: Critical fixes (Transaction handling, N+1 query optimization)
-- **Reviews:** 
-  - Spec Review: ✅ PASSED
-  - Code Quality: ✅ APPROVED
+### ✅ Task 1: Multi-Value Array Validators
+**Commit:** a715475 + 930800e (fixes)
 
-### ✅ Task #2: Add tests for cardav-sync service
-- **Status:** COMPLETED
-- **Commits:**
-  - 96b4f43: Added 9 new tests (55 total)
-  - a38c2c8: Fixed test interdependencies and removed duplicate suite (54 tests)
-  - (uncommitted): Fixed final 4 interdependent tests via suite-level `before` hook
-- **Reviews:**
-  - Spec Review: ✅ PASSED
-  - Code Quality: ✅ APPROVED - All tests isolated via `before()` hook
-- **Final State:** 54 tests, all passing, full test isolation achieved
+- Implementiert: `validatePhones()`, `validateEmails()`, `validateAddresses()`
+- Location: `server/routes/contacts.js`
+- Tests: 33 neue Tests in test-carddav.js
+- Validierungen: Arrays, Objekt-Struktur, Pflichtfelder, Max-Längen, Email-Format, isPrimary-Typ, Array-Länge (max 20)
 
-### ✅ Task #3 Design Phase: API Routes Implementation Design
-- **Status:** DESIGN COMPLETED, ready for implementation
-- **Commits:**
-  - bb961a4: Implementation design spec created
-  - 8b8ac08: REPLACEMENT semantics clarified for PUT multi-values
-- **Design Doc:** `docs/designs/2026-05-04-cardav-api-routes-implementation.md`
-- **Entscheidungen:**
-  - Route-Organisation: `server/routes/cardav.js` (neu) + `server/routes/contacts.js` (erweitern)
-  - Implementierungs-Reihenfolge: User Flow (Account → Discovery → Sync → Contacts)
-  - Architektur: Route-Level Validation mit Service Delegation
-  - Error Handling: Einfaches Fallback (500 + error.message)
-- **Scope:** 11 API Routes (8 CardDAV Management + 3 Extended Contacts)
+**Review-Findings & Fixes:**
+- Spec Compliance: Minor extras (logging) - akzeptabel
+- Code Quality Issues behoben:
+  - Whitespace-Validierung ergänzt
+  - Null-Guards hinzugefügt
+  - Email-Format-Check ergänzt
+  - isPrimary Typ-Validierung
+  - DoS-Schutz: Array-Länge begrenzt auf 20
 
-## Ausstehende Tasks (3-10)
+### ✅ Task 2: CardDAV Router Setup
+**Commits:** cf68bff, 930800e
 
-### 🔄 Task #3-5: API Routes Implementation (NEXT)
-- **Task #3:** Implement CardDAV management API routes (`server/routes/cardav.js`)
-  - 8 routes: Account CRUD, Addressbook Discovery/Toggle, Sync
-- **Task #4:** Extend contacts API routes for multiple values (`server/routes/contacts.js`)
-  - 3 routes: GET/POST/PUT mit phones/emails/addresses
-- **Task #5:** Add API route tests (erweitere `test-carddav.js`)
-  - 4 Test-Suites mit ~15 Tests total
+- Erstellt: `server/routes/cardav.js` mit Express Router
+- Implementiert: GET /accounts Endpoint
+- Test-Infrastruktur:
+  - `_setTestDatabase()` / `_resetTestDatabase()` in `server/db.js`
+  - before()/after() Hooks in test-carddav.js
+  - Migration 30 wird in Tests angewendet
+- Tests: 2 Tests (empty array, populated with shape validation)
 
-### ⏳ Task #6-10: UI & Integration (Later)
-- Task #6: Extend Settings UI with Contacts Sync section
-- Task #7: Add source badges to contact list
-- Task #8: Extend contact modal with new fields and multiple values
-- Task #9: Add UI interaction tests
-- Task #10: Integrate CardDAV sync into cron job
+**Review-Findings & Fixes:**
+- Unused imports entfernt (wurden für Task 3 wieder gebraucht)
+- Error-Message leakage behoben (generic "Interner Fehler")
+- Test-Cleanup mit after() Hook
+- `after` aus node:test importiert
+
+### ✅ Task 3: POST /accounts - Create Account
+**Commit:** f7eb73b
+
+- Implementiert: POST /accounts mit Validation
+- Validierung: name, cardavUrl, username, password (alle required, mit max lengths)
+- Delegiert an: `CardDAVSync.addAccount()`
+- Response: 201 mit `{ account, addressbooks }`
+- Tests: 2 Tests (success case, validation failure)
+
+**Test-Mocking:**
+- `_mockTestConnection()` in cardav-sync.js hinzugefügt
+- Mock gibt fake addressbooks zurück für Tests
+- Mock wird in before() gesetzt, in after() zurückgesetzt
+
+**Wichtige Änderung:**
+- `addAccount()` Return-Wert geändert von `{ accountId, addressbooks }` zu `{ account: { id, name, cardavUrl, username, createdAt, lastSync }, addressbooks }`
+
+## Offene Tasks (4-15)
+
+### 🔄 Task 4: DELETE /accounts/:id
+- DELETE /accounts/:id Route
+- Cascade-Delete von Addressbooks und Contacts-Verknüpfungen
+
+### 🔄 Task 5: POST /accounts/:id/test
+- Test Connection Endpoint (nutzt existierende testConnection Funktion)
+
+### 🔄 Task 6: GET /accounts/:id/addressbooks
+- Liste Addressbooks für Account
+
+### 🔄 Task 7: POST /accounts/:id/addressbooks/refresh
+- Re-discover Addressbooks
+
+### 🔄 Task 8: bool Validator
+- `bool()` Validator zu `server/middleware/validate.js` hinzufügen
+- Export ergänzen
+
+### 🔄 Task 9: PUT /addressbooks/:id
+- Toggle Addressbook enabled/disabled
+
+### 🔄 Task 10: POST /accounts/:id/sync
+- Sync Account (alle enabled addressbooks)
+
+### 🔄 Task 11: GET /contacts/:id
+- Erweitern um Multi-Value Fields (phones, emails, addresses)
+
+### 🔄 Task 12: POST /contacts
+- Erstellen mit Multi-Value Fields
+
+### 🔄 Task 13: PUT /contacts/:id
+- Update mit Multi-Value Fields
+
+### 🔄 Task 14: OpenAPI Documentation
+- Alle neuen Routes in `server/openapi.js` dokumentieren
+
+### 🔄 Task 15: Mount CardDAV Router
+- Router in `server/index.js` mounten unter `/api/v1/contacts/cardav`
+- Auth + CSRF Middleware werden global angewendet
+
+## Wichtige Erkenntnisse
+
+### Test-Infrastruktur
+1. **DB-Mocking:** `_setTestDatabase()` / `_resetTestDatabase()` in db.js
+2. **CardDAV-Mocking:** `_mockTestConnection()` in cardav-sync.js
+3. **before()/after() Pattern:** Setup in before(), Cleanup in after()
+4. **Migration 30:** Muss in jedem Test-Setup angewendet werden für CardDAV-Tabellen
+
+### Code-Patterns
+1. **Error-Handling:** Immer generic "Interner Fehler", niemals err.message leaken
+2. **Validation:** str(), collectErrors(), MAX_TITLE (100), MAX_URL (500)
+3. **Response-Format:** `{ data: ... }` für Success, `{ error: ..., code: ... }` für Fehler
+4. **Status Codes:** 200 (GET), 201 (POST create), 400 (validation), 500 (server error)
+
+### Konventionen
+- Tests nutzen Node built-in test runner (`node:test`)
+- Test-DB ist in-memory SQLite (`:memory:`)
+- Commits mit Co-Authored-By: Claude Sonnet 4.5
+- TDD-Workflow: Test → Run (fail) → Implement → Run (pass) → Commit
 
 ## Nächste Schritte beim Fortsetzen (Frische Session)
 
-1. ✅ Task #2 Final Fix committed
-2. ✅ API Routes Design abgeschlossen & approved
-3. 🎯 **NEXT:** Invoke `writing-plans` skill → Implementation Plan für Tasks #3-5 erstellen
-4. 🎯 **THEN:** TDD Approach → Tests schreiben, dann Implementation
+1. **Task 4 starten:** DELETE /accounts/:id implementieren
+   - Test schreiben (erst Account erstellen, dann löschen)
+   - Route implementieren mit ID-Validation
+   - CardDAVSync.deleteAccount() aufrufen
+   - Commit + Reviews
 
-## Wichtige Dateien
+2. **Review-Workflow beibehalten:**
+   - Nach jedem Commit: Spec Compliance Review (optional)
+   - Nach jedem Commit: Code Quality Review (optional)
+   - Fixes committen wenn nötig
+   - Task als completed markieren
 
-- **Feature Design:** `docs/designs/2026-05-04-cardav-contacts-design.md`
-- **Implementation Design:** `docs/designs/2026-05-04-cardav-api-routes-implementation.md`
-- **Service:** `server/services/cardav-sync.js` (873 lines, 10 exported functions)
-- **Tests:** `test-carddav.js` (54 tests, all passing)
-- **Migration:** `server/db.js` (Migration 30)
+3. **Tasks 4-15 abarbeiten gemäß Plan**
+4. **Am Ende:** Final Code Review + Release Prep
 
-## Git Status
+## Commits-Übersicht
 
-Branch: `feature/cardav-contacts`
-Basis: `main` (commit 6cc7267)
-Latest: commit 8b8ac08 (API Routes Design)
+```
+a715475 feat(contacts): add multi-value array validators
+cf68bff feat(cardav): create cardav router with GET /accounts
+930800e fix(cardav): improve router security and test coverage
+f7eb73b feat(cardav): implement POST /accounts endpoint
+```
 
-Commits since Task #2:
-- bb961a4: Implementation design spec created
-- 8b8ac08: REPLACEMENT semantics clarified
+## Test-Status
 
-Uncommitted changes: test-carddav.js (Test isolation fixes), PROGRESS.md (this file)
+- **Gesamt:** 91 Tests, alle bestehen
+- **Suites:** 13 Suites
+- **CardDAV API Routes Suite:** 4 Tests
+  - GET /accounts (empty)
+  - GET /accounts (populated)
+  - POST /accounts (success)
+  - POST /accounts (validation)
+
+## Branch & Remote
+
+- **Branch:** feature/cardav-contacts
+- **Worktree:** /home/ulsklyc/Workspace/oikos/.worktrees/feature/cardav-contacts
+- **Base:** main (commit 6cc7267)
+- **Bereit zum Pushen:** Ja, nach diesem Status-Commit
+
+## Task-Liste Status
+
+```
+#1. [completed] Task 1: Multi-Value Array Validators
+#2. [completed] Task 2: CardDAV Router Setup
+#3. [completed] Task 3: POST /accounts - Create Account
+#4. [pending] Task 4: DELETE /accounts/:id - Delete Account
+#5. [pending] Task 5: POST /accounts/:id/test - Test Connection
+#6. [pending] Task 6: GET /accounts/:id/addressbooks - List Addressbooks
+#7. [pending] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
+#8. [pending] Task 8: Add bool validator to validate.js
+#9. [pending] Task 9: PUT /addressbooks/:id - Toggle Addressbook
+#10. [pending] Task 10: POST /accounts/:id/sync - Sync Account
+#11. [pending] Task 11: GET /contacts/:id - With Multi-Values
+#12. [pending] Task 12: POST /contacts - Create With Multi-Values
+#13. [pending] Task 13: PUT /contacts/:id - Update With Multi-Values
+#14. [pending] Task 14: Document All Routes in OpenAPI
+#15. [pending] Task 15: Mount CardDAV Router
+```
