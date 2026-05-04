@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.1] - 2026-05-04
+
+### Fixed
+- **Settings page crash**: fixed ReferenceError "loadCalDAVAccounts is not defined" when opening Settings. Root cause: loadCalDAVAccounts and loadCardDAVAccounts were defined inside the render function but called from bindIcsEvents (outside render scope). Functions are now top-level exports with user parameter.
+
 ## [0.47.0] - 2026-05-04
 
 ### Added
