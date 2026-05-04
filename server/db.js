@@ -1075,6 +1075,15 @@ const MIGRATIONS = [
       db.exec(`CREATE UNIQUE INDEX idx_calendar_sub_extid ON calendar_events (subscription_id, external_calendar_id)`);
     },
   },
+  {
+    version: 30,
+    description: 'Advanced reminder options for birthdays',
+    up: `
+      ALTER TABLE birthdays ADD COLUMN reminder_offset TEXT;
+      ALTER TABLE birthdays ADD COLUMN reminder_custom_amount INTEGER;
+      ALTER TABLE birthdays ADD COLUMN reminder_custom_unit TEXT;
+    `,
+  },
 ];
 
 /**

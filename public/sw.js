@@ -184,6 +184,7 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
+  if (!url.protocol.startsWith('http')) return;
   if (url.pathname.startsWith('/api/')) return;
   if (request.method !== 'GET') return;
 
