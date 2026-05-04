@@ -138,7 +138,7 @@
 - TDD-Workflow eingehalten: RED → GREEN → Commit
 
 ### ✅ Task 12: POST /contacts - Create With Multi-Value Fields
-**Commit:** [wird gesetzt nach commit]
+**Commit:** 966a6d4
 
 - Implementiert: POST /contacts erweitert um phones, emails, addresses Arrays
 - Validierung: `validatePhones()`, `validateEmails()`, `validateAddresses()` vor Insert
