@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.42.0] - 2026-05-04
+
+### Added
+- **Module toggles** (Settings → General, admin-only): individual modules (Tasks, Calendar, Shopping, Meals, Recipes, Birthdays, Notes, Contacts, Budget, Documents) can be disabled to hide them from the navigation. Data is preserved and reappears when the module is re-enabled. Dashboard and Settings remain essential and cannot be disabled.
+- **Bulk actions for tasks** (List view only): select multiple tasks via checkboxes and apply batch operations (mark done, mark open, archive, delete). Bulk select toggle appears in the toolbar; selected count and action bar appear when tasks are checked. Kanban view remains single-task oriented.
+
 ## [0.41.0] - 2026-05-01
 
 ### Added

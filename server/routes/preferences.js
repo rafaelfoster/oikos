@@ -28,6 +28,13 @@ const DEFAULT_TIME_FORMAT = '24h';
 const VALID_WIDGET_IDS = ['tasks', 'calendar', 'weather', 'meals', 'shopping', 'birthdays', 'budget', 'family', 'notes'];
 const VALID_WIDGET_SIZES = ['1x1', '1x2', '1x3', '1x4', '2x1', '2x2', '2x3', '2x4', '3x1', '3x2', '3x3', '3x4', '4x1', '4x2', '4x3', '4x4'];
 
+// Modul-Slugs, die per Settings deaktiviert werden können.
+// Dashboard und Settings sind absichtlich nicht enthalten — sie sind essentiell.
+const TOGGLEABLE_MODULES = [
+  'tasks', 'calendar', 'meals', 'recipes', 'shopping',
+  'birthdays', 'notes', 'contacts', 'budget', 'documents',
+];
+
 function defaultWidgetSize(id) {
   if (['tasks', 'calendar'].includes(id)) return '2x2';
   if (['weather', 'shopping', 'notes'].includes(id)) return '2x1';
@@ -76,6 +83,17 @@ function parseWidgetConfig(raw) {
   }
 }
 
+function parseDisabledModules(raw) {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((m) => typeof m === 'string' && TOGGLEABLE_MODULES.includes(m));
+  } catch {
+    return [];
+  }
+}
+
 function normalizeWidgetConfig(input) {
   const valid = Array.isArray(input)
     ? input
@@ -115,6 +133,7 @@ router.get('/', (req, res) => {
     const timeFormat = VALID_TIME_FORMATS.includes(cfgGet('time_format')) ? cfgGet('time_format') : DEFAULT_TIME_FORMAT;
     const appName = cfgGet('app_name') ?? DEFAULT_APP_NAME;
     const dashboardWidgets = parseWidgetConfig(cfgGet('dashboard_widgets'));
+    const disabledModules = parseDisabledModules(cfgGet('disabled_modules'));
 
     res.json({
       data: {
@@ -124,6 +143,7 @@ router.get('/', (req, res) => {
         time_format: timeFormat,
         app_name: appName,
         dashboard_widgets: dashboardWidgets,
+        disabled_modules: disabledModules,
       },
     });
   } catch (err) {
@@ -141,7 +161,7 @@ router.get('/', (req, res) => {
 
 router.put('/', (req, res) => {
   try {
-    const { visible_meal_types, currency, date_format, time_format, app_name, dashboard_widgets } = req.body;
+    const { visible_meal_types, currency, date_format, time_format, app_name, dashboard_widgets, disabled_modules } = req.body;
 
     if (visible_meal_types !== undefined) {
       if (!Array.isArray(visible_meal_types)) {
@@ -190,6 +210,16 @@ router.put('/', (req, res) => {
       cfgSet('dashboard_widgets', JSON.stringify(normalized));
     }
 
+    if (disabled_modules !== undefined) {
+      if (!Array.isArray(disabled_modules)) {
+        return res.status(400).json({ error: 'disabled_modules muss ein Array sein', code: 400 });
+      }
+      const filtered = disabled_modules
+        .filter((m) => typeof m === 'string' && TOGGLEABLE_MODULES.includes(m));
+      const unique = [...new Set(filtered)];
+      cfgSet('disabled_modules', JSON.stringify(unique));
+    }
+
     const rawMealTypes = cfgGet('visible_meal_types') ?? DEFAULT_MEAL_TYPES;
     const savedMealTypes = rawMealTypes.split(',').filter((t) => VALID_MEAL_TYPES.includes(t));
     const savedCurrency = cfgGet('currency') ?? DEFAULT_CURRENCY;
@@ -197,6 +227,7 @@ router.put('/', (req, res) => {
     const savedTimeFormat = VALID_TIME_FORMATS.includes(cfgGet('time_format')) ? cfgGet('time_format') : DEFAULT_TIME_FORMAT;
     const savedAppName = cfgGet('app_name') ?? DEFAULT_APP_NAME;
     const savedWidgets = parseWidgetConfig(cfgGet('dashboard_widgets'));
+    const savedDisabledModules = parseDisabledModules(cfgGet('disabled_modules'));
 
     res.json({
       data: {
@@ -206,6 +237,7 @@ router.put('/', (req, res) => {
         time_format: savedTimeFormat,
         app_name: savedAppName,
         dashboard_widgets: savedWidgets,
+        disabled_modules: savedDisabledModules,
       },
     });
   } catch (err) {

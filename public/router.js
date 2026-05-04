@@ -121,6 +121,7 @@ let currentUser = null;
 let currentPath = null;
 let isNavigating = false;
 let _preferencesLoaded = false;
+let _disabledModules = new Set();
 // Gesetzt wenn auth:expired waehrend einer laufenden Navigation feuert.
 // Die Weiterleitung zu /login wird nach Abschluss der Navigation nachgeholt.
 let _pendingLoginRedirect = false;
@@ -239,7 +240,15 @@ async function navigate(path, userOrPushState = true, pushState = true) {
     const basePath = path.split('?')[0];
     currentPath = basePath;
 
-    const route = ROUTES.find((r) => r.path === basePath) ?? ROUTES.find((r) => r.path === '/');
+    let route = ROUTES.find((r) => r.path === basePath) ?? ROUTES.find((r) => r.path === '/');
+
+    // Modul-Guard: deaktivierte Module leiten auf Dashboard um.
+    if (route.module && _disabledModules.has(route.module) && route.path !== '/') {
+      currentPath = null;
+      isNavigating = false;
+      navigate('/');
+      return;
+    }
 
     // Auth-Guard
     if (route.requiresAuth && !currentUser) {
@@ -307,6 +316,9 @@ async function syncPreferencesOnce() {
     if (res?.data?.app_name) {
       setAppName(res.data.app_name);
       updateBranding();
+    }
+    if (Array.isArray(res?.data?.disabled_modules)) {
+      _disabledModules = new Set(res.data.disabled_modules);
     }
   } catch {
     // Non-critical. The settings page can refresh this later.
@@ -981,22 +993,32 @@ function renderSearchResults(container, data, onClose) {
 }
 
 function navItems() {
-  return [
-    { path: '/',          label: t('nav.dashboard'), icon: 'layout-dashboard' },
-    { path: '/calendar',  label: t('nav.calendar'),  icon: 'calendar'         },
+  const all = [
+    { path: '/',          label: t('nav.dashboard'), icon: 'layout-dashboard', module: 'dashboard' },
+    { path: '/calendar',  label: t('nav.calendar'),  icon: 'calendar',         module: 'calendar'  },
     // More-Sheet Items:
-    { path: '/tasks',     label: t('nav.tasks'),     icon: 'check-square'     },
-    { path: '/birthdays', label: t('nav.birthdays'), icon: 'cake'             },
-    { path: '/notes',     label: t('nav.notes'),     icon: 'sticky-note'      },
-    { path: '/contacts',  label: t('nav.contacts'),  icon: 'book-user'        },
-    { path: '/budget',    label: t('nav.budget'),    icon: 'wallet'           },
-    { path: '/documents', label: t('nav.documents'), icon: 'folder-lock'      },
-    { path: '/settings',  label: t('nav.settings'),  icon: 'settings'         },
+    { path: '/tasks',     label: t('nav.tasks'),     icon: 'check-square',     module: 'tasks'     },
+    { path: '/birthdays', label: t('nav.birthdays'), icon: 'cake',             module: 'birthdays' },
+    { path: '/notes',     label: t('nav.notes'),     icon: 'sticky-note',      module: 'notes'     },
+    { path: '/contacts',  label: t('nav.contacts'),  icon: 'book-user',        module: 'contacts'  },
+    { path: '/budget',    label: t('nav.budget'),    icon: 'wallet',           module: 'budget'    },
+    { path: '/documents', label: t('nav.documents'), icon: 'folder-lock',      module: 'documents' },
+    { path: '/settings',  label: t('nav.settings'),  icon: 'settings',         module: 'settings'  },
     // Kitchen-Gruppe: via Küche-Nav-Button (Bottom-Nav + Sidebar) + kitchen-tabs-bar erreichbar
-    { path: '/meals',     label: t('nav.meals'),     icon: 'utensils',      kitchenGroup: true },
-    { path: '/recipes',   label: t('nav.recipes'),   icon: 'book-text',     kitchenGroup: true },
-    { path: '/shopping',  label: t('nav.shopping'),  icon: 'shopping-cart', kitchenGroup: true },
+    { path: '/meals',     label: t('nav.meals'),     icon: 'utensils',      module: 'meals',    kitchenGroup: true },
+    { path: '/recipes',   label: t('nav.recipes'),   icon: 'book-text',     module: 'recipes',  kitchenGroup: true },
+    { path: '/shopping',  label: t('nav.shopping'),  icon: 'shopping-cart', module: 'shopping', kitchenGroup: true },
   ];
+  return all.filter((item) => !_disabledModules.has(item.module));
+}
+
+function isModuleDisabled(moduleName) {
+  return _disabledModules.has(moduleName);
+}
+
+function setDisabledModules(modules) {
+  _disabledModules = new Set(Array.isArray(modules) ? modules : []);
+  rebuildNavigation();
 }
 
 function navItemEl({ path, label, icon }) {
@@ -1276,8 +1298,9 @@ window.addEventListener('auth:expired', () => {
   }
 });
 
-// Sprache geändert: Navigation neu rendern damit Labels aktualisiert werden
-window.addEventListener('locale-changed', () => {
+// Navigation komplett neu rendern (z.B. nach Sprach- oder Modul-Toggle-Änderung).
+// Behält Bottom-Bar-Buttons (Kitchen, More) und More-Sheet-Handle/Suche bei.
+function rebuildNavigation({ updateLabels = true } = {}) {
   const skipLink     = document.querySelector('.sr-only[href="#main-content"]');
   const navSidebar   = document.querySelector('.nav-sidebar');
   const navSidebarItems = document.querySelector('.nav-sidebar__items');
@@ -1286,10 +1309,14 @@ window.addEventListener('locale-changed', () => {
   const moreSheet    = document.querySelector('#more-sheet');
   const moreBtnLabel = document.querySelector('#more-btn .nav-item__label');
 
-  if (skipLink)     skipLink.textContent = t('common.skipToContent');
-  if (navSidebar)   navSidebar.setAttribute('aria-label', t('nav.main'));
-  if (navBottom)    navBottom.setAttribute('aria-label', t('nav.navigation'));
-  if (moreBtnLabel) moreBtnLabel.textContent = t('nav.more');
+  if (updateLabels) {
+    if (skipLink)     skipLink.textContent = t('common.skipToContent');
+    if (navSidebar)   navSidebar.setAttribute('aria-label', t('nav.main'));
+    if (navBottom)    navBottom.setAttribute('aria-label', t('nav.navigation'));
+    if (moreBtnLabel) moreBtnLabel.textContent = t('nav.more');
+  }
+
+  const kitchenVisible = ['meals', 'recipes', 'shopping'].some((m) => !_disabledModules.has(m));
 
   if (navSidebarItems) {
     const sidebarEls = [];
@@ -1297,7 +1324,7 @@ window.addEventListener('locale-changed', () => {
       .filter((item) => !item.kitchenGroup)
       .forEach((item) => {
         sidebarEls.push(navItemEl(item));
-        if (item.path === '/calendar') sidebarEls.push(sidebarKitchenEl());
+        if (item.path === '/calendar' && kitchenVisible) sidebarEls.push(sidebarKitchenEl());
       });
     navSidebarItems.replaceChildren(...sidebarEls);
     if (window.lucide) window.lucide.createIcons({ el: navSidebarItems });
@@ -1305,9 +1332,13 @@ window.addEventListener('locale-changed', () => {
   if (bottomItems) {
     const kitchenBtnEl = bottomItems.querySelector('#kitchen-btn');
     const moreBtn      = bottomItems.querySelector('#more-btn');
-    if (kitchenBtnEl) kitchenBtnEl.querySelector('.nav-item__label').textContent = t('nav.kitchen');
+    if (kitchenBtnEl) {
+      kitchenBtnEl.querySelector('.nav-item__label').textContent = t('nav.kitchen');
+      kitchenBtnEl.hidden = !kitchenVisible;
+    }
     const newItems = navItems().slice(0, PRIMARY_NAV).map(navItemEl);
-    bottomItems.replaceChildren(...newItems, kitchenBtnEl, moreBtn);
+    const tail = [kitchenBtnEl, moreBtn].filter(Boolean);
+    bottomItems.replaceChildren(...newItems, ...tail);
   }
   if (moreSheet) {
     const handle = moreSheet.querySelector('.more-sheet__handle');
@@ -1330,7 +1361,10 @@ window.addEventListener('locale-changed', () => {
 
   updateNav(currentPath);
   updateBranding(currentPath || '/');
-});
+}
+
+// Sprache geändert: Navigation neu rendern damit Labels aktualisiert werden
+window.addEventListener('locale-changed', () => rebuildNavigation());
 
 window.addEventListener('app-name-changed', () => {
   updateBranding(currentPath || '/');
@@ -1422,6 +1456,8 @@ window.oikos = {
   showToast,
   friendlyError,
   setThemeColor,
+  setDisabledModules,
+  isModuleDisabled,
   applyTheme: (value) => {
     localStorage.setItem('oikos-theme', value);
     if (value === 'dark') {

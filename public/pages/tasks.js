@@ -159,7 +159,7 @@ function renderSwipeRow(task, innerHtml) {
 }
 
 function renderTaskCard(task, opts = {}) {
-  const { expandedSubtasks = false } = opts;
+  const { expandedSubtasks = false, showCheckbox = false, isChecked = false } = opts;
   const isDone = task.status === 'done';
   const progress = task.subtask_total > 0
     ? Math.round((task.subtask_done / task.subtask_total) * 100)
@@ -181,6 +181,10 @@ function renderTaskCard(task, opts = {}) {
   return `
     <div class="task-card ${isDone ? 'task-card--done' : ''}" data-task-id="${task.id}">
       <div class="task-card__main">
+        ${showCheckbox ? `
+        <input type="checkbox" class="task-bulk-checkbox" data-task-id="${task.id}"
+               ${isChecked ? 'checked' : ''} aria-label="${t('tasks.selectTask')}">
+        ` : ''}
         <button class="task-status-btn task-status-btn--${task.status}"
                 data-action="toggle-status" data-id="${task.id}" data-status="${task.status}"
                 aria-label="${isDone ? t('tasks.markOpen', { title: esc(task.title) }) : t('tasks.markDone', { title: esc(task.title) })}">
@@ -286,7 +290,10 @@ function renderTaskGroups(tasks, groupMode) {
         <span class="task-group__title">${catLabelsMap[name] ?? name}</span>
         <span class="task-group__count">${groupTasks.length}</span>
       </div>
-      ${sorted.map((t) => renderSwipeRow(t, renderTaskCard(t))).join('')}
+      ${sorted.map((t) => renderSwipeRow(t, renderTaskCard(t, {
+        showCheckbox: state.bulkSelectMode,
+        isChecked: state.selectedTaskIds.has(t.id),
+      }))).join('')}
     </div>`;
   }).join('');
 }
@@ -414,6 +421,8 @@ let state = {
   expandedTasks:   new Set(),
   dragTaskId:      null,
   filterPanelOpen: false,
+  bulkSelectMode:  false,
+  selectedTaskIds: new Set(),
 };
 
 // --------------------------------------------------------
@@ -1504,11 +1513,21 @@ function wireViewToggle(container) {
       );
       const groupToggle = container.querySelector('#group-mode-toggle');
       if (groupToggle) groupToggle.style.display = state.viewMode === 'list' ? '' : 'none';
+      const bulkSelectBtn = container.querySelector('#btn-bulk-select');
+      if (bulkSelectBtn) {
+        bulkSelectBtn.style.display = state.viewMode === 'list' ? '' : 'none';
+        if (state.viewMode === 'kanban') {
+          state.bulkSelectMode = false;
+          state.selectedTaskIds.clear();
+          bulkSelectBtn.classList.remove('btn--active');
+        }
+      }
       // Skeleton-Flash: einen Frame Render-Feedback geben, dann Ansicht aufbauen
       const listEl = container.querySelector('#task-list');
       if (listEl) listEl.style.opacity = '0.4';
       requestAnimationFrame(() => {
         renderTaskList(container);
+        updateBulkActionsBar(container);
         const el = container.querySelector('#task-list');
         if (el) { el.style.transition = 'opacity 0.15s'; el.style.opacity = ''; }
       });
@@ -1536,6 +1555,92 @@ function wireNewTaskBtn(container) {
   };
   container.querySelector('#btn-new-task')?.addEventListener('click', handler);
   container.querySelector('#fab-new-task')?.addEventListener('click', handler);
+}
+
+function updateBulkActionsBar(container) {
+  const bar = container.querySelector('#bulk-actions-bar');
+  const count = container.querySelector('#bulk-count');
+  if (!bar) return;
+
+  const selected = state.selectedTaskIds.size;
+  if (selected === 0) {
+    bar.hidden = true;
+  } else {
+    bar.hidden = false;
+    count.textContent = t('tasks.bulkSelectedCount', { count: selected });
+  }
+}
+
+function wireBulkSelect(container) {
+  const toggleBtn = container.querySelector('#btn-bulk-select');
+  if (!toggleBtn) return;
+
+  toggleBtn.addEventListener('click', () => {
+    state.bulkSelectMode = !state.bulkSelectMode;
+    if (!state.bulkSelectMode) {
+      state.selectedTaskIds.clear();
+    }
+    toggleBtn.classList.toggle('btn--active', state.bulkSelectMode);
+    loadTasks(container);
+  });
+}
+
+function wireBulkCheckboxes(container) {
+  const listEl = container.querySelector('#task-list');
+  if (!listEl) return;
+
+  listEl.addEventListener('change', (e) => {
+    const checkbox = e.target.closest('.task-bulk-checkbox');
+    if (!checkbox) return;
+
+    const taskId = Number(checkbox.dataset.taskId);
+    if (checkbox.checked) {
+      state.selectedTaskIds.add(taskId);
+    } else {
+      state.selectedTaskIds.delete(taskId);
+    }
+    updateBulkActionsBar(container);
+  });
+}
+
+function wireBulkActions(container) {
+  const bar = container.querySelector('#bulk-actions-bar');
+  if (!bar) return;
+
+  bar.addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[id^="bulk-"]');
+    if (!btn) return;
+
+    const taskIds = [...state.selectedTaskIds];
+    if (taskIds.length === 0) return;
+
+    const action = btn.id;
+    let confirm = true;
+    if (action === 'bulk-delete') {
+      confirm = window.confirm(t('tasks.bulkDeleteConfirm', { count: taskIds.length }));
+    }
+    if (!confirm) return;
+
+    try {
+      if (action === 'bulk-mark-done' || action === 'bulk-mark-open') {
+        const status = btn.dataset.status;
+        await Promise.all(taskIds.map(id => api.patch(`/tasks/${id}/status`, { status })));
+        window.oikos.showToast(t('tasks.bulkStatusChanged'), 'success');
+      } else if (action === 'bulk-archive') {
+        await Promise.all(taskIds.map(id => api.patch(`/tasks/${id}/status`, { status: 'archived' })));
+        window.oikos.showToast(t('tasks.bulkArchived'), 'success');
+      } else if (action === 'bulk-delete') {
+        await Promise.all(taskIds.map(id => api.delete(`/tasks/${id}`)));
+        window.oikos.showToast(t('tasks.bulkDeleted'), 'success');
+      }
+
+      state.selectedTaskIds.clear();
+      updateBulkActionsBar(container);
+      await loadTasks(container);
+    } catch (err) {
+      window.oikos.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+    }
+  });
 }
 
 function wireTaskList(container) {
@@ -1638,6 +1743,10 @@ export async function render(container, { user }) {
               <i data-lucide="columns" class="icon-md" aria-hidden="true"></i>
             </button>
           </div>
+          <button class="btn btn--ghost btn--icon" id="btn-bulk-select" ${isKanban ? 'style="display:none"' : ''}
+                  title="${t('tasks.bulkSelect')}" aria-label="${t('tasks.bulkSelect')}">
+            <i data-lucide="list-checks" class="icon-lg" aria-hidden="true"></i>
+          </button>
           <button class="btn btn--primary" id="btn-new-task" style="gap:var(--space-1)">
             <i data-lucide="plus" class="icon-lg" aria-hidden="true"></i> ${t('tasks.newTask')}
           </button>
@@ -1647,6 +1756,27 @@ export async function render(container, { user }) {
       <div class="tasks-body">
         <div class="tasks-filters" id="filter-bar"></div>
         <div class="filter-panel" id="filter-panel" hidden></div>
+        <div class="bulk-actions-bar" id="bulk-actions-bar" hidden>
+          <span class="bulk-actions-bar__count" id="bulk-count"></span>
+          <div class="bulk-actions-bar__actions">
+            <button class="btn btn--secondary btn--sm" id="bulk-mark-done" data-status="done">
+              <i data-lucide="check" class="icon-base" aria-hidden="true"></i>
+              ${t('tasks.bulkMarkDone')}
+            </button>
+            <button class="btn btn--secondary btn--sm" id="bulk-mark-open" data-status="open">
+              <i data-lucide="rotate-ccw" class="icon-base" aria-hidden="true"></i>
+              ${t('tasks.bulkMarkOpen')}
+            </button>
+            <button class="btn btn--secondary btn--sm" id="bulk-archive">
+              <i data-lucide="archive" class="icon-base" aria-hidden="true"></i>
+              ${t('tasks.bulkArchive')}
+            </button>
+            <button class="btn btn--danger btn--sm" id="bulk-delete">
+              <i data-lucide="trash-2" class="icon-base" aria-hidden="true"></i>
+              ${t('tasks.bulkDelete')}
+            </button>
+          </div>
+        </div>
 
         <div id="task-list">
           ${[1,2,3].map(() => `
@@ -1691,6 +1821,9 @@ export async function render(container, { user }) {
   wireGroupToggle(container);
   wireNewTaskBtn(container);
   wireTaskList(container);
+  wireBulkSelect(container);
+  wireBulkCheckboxes(container);
+  wireBulkActions(container);
   renderFilters(container);
   renderTaskList(container);
 

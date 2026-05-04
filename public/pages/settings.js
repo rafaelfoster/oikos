@@ -199,7 +199,7 @@ export async function render(container, { user }) {
   let users           = [];
   let googleStatus    = { configured: false, connected: false, lastSync: null };
   let appleStatus     = { configured: false, lastSync: null };
-  let prefs           = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR', date_format: 'mdy', time_format: '24h', app_name: DEFAULT_APP_NAME };
+  let prefs           = { visible_meal_types: ['breakfast', 'lunch', 'dinner', 'snack'], currency: 'EUR', date_format: 'mdy', time_format: '24h', app_name: DEFAULT_APP_NAME, disabled_modules: [] };
   let categories      = [];
   let icsSubscriptions = [];
   let apiTokens       = [];
@@ -359,6 +359,35 @@ export async function render(container, { user }) {
             <oikos-locale-picker></oikos-locale-picker>
           </div>
         </section>
+
+        ${user?.role === 'admin' ? `
+        <section class="settings-section">
+          <h2 class="settings-section__title">${t('settings.sectionModules')}</h2>
+          <div class="settings-card">
+            <h3 class="settings-card__title">${t('settings.modulesTitle')}</h3>
+            <p class="form-hint" style="margin-bottom:var(--space-3)">${t('settings.modulesHint')}</p>
+            <div class="meal-type-toggles" id="module-toggles">
+              ${[
+                ['tasks',     'nav.tasks'],
+                ['calendar',  'nav.calendar'],
+                ['meals',     'nav.meals'],
+                ['recipes',   'nav.recipes'],
+                ['shopping',  'nav.shopping'],
+                ['birthdays', 'nav.birthdays'],
+                ['notes',     'nav.notes'],
+                ['contacts',  'nav.contacts'],
+                ['budget',    'nav.budget'],
+                ['documents', 'nav.documents'],
+              ].map(([slug, labelKey]) => `
+                <label class="toggle-row">
+                  <input type="checkbox" value="${slug}" ${prefs.disabled_modules?.includes(slug) ? '' : 'checked'}>
+                  <span>${t(labelKey)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </div>
+        </section>
+        ` : ''}
       </div>
 
       <!-- Panel: Mahlzeiten -->
@@ -820,6 +849,22 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
       applyTheme(value);
       themeToggle.querySelectorAll('.theme-toggle__btn').forEach(b => b.classList.remove('theme-toggle__btn--active'));
       btn.classList.add('theme-toggle__btn--active');
+    });
+  }
+
+  // Modul-Toggles (admin-only)
+  const moduleToggles = container.querySelector('#module-toggles');
+  if (moduleToggles) {
+    moduleToggles.addEventListener('change', async () => {
+      const disabled = [...moduleToggles.querySelectorAll('input:not(:checked)')].map((cb) => cb.value);
+      try {
+        const res = await api.put('/preferences', { disabled_modules: disabled });
+        const saved = res?.data?.disabled_modules ?? disabled;
+        window.oikos?.setDisabledModules?.(saved);
+        window.oikos?.showToast(t('settings.modulesSaved'), 'success');
+      } catch (err) {
+        window.oikos?.showToast(err.message ?? t('common.errorGeneric'), 'danger');
+      }
     });
   }
 
