@@ -1513,12 +1513,26 @@ describe('CardDAV API Routes', () => {
     // Override db.get() to use our test database
     const dbModule = await import('./server/db.js');
     dbModule._setTestDatabase(apiTestDb);
+
+    // Mock testConnection for API route tests
+    const cardavSync = await import('./server/services/cardav-sync.js');
+    cardavSync._mockTestConnection(async () => ({
+      ok: true,
+      addressbooks: [
+        { url: 'https://example.com/carddav/addressbook1', displayName: 'Contacts' },
+        { url: 'https://example.com/carddav/addressbook2', displayName: 'Work' }
+      ]
+    }));
   });
 
   after(async () => {
     // Restore original database
     const dbModule = await import('./server/db.js');
     dbModule._resetTestDatabase();
+
+    // Reset testConnection mock
+    const cardavSync = await import('./server/services/cardav-sync.js');
+    cardavSync._mockTestConnection(null);
   });
 
   describe('Account Management', () => {
@@ -1575,6 +1589,67 @@ describe('CardDAV API Routes', () => {
       assert.strictEqual(account.username, 'test@icloud.com');
       assert.strictEqual(account.createdAt, '2026-05-01T10:00:00Z');
       assert.ok(!account.password, 'Password should not be exposed');
+    });
+
+    it('POST /accounts - should create account and discover addressbooks', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Test Account',
+          cardavUrl: 'https://example.com/carddav',
+          username: 'testuser',
+          password: 'testpass'
+        }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(postHandler, 'POST /accounts handler should exist');
+      await postHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 201);
+      assert.ok(res.data.data.account);
+      assert.ok(res.data.data.account.id);
+      assert.strictEqual(res.data.data.account.name, 'Test Account');
+      assert.ok(Array.isArray(res.data.data.addressbooks));
+    });
+
+    it('POST /accounts - should return 400 for missing name', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = {
+        params: {},
+        query: {},
+        body: {
+          cardavUrl: 'https://example.com/carddav',
+          username: 'testuser',
+          password: 'testpass'
+        }
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 400);
+      assert.ok(res.data.error.includes('Name'));
     });
   });
 });

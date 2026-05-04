@@ -212,6 +212,11 @@ function parseBirthday(value) {
  * @returns {Promise<Object>} { ok: true, addressbooks: [...] }
  */
 async function testConnection(cardavUrl, username, password) {
+  // Use mock if set (for testing)
+  if (_testConnectionMock) {
+    return _testConnectionMock(cardavUrl, username, password);
+  }
+
   try {
     const { createDAVClient } = await import('tsdav');
     const client = await createDAVClient({
@@ -288,7 +293,16 @@ async function addAccount(name, cardavUrl, username, password) {
 
     log.info(`Added CardDAV account "${name}" with ${addressbooks.length} addressbooks.`);
 
-    return { accountId, addressbooks: addressbookData };
+    const account = {
+      id: accountId,
+      name,
+      cardavUrl,
+      username,
+      createdAt: new Date().toISOString(),
+      lastSync: null
+    };
+
+    return { account, addressbooks: addressbookData };
   } catch (err) {
     log.error('Failed to add account:', err.message);
     throw err;
@@ -869,4 +883,19 @@ export {
 
   // Helpers (exported for testing)
   parseVCard,
+  _mockTestConnection,
 };
+
+// --------------------------------------------------------
+// Test Mocking Support
+// --------------------------------------------------------
+
+let _testConnectionMock = null;
+
+/**
+ * ONLY FOR TESTING: Mock testConnection for unit tests
+ * @param {Function|null} mockFn - Mock function or null to reset
+ */
+function _mockTestConnection(mockFn) {
+  _testConnectionMock = mockFn;
+}

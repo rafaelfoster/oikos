@@ -7,8 +7,10 @@
 import { createLogger } from '../logger.js';
 import express from 'express';
 import * as CardDAVSync from '../services/cardav-sync.js';
+import { str, collectErrors, MAX_TITLE } from '../middleware/validate.js';
 
 const log = createLogger('CardDAV');
+const MAX_URL = 500;
 const router = express.Router();
 
 /**
@@ -22,6 +24,35 @@ router.get('/accounts', async (req, res) => {
     res.json({ data: accounts });
   } catch (err) {
     log.error('Error fetching accounts:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+/**
+ * POST /api/v1/contacts/cardav/accounts
+ * Neuen CardDAV Account erstellen und Addressbooks discovern.
+ * Body: { name, cardavUrl, username, password }
+ * Response: { data: { account, addressbooks } }
+ */
+router.post('/accounts', async (req, res) => {
+  try {
+    const vName     = str(req.body.name, 'Name', { max: MAX_TITLE });
+    const vUrl      = str(req.body.cardavUrl, 'CardDAV URL', { max: MAX_URL });
+    const vUsername = str(req.body.username, 'Username', { max: MAX_TITLE });
+    const vPassword = str(req.body.password, 'Password', { max: MAX_TITLE });
+    const errors = collectErrors([vName, vUrl, vUsername, vPassword]);
+    if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
+
+    const result = await CardDAVSync.addAccount(
+      vName.value,
+      vUrl.value,
+      vUsername.value,
+      vPassword.value
+    );
+
+    res.status(201).json({ data: result });
+  } catch (err) {
+    log.error('Error adding CardDAV account:', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
   }
 });
