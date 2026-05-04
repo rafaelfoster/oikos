@@ -43,9 +43,22 @@ function daysUntilBirthday(birthDate, from = new Date()) {
   return Math.round((nextUtc - todayUtc) / 86400000);
 }
 
-function birthdayReminderAt(birthDate, from = new Date()) {
+function getOffsetMinutes(birthday) {
+  if (birthday.reminder_offset === 'custom') {
+    const amount = parseInt(birthday.reminder_custom_amount, 10) || 1;
+    const unit = birthday.reminder_custom_unit || 'days';
+    if (unit === 'weeks') return amount * 10080;
+    if (unit === 'days') return amount * 1440;
+    if (unit === 'hours') return amount * 60;
+    return amount;
+  }
+  return parseInt(birthday.reminder_offset, 10) || 0;
+}
+
+function birthdayReminderAt(birthDate, offsetMin = 0, from = new Date()) {
   const next = nextBirthdayDate(birthDate, from);
-  return `${next}T12:00:00Z`;
+  const baseTime = new Date(`${next}T12:00:00Z`).getTime();
+  return new Date(baseTime - (offsetMin || 0) * 60000).toISOString();
 }
 
 function eventTitle(name) {
@@ -125,7 +138,16 @@ function syncBirthdayCalendarEvent(database, birthday) {
 function syncBirthdayReminder(database, birthday, from = new Date()) {
   if (!birthday.calendar_event_id) return null;
 
-  const desired = birthdayReminderAt(birthday.birth_date, from);
+  if (birthday.reminder_offset === '') {
+    database.prepare(`
+      DELETE FROM reminders
+      WHERE entity_type = 'event' AND entity_id = ? AND created_by = ?
+    `).run(birthday.calendar_event_id, birthday.created_by);
+    return null;
+  }
+
+  const offsetMin = getOffsetMinutes(birthday);
+  const desired = birthdayReminderAt(birthday.birth_date, offsetMin, from);
   const existing = database.prepare(`
     SELECT * FROM reminders
     WHERE entity_type = 'event' AND entity_id = ? AND created_by = ?
