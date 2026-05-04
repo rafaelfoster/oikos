@@ -1006,8 +1006,6 @@ const MIGRATIONS = [
         // Update external_calendars source
         db.prepare(`UPDATE external_calendars SET source='caldav' WHERE source='apple'`).run();
 
-        // Update calendar_events external_source
-        db.prepare(`UPDATE calendar_events SET external_source='caldav' WHERE external_source='apple'`).run();
       }
 
       // Add caldav to external_source CHECK constraint by recreating table
@@ -1050,8 +1048,9 @@ const MIGRATIONS = [
            attachment_name, attachment_mime, attachment_size, attachment_data,
            created_at, updated_at)
         SELECT id, title, description, start_datetime, end_datetime, all_day, location, color,
-               assigned_to, created_by, external_calendar_id, external_source, recurrence_rule,
-               subscription_id, user_modified, calendar_ref_id, icon,
+               assigned_to, created_by, external_calendar_id,
+               CASE WHEN external_source = 'apple' THEN 'caldav' ELSE external_source END,
+               recurrence_rule, subscription_id, user_modified, calendar_ref_id, icon,
                attachment_name, attachment_mime, attachment_size, attachment_data,
                created_at, updated_at
         FROM calendar_events
@@ -1077,11 +1076,116 @@ const MIGRATIONS = [
   },
   {
     version: 30,
+<<<<<<< HEAD
     description: 'Advanced reminder options for birthdays',
     up: `
       ALTER TABLE birthdays ADD COLUMN reminder_offset TEXT;
       ALTER TABLE birthdays ADD COLUMN reminder_custom_amount INTEGER;
       ALTER TABLE birthdays ADD COLUMN reminder_custom_unit TEXT;
+=======
+    description: 'CardDAV multi-account contacts sync',
+    up: `
+      -- ========================================
+      -- CardDAV Accounts
+      -- ========================================
+      CREATE TABLE carddav_accounts (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        name        TEXT NOT NULL,
+        carddav_url TEXT NOT NULL,
+        username    TEXT NOT NULL,
+        password    TEXT NOT NULL,
+        created_at  TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        last_sync   TEXT,
+        UNIQUE(carddav_url, username)
+      );
+
+      -- ========================================
+      -- CardDAV Addressbook Selection
+      -- ========================================
+      CREATE TABLE carddav_addressbook_selection (
+        id               INTEGER PRIMARY KEY AUTOINCREMENT,
+        account_id       INTEGER NOT NULL,
+        addressbook_url  TEXT NOT NULL,
+        addressbook_name TEXT NOT NULL,
+        enabled          INTEGER NOT NULL DEFAULT 1,
+        created_at       TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        UNIQUE(account_id, addressbook_url),
+        FOREIGN KEY(account_id) REFERENCES carddav_accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_carddav_addressbook_account
+        ON carddav_addressbook_selection(account_id, enabled);
+
+      -- ========================================
+      -- Extend Contacts Table for CardDAV
+      -- ========================================
+      ALTER TABLE contacts ADD COLUMN organization TEXT;
+      ALTER TABLE contacts ADD COLUMN job_title TEXT;
+      ALTER TABLE contacts ADD COLUMN birthday TEXT;
+      ALTER TABLE contacts ADD COLUMN website TEXT;
+      ALTER TABLE contacts ADD COLUMN photo TEXT;
+      ALTER TABLE contacts ADD COLUMN nickname TEXT;
+      ALTER TABLE contacts ADD COLUMN carddav_account_id INTEGER
+        REFERENCES carddav_accounts(id) ON DELETE SET NULL;
+      ALTER TABLE contacts ADD COLUMN carddav_uid TEXT;
+      ALTER TABLE contacts ADD COLUMN carddav_addressbook_url TEXT;
+
+      CREATE INDEX idx_contacts_carddav_uid ON contacts(carddav_uid);
+      CREATE INDEX idx_contacts_email ON contacts(email);
+
+      -- UNIQUE constraint for CardDAV UIDs (prevents duplicates per account+addressbook)
+      CREATE UNIQUE INDEX idx_contacts_carddav_uid_unique
+        ON contacts(carddav_account_id, carddav_addressbook_url, carddav_uid)
+        WHERE carddav_uid IS NOT NULL;
+
+      -- ========================================
+      -- Contact Phones (Multiple per Contact)
+      -- ========================================
+      CREATE TABLE contact_phones (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        contact_id INTEGER NOT NULL,
+        label      TEXT,
+        value      TEXT NOT NULL,
+        is_primary INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_contact_phones_contact ON contact_phones(contact_id);
+      CREATE INDEX idx_contact_phones_value ON contact_phones(value);
+
+      -- ========================================
+      -- Contact Emails (Multiple per Contact)
+      -- ========================================
+      CREATE TABLE contact_emails (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        contact_id INTEGER NOT NULL,
+        label      TEXT,
+        value      TEXT NOT NULL,
+        is_primary INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_contact_emails_contact ON contact_emails(contact_id);
+      CREATE INDEX idx_contact_emails_value ON contact_emails(value);
+
+      -- ========================================
+      -- Contact Addresses (Multiple per Contact)
+      -- ========================================
+      CREATE TABLE contact_addresses (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        contact_id  INTEGER NOT NULL,
+        label       TEXT,
+        street      TEXT,
+        city        TEXT,
+        state       TEXT,
+        postal_code TEXT,
+        country     TEXT,
+        is_primary  INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_contact_addresses_contact ON contact_addresses(contact_id);
+>>>>>>> d371e2b554ea2c81e9bac307289b50f34668297e
     `,
   },
 ];
@@ -1257,6 +1361,27 @@ function transaction(fn) {
   return get().transaction(fn)();
 }
 
+let _originalDb = null;
+
+/**
+ * ONLY FOR TESTING: Override the internal db instance
+ * @param {import('better-sqlite3').Database} testDb
+ */
+function _setTestDatabase(testDb) {
+  if (!_originalDb) _originalDb = db;
+  db = testDb;
+}
+
+/**
+ * ONLY FOR TESTING: Restore the original db instance
+ */
+function _resetTestDatabase() {
+  if (_originalDb) {
+    db = _originalDb;
+    _originalDb = null;
+  }
+}
+
 init();   // auto-initialise when module is first imported
 
-export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile };
+export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile, MIGRATIONS, _setTestDatabase, _resetTestDatabase };

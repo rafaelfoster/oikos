@@ -164,8 +164,24 @@ function id(val, field) {
   return { value: n, error: null };
 }
 
+/**
+ * Validiert einen Boolean-Wert.
+ * @param {any}    val
+ * @param {string} field
+ * @returns {{ value: boolean|null, error: string|null }}
+ */
+function bool(val, field) {
+  if (val === undefined || val === null) {
+    return { value: null, error: `${field} is required.` };
+  }
+  if (typeof val !== 'boolean') {
+    return { value: null, error: `${field} must be a boolean.` };
+  }
+  return { value: val, error: null };
+}
+
 export {
-  str, oneOf, date, time, datetime, month, num, color, rrule, id, collectErrors,
+  str, oneOf, date, time, datetime, month, num, color, rrule, id, bool, collectErrors,
   MAX_TITLE, MAX_TEXT, MAX_SHORT, MAX_RRULE,
   DATE_RE, TIME_RE, DATETIME_RE, COLOR_RE, MONTH_RE,
 };
