@@ -1726,4 +1726,41 @@ describe('CardDAV API Routes', () => {
       assert.ok(res.data.error.includes('Invalid ID'));
     });
   });
+
+  describe('Connection & Discovery', () => {
+    it('POST /accounts/:id/test - should test connection', async () => {
+      // Insert test account directly into DB
+      const result = apiTestDb.prepare(`
+        INSERT INTO carddav_accounts (name, carddav_url, username, password, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).run('Test Connection Account', 'https://example.com/carddav-test', 'testuser-connection', 'testpass', '2026-05-04T10:00:00Z');
+
+      const accountId = result.lastInsertRowid;
+
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      // Test connection
+      const req = {
+        params: { id: String(accountId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const testHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts/:id/test' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(testHandler, 'POST /accounts/:id/test handler should exist');
+      await testHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok('ok' in res.data.data);
+      assert.ok(Array.isArray(res.data.data.addressbooks));
+    });
+  });
 });

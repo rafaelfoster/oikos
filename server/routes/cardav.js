@@ -6,6 +6,7 @@
 
 import { createLogger } from '../logger.js';
 import express from 'express';
+import * as db from '../db.js';
 import * as CardDAVSync from '../services/cardav-sync.js';
 import { str, collectErrors, MAX_TITLE } from '../middleware/validate.js';
 
@@ -72,6 +73,32 @@ router.delete('/accounts/:id', async (req, res) => {
     res.json({ data: { deleted: true } });
   } catch (err) {
     log.error('Error deleting CardDAV account:', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+/**
+ * POST /api/v1/contacts/cardav/accounts/:id/test
+ * Connection testen (ohne Account zu speichern).
+ * Response: { data: { ok, addressbooks } }
+ */
+router.post('/accounts/:id/test', async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!id || id < 1) return res.status(400).json({ error: 'Invalid ID', code: 400 });
+
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(id);
+    if (!account) return res.status(404).json({ error: 'Account nicht gefunden', code: 404 });
+
+    const result = await CardDAVSync.testConnection(
+      account.carddav_url,
+      account.username,
+      account.password
+    );
+
+    res.json({ data: result });
+  } catch (err) {
+    log.error('Error testing CardDAV connection:', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
   }
 });
