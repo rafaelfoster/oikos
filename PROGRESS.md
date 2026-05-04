@@ -1,7 +1,8 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 10 von 15
+**Stand:** 2026-05-04, nach Task 10 von 15 (Session 2 pausiert bei ~77k tokens)
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
+**Nächster Task:** Task 11 - GET /contacts/:id mit Multi-Value Fields
 
 ## Abgeschlossene Tasks
 
@@ -125,24 +126,33 @@
 
 ## Offene Tasks (11-15)
 
-### 🔄 Task 10: POST /accounts/:id/sync
-- Sync Account (alle enabled addressbooks)
-
 ### 🔄 Task 11: GET /contacts/:id
 - Erweitern um Multi-Value Fields (phones, emails, addresses)
+- Bestehende Route in `server/routes/contacts.js` erweitern
+- Zusätzliche Queries für `contact_phones`, `contact_emails`, `contact_addresses`
+- Response-Format: `{ ...contact, phones: [], emails: [], addresses: [] }`
 
 ### 🔄 Task 12: POST /contacts
 - Erstellen mit Multi-Value Fields
+- Validierung mit `validatePhones()`, `validateEmails()`, `validateAddresses()`
+- Atomare Transaktionen für Contact + Multi-Values
 
 ### 🔄 Task 13: PUT /contacts/:id
 - Update mit Multi-Value Fields
+- Replacement-Semantik für Arrays (DELETE + INSERT)
+- Atomare Transaktionen
 
 ### 🔄 Task 14: OpenAPI Documentation
 - Alle neuen Routes in `server/openapi.js` dokumentieren
+- CardDAV Account Management Routes
+- Addressbook Discovery Routes
+- Sync Routes
+- Contacts Multi-Value Schemas
 
 ### 🔄 Task 15: Mount CardDAV Router
 - Router in `server/index.js` mounten unter `/api/v1/contacts/cardav`
 - Auth + CSRF Middleware werden global angewendet
+- Finale Integration Tests
 
 ## Wichtige Erkenntnisse
 
@@ -164,29 +174,43 @@
 - Commits mit Co-Authored-By: Claude Sonnet 4.5
 - TDD-Workflow: Test → Run (fail) → Implement → Run (pass) → Commit
 
-## Nächste Schritte beim Fortsetzen (Frische Session)
+## Nächste Schritte beim Fortsetzen (Session 3 - Frische Session)
 
-1. **Task 9 starten:** PUT /addressbooks/:id - Toggle Addressbook
-   - Test schreiben (erst Account + Addressbooks erstellen, dann toggle enabled)
-   - Route implementieren mit bool Validation (nutzt neuen bool Validator)
-   - CardDAVSync.toggleAddressbook(id, enabled) aufrufen
-   - 2 Tests: success case, validation failure
+**Aktueller Stand:** Tasks 1-10 abgeschlossen (101 Tests bestehen), Tasks 11-15 offen
+
+1. **Task 11 starten:** GET /contacts/:id - Mit Multi-Value Fields erweitern
+   - Bestehende Route in `server/routes/contacts.js` lesen
+   - Tests schreiben (TDD RED):
+     - Success case: Contact mit phones, emails, addresses
+     - Empty arrays wenn keine Multi-Values vorhanden
+   - Route erweitern:
+     - Zusätzliche Queries für `contact_phones`, `contact_emails`, `contact_addresses`
+     - JOIN oder separate Queries
+     - Response-Format: `{ ...existingFields, phones: [], emails: [], addresses: [] }`
    - Commit
 
-2. **Verbleibende Tasks 10-15:**
-   - Task 10: POST /accounts/:id/sync - Sync Account
-   - Task 11: GET /contacts/:id - With Multi-Values
-   - Task 12: POST /contacts - Create With Multi-Values
-   - Task 13: PUT /contacts/:id - Update With Multi-Values
-   - Task 14: Document All Routes in OpenAPI
-   - Task 15: Mount CardDAV Router in server/index.js
+2. **Task 12:** POST /contacts - Create With Multi-Values
+   - Validierung mit `validatePhones()`, `validateEmails()`, `validateAddresses()` (bereits implementiert in Task 1)
+   - Atomare Transaktionen (BEGIN/COMMIT) für Contact + Multi-Values
+   - Tests für Success + Validation
 
-3. **Review-Workflow beibehalten:**
+3. **Task 13:** PUT /contacts/:id - Update With Multi-Values
+   - Replacement-Semantik: DELETE alle Multi-Values, dann INSERT neue
+   - Atomare Transaktionen
+
+4. **Task 14:** OpenAPI Documentation
+   - Alle CardDAV Routes in `server/openapi.js` dokumentieren
+   - Schemas für Multi-Value Arrays
+
+5. **Task 15:** Mount CardDAV Router
+   - `server/index.js` anpassen
+   - Finale Integration Tests
+
+6. **Review-Workflow beibehalten:**
    - TDD: RED → Verify RED → GREEN → Verify GREEN → Commit
    - PROGRESS.md nach jedem Task aktualisieren
-   - Nach jedem Commit: Optional Code Review
 
-4. **Am Ende:** Final Code Review + Release Prep
+7. **Am Ende:** Final Code Review + Release Prep
 
 ## Commits-Übersicht
 
