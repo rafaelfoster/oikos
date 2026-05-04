@@ -112,7 +112,7 @@ Reusable recipe cards that can be pre-filled into meal slots.
 | assigned_to | INTEGER | FK → Users |
 | created_by | INTEGER | FK → Users, NOT NULL |
 | external_calendar_id | TEXT | ID from external calendar |
-| external_source | TEXT | local, google, apple, ics |
+| external_source | TEXT | local, google, apple, ics, caldav |
 | recurrence_rule | TEXT | iCal RRULE |
 | subscription_id | INTEGER | FK → ICS Subscriptions (CASCADE delete) |
 | user_modified | INTEGER | 0/1 — prevents sync overwrite when 1 |
@@ -121,17 +121,49 @@ Reusable recipe cards that can be pre-filled into meal slots.
 | attachment_mime | TEXT | MIME type (e.g. image/jpeg, application/pdf), nullable |
 | attachment_size | INTEGER | File size in bytes, nullable |
 | attachment_data | TEXT | Base64 data URL of attachment (≤ 5 MB), nullable |
+| target_caldav_account_id | INTEGER | FK → CalDAV Accounts (for outbound sync), nullable |
+| target_caldav_calendar_url | TEXT | CalDAV calendar URL (for outbound sync), nullable |
 
 ### External Calendars
-Display metadata (name, color) for synced Google/Apple calendars. Populated automatically during sync.
+Display metadata (name, color) for synced Google/Apple/CalDAV calendars. Populated automatically during sync.
 
 | Column | Type | Constraint |
 |--------|------|-----------|
-| source | TEXT | 'google' or 'apple', NOT NULL |
+| source | TEXT | 'google', 'apple', or 'caldav', NOT NULL |
 | external_id | TEXT | Calendar ID from the provider, NOT NULL |
 | name | TEXT | Display name from the provider, NOT NULL |
 | color | TEXT | Background color from the provider (HEX) |
 | UNIQUE | | (source, external_id) |
+
+### CalDAV Accounts
+Multi-account CalDAV integration. Stores credentials for CalDAV servers (iCloud, Nextcloud, Radicale, Baikal, etc.).
+
+| Column | Type | Constraint |
+|--------|------|-----------|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT |
+| name | TEXT | User-defined label (e.g. "My Radicale", "iCloud"), NOT NULL |
+| caldav_url | TEXT | CalDAV server base URL, NOT NULL |
+| username | TEXT | CalDAV username, NOT NULL |
+| password | TEXT | CalDAV password (encrypted if DB_ENCRYPTION_KEY set), NOT NULL |
+| created_at | TEXT | ISO 8601 |
+| last_sync | TEXT | ISO 8601, nullable |
+| UNIQUE | | (caldav_url, username) |
+
+### CalDAV Calendar Selection
+Per-account calendar enable/disable state for CalDAV accounts.
+
+| Column | Type | Constraint |
+|--------|------|-----------|
+| id | INTEGER | PRIMARY KEY AUTOINCREMENT |
+| account_id | INTEGER | FK → CalDAV Accounts (CASCADE delete), NOT NULL |
+| calendar_url | TEXT | CalDAV calendar URL from provider, NOT NULL |
+| calendar_name | TEXT | Display name from provider, NOT NULL |
+| calendar_color | TEXT | HEX color code from provider, nullable |
+| enabled | INTEGER | 0/1 (default 1), controls sync for this calendar |
+| created_at | TEXT | ISO 8601 |
+| UNIQUE | | (account_id, calendar_url) |
+
+Index: CREATE INDEX idx_caldav_selection_enabled ON caldav_calendar_selection(account_id, enabled)
 
 ### Notes
 | Column | Type | Constraint |
@@ -393,7 +425,7 @@ Reusable recipe cards linked to meal slots.
 - Color-coding per person
 - Recurring via iCal RRULE
 - **Google Calendar:** OAuth 2.0, Calendar API v3, two-way sync
-- **Apple Calendar:** CalDAV (tsdav), two-way sync
+- **CalDAV Multi-Account:** Connect multiple CalDAV servers (iCloud, Nextcloud, Radicale, Baikal) with per-account calendar selection via checkboxes, two-way sync (tsdav), optional outbound target selection per event
 - **ICS Subscriptions:** Subscribe to any public ICS/webcal URL (e.g. public holidays, sports schedules). Per-subscription color, private/shared visibility, manual "Sync now" and automatic sync on the shared interval. Edit name, color, and visibility of any subscription inline. RRULE events expanded into a rolling ±6/+12 month window. SSRF-protected (DNS pre-resolution), ETag/Last-Modified conditional fetch, 10 MB limit, 15 s timeout. User-edited events are protected from being overwritten (`user_modified`); a "Reset to original" link restores them.
 - **External calendar names & colors:** Google and Apple sync stores each calendar's display name and background color in the `external_calendars` table (migration v14). A colored `event-cal-label` badge appears in event popups, agenda, month, week, and day views when `cal_name` is present.
 - **Event location:** Event popup and dashboard display the location field with RFC 5545 backslash-escape normalization (`\n`, `\,`, `\;`, `\\`) via `fmtLocation()` in `public/utils/html.js`.

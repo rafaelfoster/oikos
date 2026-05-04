@@ -11,6 +11,7 @@ import * as db from '../db.js';
 import * as googleCalendar from '../services/google-calendar.js';
 import * as appleCalendar from '../services/apple-calendar.js';
 import * as icsSubscription from '../services/ics-subscription.js';
+import * as caldavSync from '../services/caldav-sync.js';
 import { requireAdmin } from '../auth.js';
 import { str, color, datetime, rrule, collectErrors, MAX_TITLE, MAX_TEXT, DATE_RE, DATETIME_RE } from '../middleware/validate.js';
 import { nextOccurrence } from '../services/recurrence.js';
@@ -814,6 +815,116 @@ router.delete('/:id', (req, res) => {
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+// --------------------------------------------------------
+// CalDAV Multi-Account Sync Routes
+// --------------------------------------------------------
+
+// Account Management
+
+router.post('/caldav/accounts', requireAdmin, async (req, res) => {
+  try {
+    const { name, caldavUrl, username, password } = req.body;
+
+    if (!name || !caldavUrl || !username || !password) {
+      return res.status(400).json({ error: 'Missing required fields.', code: 400 });
+    }
+
+    const result = await caldavSync.addAccount(name, caldavUrl, username, password);
+    res.json({ data: result });
+  } catch (err) {
+    log.error('CalDAV account creation failed:', err);
+    res.status(500).json({ error: err.message || 'Failed to create CalDAV account.', code: 500 });
+  }
+});
+
+router.get('/caldav/accounts', requireAdmin, (req, res) => {
+  try {
+    const accounts = caldavSync.listAccounts();
+    res.json({ data: accounts });
+  } catch (err) {
+    log.error('CalDAV accounts list failed:', err);
+    res.status(500).json({ error: 'Failed to list CalDAV accounts.', code: 500 });
+  }
+});
+
+router.put('/caldav/accounts/:id', requireAdmin, async (req, res) => {
+  try {
+    const accountId = parseInt(req.params.id, 10);
+    const { name, caldavUrl, username, password } = req.body;
+
+    const result = await caldavSync.updateAccount(accountId, { name, caldavUrl, username, password });
+    res.json({ data: result });
+  } catch (err) {
+    log.error('CalDAV account update failed:', err);
+    res.status(500).json({ error: err.message || 'Failed to update CalDAV account.', code: 500 });
+  }
+});
+
+router.delete('/caldav/accounts/:id', requireAdmin, (req, res) => {
+  try {
+    const accountId = parseInt(req.params.id, 10);
+    const result = caldavSync.deleteAccount(accountId);
+    res.json({ data: result });
+  } catch (err) {
+    log.error('CalDAV account deletion failed:', err);
+    res.status(500).json({ error: err.message || 'Failed to delete CalDAV account.', code: 500 });
+  }
+});
+
+// Calendar Selection
+
+router.get('/caldav/accounts/:id/calendars', requireAdmin, async (req, res) => {
+  try {
+    const accountId = parseInt(req.params.id, 10);
+    const refresh = req.query.refresh === 'true';
+
+    const calendars = await caldavSync.getCalendars(accountId, { refresh });
+    res.json({ data: calendars });
+  } catch (err) {
+    log.error('CalDAV calendars fetch failed:', err);
+    res.status(500).json({ error: err.message || 'Failed to fetch calendars.', code: 500 });
+  }
+});
+
+router.patch('/caldav/accounts/:id/calendars', requireAdmin, (req, res) => {
+  try {
+    const accountId = parseInt(req.params.id, 10);
+    const { calendarUrl, enabled } = req.body;
+
+    if (!calendarUrl || enabled === undefined) {
+      return res.status(400).json({ error: 'Missing calendarUrl or enabled field.', code: 400 });
+    }
+
+    const result = caldavSync.updateCalendarSelection(accountId, calendarUrl, enabled);
+    res.json({ data: result });
+  } catch (err) {
+    log.error('CalDAV calendar selection update failed:', err);
+    res.status(500).json({ error: err.message || 'Failed to update calendar selection.', code: 500 });
+  }
+});
+
+// Sync & Status
+
+router.post('/caldav/sync', requireAdmin, async (req, res) => {
+  try {
+    const result = await caldavSync.sync();
+    res.json({ data: result });
+  } catch (err) {
+    log.error('CalDAV sync failed:', err);
+    res.status(500).json({ error: 'CalDAV sync failed.', code: 500 });
+  }
+});
+
+router.get('/caldav/status', (req, res) => {
+  try {
+    const status = caldavSync.getStatus();
+    res.json({ data: status });
+  } catch (err) {
+    log.error('CalDAV status failed:', err);
+    res.status(500).json({ error: 'Failed to get CalDAV status.', code: 500 });
   }
 });
 

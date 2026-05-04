@@ -529,6 +529,23 @@ export async function render(container, { user }) {
             ` : `<span class="form-hint">${t('settings.appleOnlyAdmin')}</span>`}
           </div>
 
+          <!-- CalDAV Kalender -->
+          <div class="settings-card">
+            <h2>${t('settings.caldavTitle')}</h2>
+            <p class="settings-card-description">${t('settings.caldavDescription')}</p>
+
+            <div id="caldav-accounts-list"></div>
+            <div id="caldav-empty-state" class="caldav-empty-state" style="display: none;">
+              <p>${t('settings.caldavEmptyState')}</p>
+            </div>
+
+            ${user?.role === 'admin' ? `
+              <button class="btn btn--primary" id="caldav-add-account-btn">
+                ${t('settings.caldavAddAccount')}
+              </button>
+            ` : ''}
+          </div>
+
           <!-- ICS-Abonnements -->
           <div class="settings-card" id="ics-card">
             <div class="settings-sync-header">
@@ -1164,6 +1181,220 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
         btn.disabled = false;
         btn.textContent = t('settings.appleConnectBtn');
       }
+    });
+  }
+
+  // CalDAV-Konten laden
+  async function loadCalDAVAccounts(container) {
+    const listEl = container.querySelector('#caldav-accounts-list');
+    const emptyEl = container.querySelector('#caldav-empty-state');
+    if (!listEl || !emptyEl) return;
+
+    try {
+      const accountsRes = await api.get('/calendar/caldav/accounts');
+      const accounts = accountsRes.data || [];
+
+      if (accounts.length === 0) {
+        listEl.replaceChildren();
+        emptyEl.style.display = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      listEl.replaceChildren();
+
+      for (const account of accounts) {
+        const calendarsRes = await api.get(`/calendar/caldav/accounts/${account.id}/calendars`);
+        const calendars = calendarsRes.data || [];
+
+        const accountCard = document.createElement('div');
+        accountCard.className = 'caldav-account-item';
+        accountCard.insertAdjacentHTML('beforeend', `
+          <div class="caldav-account-header">
+            <h4>${esc(account.name)}</h4>
+            <div class="caldav-account-meta">
+              <span>${esc(account.caldav_url)}</span>
+              ${account.last_sync ? `<span>${t('settings.lastSync')}: ${formatDateTime(account.last_sync)}</span>` : ''}
+            </div>
+          </div>
+          <details class="caldav-calendars-details">
+            <summary class="caldav-calendars-summary">
+              ${t('settings.caldavCalendarsToggle')} (${calendars.length})
+            </summary>
+            <div class="caldav-calendars-list">
+              ${calendars.map((cal) => `
+                <label class="caldav-calendar-item">
+                  <input type="checkbox" class="caldav-calendar-checkbox"
+                         data-account-id="${account.id}"
+                         data-calendar-url="${esc(cal.url)}"
+                         ${cal.enabled ? 'checked' : ''}>
+                  <span class="caldav-calendar-color" style="background-color: ${esc(cal.color || '#007AFF')}"></span>
+                  <span class="caldav-calendar-name">${esc(cal.display_name || cal.url)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </details>
+          <div class="caldav-account-actions">
+            <button class="btn btn--secondary btn--sm" data-caldav-sync="${account.id}">${t('settings.syncNow')}</button>
+            <button class="btn btn--secondary btn--sm" data-caldav-refresh="${account.id}">${t('settings.caldavRefreshCalendars')}</button>
+            ${user?.role === 'admin' ? `<button class="btn btn--danger-outline btn--sm" data-caldav-delete="${account.id}">${t('common.delete')}</button>` : ''}
+          </div>
+        `);
+        listEl.appendChild(accountCard);
+      }
+
+      if (window.lucide) lucide.createIcons({ el: listEl });
+
+      // Bind calendar checkbox events
+      listEl.querySelectorAll('.caldav-calendar-checkbox').forEach((checkbox) => {
+        checkbox.addEventListener('change', async () => {
+          const accountId = parseInt(checkbox.dataset.accountId, 10);
+          const calendarUrl = checkbox.dataset.calendarUrl;
+          const enabled = checkbox.checked;
+
+          try {
+            await api.patch(`/calendar/caldav/accounts/${accountId}/calendars`, {
+              calendarUrl,
+              enabled,
+            });
+            window.oikos?.showToast(
+              enabled ? t('settings.calendarEnabled') : t('settings.calendarDisabled'),
+              'success'
+            );
+          } catch (err) {
+            window.oikos?.showToast(err.message, 'danger');
+            checkbox.checked = !enabled; // Revert on error
+          }
+        });
+      });
+
+      // Bind sync buttons
+      listEl.querySelectorAll('[data-caldav-sync]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = t('settings.synchronizing');
+          try {
+            await api.post('/calendar/caldav/sync');
+            window.oikos?.showToast(t('settings.caldavSyncSuccess'), 'success');
+            await loadCalDAVAccounts(container);
+          } catch (err) {
+            window.oikos?.showToast(err.message || t('settings.caldavSyncFailed'), 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+          }
+        });
+      });
+
+      // Bind refresh buttons
+      listEl.querySelectorAll('[data-caldav-refresh]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const accountId = parseInt(btn.dataset.caldavRefresh, 10);
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = t('settings.loading');
+          try {
+            await api.get(`/calendar/caldav/accounts/${accountId}/calendars?refresh=true`);
+            await loadCalDAVAccounts(container);
+            window.oikos?.showToast(t('settings.calendarsRefreshed'), 'success');
+          } catch (err) {
+            window.oikos?.showToast(err.message, 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+          }
+        });
+      });
+
+      // Bind delete buttons
+      listEl.querySelectorAll('[data-caldav-delete]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const accountId = parseInt(btn.dataset.caldavDelete, 10);
+          if (!await confirmModal(t('settings.deleteAccountConfirm'), { danger: true })) return;
+          try {
+            await api.delete(`/calendar/caldav/accounts/${accountId}`);
+            window.oikos?.showToast(t('settings.caldavAccountDeleted'), 'success');
+            await loadCalDAVAccounts(container);
+          } catch (err) {
+            window.oikos?.showToast(err.message, 'danger');
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error('Failed to load CalDAV accounts:', err);
+      window.oikos?.showToast(t('settings.caldavConnectionFailed'), 'danger');
+    }
+  }
+
+  // Load CalDAV accounts on page load
+  if (user?.role === 'admin') {
+    loadCalDAVAccounts(container);
+  }
+
+  // CalDAV add account button
+  const caldavAddBtn = container.querySelector('#caldav-add-account-btn');
+  if (caldavAddBtn) {
+    caldavAddBtn.addEventListener('click', () => {
+      openModal({
+        title: t('settings.caldavAddAccount'),
+        size: 'sm',
+        content: `
+          <form id="caldav-add-form" novalidate autocomplete="off">
+            <div class="form-group">
+              <label class="form-label" for="caldav-name">${t('settings.caldavNameLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
+              <input class="form-input" type="text" id="caldav-name" required
+                     placeholder="${t('settings.caldavNamePlaceholder')}" maxlength="100" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="caldav-url">${t('settings.caldavUrlLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
+              <input class="form-input" type="url" id="caldav-url" required
+                     placeholder="${t('settings.caldavUrlPlaceholder')}" />
+              <small class="form-hint">${t('settings.caldavUrlHint')}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="caldav-username">${t('settings.caldavUsernameLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
+              <input class="form-input" type="text" id="caldav-username" required autocomplete="username" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="caldav-password">${t('settings.caldavPasswordLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
+              <input class="form-input" type="password" id="caldav-password" required autocomplete="current-password" />
+              <small class="form-hint">${t('settings.caldavPasswordHint')}</small>
+            </div>
+            <div id="caldav-add-error" class="form-error" hidden></div>
+          </form>
+        `,
+        onSave: async (panel) => {
+          const form = panel.querySelector('#caldav-add-form');
+          const errorEl = panel.querySelector('#caldav-add-error');
+          errorEl.hidden = true;
+
+          const name = panel.querySelector('#caldav-name').value.trim();
+          const caldavUrl = panel.querySelector('#caldav-url').value.trim();
+          const username = panel.querySelector('#caldav-username').value.trim();
+          const password = panel.querySelector('#caldav-password').value;
+
+          if (!name || !caldavUrl || !username || !password) {
+            showError(errorEl, t('common.requiredFields'));
+            return;
+          }
+
+          try {
+            await api.post('/calendar/caldav/accounts', {
+              name,
+              caldavUrl,
+              username,
+              password,
+            });
+            closeModal({ force: true });
+            window.oikos?.showToast(t('settings.caldavAccountAdded'), 'success');
+            await loadCalDAVAccounts(container);
+          } catch (err) {
+            showError(errorEl, err.message);
+          }
+        },
+      });
     });
   }
 
