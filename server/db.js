@@ -1354,6 +1354,14 @@ function transaction(fn) {
   return get().transaction(fn)();
 }
 
+/**
+ * ONLY FOR TESTING: Override the internal db instance
+ * @param {import('better-sqlite3').Database} testDb
+ */
+function _setTestDatabase(testDb) {
+  db = testDb;
+}
+
 init();   // auto-initialise when module is first imported
 
-export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile, MIGRATIONS };
+export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile, MIGRATIONS, _setTestDatabase };

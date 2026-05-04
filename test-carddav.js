@@ -1467,3 +1467,75 @@ describe('Multi-Value Validators', () => {
     });
   });
 });
+
+// ========================================
+// CardDAV API Routes
+// ========================================
+
+describe('CardDAV API Routes', () => {
+  let apiTestDb;
+
+  before(async () => {
+    // Create in-memory test database for API routes
+    apiTestDb = new Database(':memory:');
+    apiTestDb.pragma('foreign_keys = ON');
+
+    // Create minimal schema
+    apiTestDb.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL
+      );
+
+      CREATE TABLE contacts (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL,
+        category   TEXT NOT NULL DEFAULT 'Sonstiges',
+        phone      TEXT,
+        email      TEXT,
+        address    TEXT,
+        notes      TEXT,
+        family_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      INSERT INTO users (username) VALUES ('testuser');
+    `);
+
+    // Apply Migration 30 to create CardDAV tables
+    const migration30 = MIGRATIONS.find(m => m.version === 30);
+    if (!migration30) {
+      throw new Error('Migration 30 not found');
+    }
+    apiTestDb.exec(migration30.up);
+
+    // Override db.get() to use our test database
+    const dbModule = await import('./server/db.js');
+    dbModule._setTestDatabase(apiTestDb);
+  });
+
+  describe('Account Management', () => {
+    it('GET /accounts - should return empty array when no accounts', async () => {
+      const cardavRouter = await import('./server/routes/cardav.js');
+
+      const req = { params: {}, query: {}, body: {} };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(getHandler, 'GET /accounts handler should exist');
+      await getHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(Array.isArray(res.data.data));
+      assert.strictEqual(res.data.data.length, 0);
+    });
+  });
+});
