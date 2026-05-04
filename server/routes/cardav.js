@@ -6,13 +6,9 @@
 
 import { createLogger } from '../logger.js';
 import express from 'express';
-import * as db from '../db.js';
 import * as CardDAVSync from '../services/cardav-sync.js';
-import { str, collectErrors, MAX_TITLE } from '../middleware/validate.js';
 
 const log = createLogger('CardDAV');
-const MAX_URL = 500;
-
 const router = express.Router();
 
 /**
@@ -26,7 +22,7 @@ router.get('/accounts', async (req, res) => {
     res.json({ data: accounts });
   } catch (err) {
     log.error('Error fetching accounts:', err);
-    res.status(500).json({ error: err.message || 'Interner Fehler', code: 500 });
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
   }
 });
 

@@ -1354,14 +1354,27 @@ function transaction(fn) {
   return get().transaction(fn)();
 }
 
+let _originalDb = null;
+
 /**
  * ONLY FOR TESTING: Override the internal db instance
  * @param {import('better-sqlite3').Database} testDb
  */
 function _setTestDatabase(testDb) {
+  if (!_originalDb) _originalDb = db;
   db = testDb;
+}
+
+/**
+ * ONLY FOR TESTING: Restore the original db instance
+ */
+function _resetTestDatabase() {
+  if (_originalDb) {
+    db = _originalDb;
+    _originalDb = null;
+  }
 }
 
 init();   // auto-initialise when module is first imported
 
-export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile, MIGRATIONS, _setTestDatabase };
+export { init, get, transaction, currentVersion, getPath, backupToFile, restoreFromFile, MIGRATIONS, _setTestDatabase, _resetTestDatabase };

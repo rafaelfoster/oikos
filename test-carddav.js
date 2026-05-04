@@ -3,7 +3,7 @@
  * Purpose: Verify Migration 30 - CardDAV multi-account contacts sync tables
  */
 
-import { describe, it, before } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import Database from 'better-sqlite3';
 import { MIGRATIONS } from './server/db.js';
@@ -1515,6 +1515,12 @@ describe('CardDAV API Routes', () => {
     dbModule._setTestDatabase(apiTestDb);
   });
 
+  after(async () => {
+    // Restore original database
+    const dbModule = await import('./server/db.js');
+    dbModule._resetTestDatabase();
+  });
+
   describe('Account Management', () => {
     it('GET /accounts - should return empty array when no accounts', async () => {
       const cardavRouter = await import('./server/routes/cardav.js');
@@ -1536,6 +1542,39 @@ describe('CardDAV API Routes', () => {
       assert.strictEqual(res.statusCode, 200);
       assert.ok(Array.isArray(res.data.data));
       assert.strictEqual(res.data.data.length, 0);
+    });
+
+    it('GET /accounts - should return accounts with correct shape', async () => {
+      // Insert test account
+      apiTestDb.prepare(`
+        INSERT INTO carddav_accounts (name, carddav_url, username, password, created_at)
+        VALUES (?, ?, ?, ?, ?)
+      `).run('Test iCloud', 'https://contacts.icloud.com', 'test@icloud.com', 'secret', '2026-05-01T10:00:00Z');
+
+      const cardavRouter = await import('./server/routes/cardav.js');
+      const req = { params: {}, query: {}, body: {} };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getHandler = cardavRouter.default.stack.find(
+        layer => layer.route?.path === '/accounts' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      await getHandler(req, res);
+
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(Array.isArray(res.data.data));
+      assert.strictEqual(res.data.data.length, 1);
+
+      const account = res.data.data[0];
+      assert.strictEqual(account.name, 'Test iCloud');
+      assert.strictEqual(account.cardavUrl, 'https://contacts.icloud.com');
+      assert.strictEqual(account.username, 'test@icloud.com');
+      assert.strictEqual(account.createdAt, '2026-05-01T10:00:00Z');
+      assert.ok(!account.password, 'Password should not be exposed');
     });
   });
 });
