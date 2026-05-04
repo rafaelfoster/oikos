@@ -1,6 +1,6 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 3 von 15 (Session pausiert bei ~77k tokens)
+**Stand:** 2026-05-04, nach Task 8 von 15 (Session pausiert bei ~88k tokens, frische Session startet bei Task 9)
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
 
 ## Abgeschlossene Tasks
@@ -76,7 +76,33 @@
 - Test: 1 Test (success case mit addressbooks)
 - Verwendet gemockten testConnection für konsistente Test-Results
 
-## Offene Tasks (6-15)
+### ✅ Task 6: GET /accounts/:id/addressbooks - List Addressbooks
+**Commit:** 12e8edf
+
+- Implementiert: GET /accounts/:id/addressbooks mit ID-Validierung
+- Query: carddav_addressbook_selection table, ORDER BY addressbook_name
+- Response: 200 mit Array von `{ id, url, name, enabled }`
+- Tests: 2 Tests (success case mit shape validation, empty array für non-existent account)
+
+### ✅ Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
+**Commit:** c078a48
+
+- Implementiert: POST /accounts/:id/addressbooks/refresh mit ID-Validierung
+- Lädt Account aus DB (404 wenn nicht gefunden)
+- Delegiert an: `CardDAVSync.discoverAddressbooks(accountId)` für PROPFIND
+- Query updated addressbooks nach Discovery
+- Response: 200 mit Array von addressbooks
+- Test: 1 Test (success case)
+
+### ✅ Task 8: Add bool Validator
+**Commit:** 362f711
+
+- Implementiert: `bool(val, field)` Validator in server/middleware/validate.js
+- Validiert: type === 'boolean', required by default
+- Exportiert: bool in export statement
+- Keine Tests (wird in Task 9 verwendet)
+
+## Offene Tasks (9-15)
 
 ### 🔄 Task 5: POST /accounts/:id/test
 - Test Connection Endpoint (nutzt existierende testConnection Funktion)
@@ -135,19 +161,26 @@
 
 ## Nächste Schritte beim Fortsetzen (Frische Session)
 
-1. **Task 4 starten:** DELETE /accounts/:id implementieren
-   - Test schreiben (erst Account erstellen, dann löschen)
-   - Route implementieren mit ID-Validation
-   - CardDAVSync.deleteAccount() aufrufen
-   - Commit + Reviews
+1. **Task 9 starten:** PUT /addressbooks/:id - Toggle Addressbook
+   - Test schreiben (erst Account + Addressbooks erstellen, dann toggle enabled)
+   - Route implementieren mit bool Validation (nutzt neuen bool Validator)
+   - CardDAVSync.toggleAddressbook(id, enabled) aufrufen
+   - 2 Tests: success case, validation failure
+   - Commit
 
-2. **Review-Workflow beibehalten:**
-   - Nach jedem Commit: Spec Compliance Review (optional)
-   - Nach jedem Commit: Code Quality Review (optional)
-   - Fixes committen wenn nötig
-   - Task als completed markieren
+2. **Verbleibende Tasks 10-15:**
+   - Task 10: POST /accounts/:id/sync - Sync Account
+   - Task 11: GET /contacts/:id - With Multi-Values
+   - Task 12: POST /contacts - Create With Multi-Values
+   - Task 13: PUT /contacts/:id - Update With Multi-Values
+   - Task 14: Document All Routes in OpenAPI
+   - Task 15: Mount CardDAV Router in server/index.js
 
-3. **Tasks 4-15 abarbeiten gemäß Plan**
+3. **Review-Workflow beibehalten:**
+   - TDD: RED → Verify RED → GREEN → Verify GREEN → Commit
+   - PROGRESS.md nach jedem Task aktualisieren
+   - Nach jedem Commit: Optional Code Review
+
 4. **Am Ende:** Final Code Review + Release Prep
 
 ## Commits-Übersicht
@@ -158,18 +191,31 @@ cf68bff feat(cardav): create cardav router with GET /accounts
 930800e fix(cardav): improve router security and test coverage
 f7eb73b feat(cardav): implement POST /accounts endpoint
 ca92cb2 feat(cardav): implement DELETE /accounts/:id endpoint
+38fa84c docs: update PROGRESS.md for completed Task 4
 dd5ac88 feat(cardav): implement POST /accounts/:id/test endpoint
+2964696 docs: update PROGRESS.md for completed Task 5
+12e8edf feat(cardav): implement GET /accounts/:id/addressbooks endpoint
+c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
+362f711 feat(validate): add bool validator
 ```
 
 ## Test-Status
 
-- **Gesamt:** 91 Tests, alle bestehen
-- **Suites:** 13 Suites
-- **CardDAV API Routes Suite:** 4 Tests
-  - GET /accounts (empty)
-  - GET /accounts (populated)
-  - POST /accounts (success)
-  - POST /accounts (validation)
+- **Gesamt:** 97 Tests, alle bestehen
+- **Suites:** 14 Suites
+- **CardDAV API Routes Suite:** 10 Tests
+  - Account Management (6 Tests):
+    - GET /accounts (empty)
+    - GET /accounts (populated with shape)
+    - POST /accounts (success)
+    - POST /accounts (validation failure)
+    - DELETE /accounts/:id (success with cascade)
+    - DELETE /accounts/:id (invalid ID → 400)
+  - Connection & Discovery (4 Tests):
+    - POST /accounts/:id/test (success)
+    - GET /accounts/:id/addressbooks (success with addressbooks)
+    - GET /accounts/:id/addressbooks (empty array)
+    - POST /accounts/:id/addressbooks/refresh (success)
 
 ## Branch & Remote
 
@@ -186,9 +232,9 @@ dd5ac88 feat(cardav): implement POST /accounts/:id/test endpoint
 #3. [completed] Task 3: POST /accounts - Create Account
 #4. [completed] Task 4: DELETE /accounts/:id - Delete Account
 #5. [completed] Task 5: POST /accounts/:id/test - Test Connection
-#6. [pending] Task 6: GET /accounts/:id/addressbooks - List Addressbooks
-#7. [pending] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
-#8. [pending] Task 8: Add bool validator to validate.js
+#6. [completed] Task 6: GET /accounts/:id/addressbooks - List Addressbooks
+#7. [completed] Task 7: POST /accounts/:id/addressbooks/refresh - Refresh Addressbooks
+#8. [completed] Task 8: Add bool validator to validate.js
 #9. [pending] Task 9: PUT /addressbooks/:id - Toggle Addressbook
 #10. [pending] Task 10: POST /accounts/:id/sync - Sync Account
 #11. [pending] Task 11: GET /contacts/:id - With Multi-Values
