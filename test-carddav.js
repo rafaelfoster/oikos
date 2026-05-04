@@ -449,3 +449,521 @@ describe('CardDAV Contacts Schema (Migration 30)', () => {
     assert.ok(differentAccount, 'Same UID in different account should be allowed');
   });
 });
+
+// ========================================
+// CardDAV Sync Service Tests
+// ========================================
+
+describe('CardDAV Sync Service', () => {
+  let testDb;
+  let parseVCard;
+
+  before(async () => {
+    // Create in-memory test database
+    testDb = new Database(':memory:');
+    testDb.pragma('foreign_keys = ON');
+
+    // Create minimal schema
+    testDb.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL
+      );
+
+      CREATE TABLE contacts (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL,
+        category   TEXT NOT NULL DEFAULT 'Sonstiges',
+        phone      TEXT,
+        email      TEXT,
+        address    TEXT,
+        notes      TEXT,
+        family_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      INSERT INTO users (username) VALUES ('testuser');
+    `);
+
+    // Apply Migration 30
+    const migration30 = MIGRATIONS.find(m => m.version === 30);
+    if (!migration30) {
+      throw new Error('Migration 30 not found');
+    }
+    testDb.exec(migration30.up);
+
+    // Import parseVCard helper for testing
+    const cardavSync = await import('./server/services/cardav-sync.js');
+    parseVCard = cardavSync.parseVCard;
+  });
+
+  // ========================================
+  // vCard Parsing Tests
+  // ========================================
+
+  describe('parseVCard', () => {
+    it('should parse basic vCard with FN and UID', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.uid, 'urn:uuid:12345');
+      assert.strictEqual(result.name, 'John Doe');
+    });
+
+    it('should parse N as fallback when FN missing', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+N:Doe;John;Middle;Mr.;Jr.
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.uid, 'urn:uuid:12345');
+      assert.ok(result.name.includes('Doe'));
+      assert.ok(result.name.includes('John'));
+    });
+
+    it('should parse TEL fields with types', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+TEL;TYPE=CELL:+1234567890
+TEL;TYPE=WORK:+0987654321
+TEL;TYPE=HOME:+1111111111
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.phones.length, 3);
+
+      const cellPhone = result.phones.find(p => p.label === 'cell');
+      assert.ok(cellPhone);
+      assert.strictEqual(cellPhone.value, '+1234567890');
+
+      const workPhone = result.phones.find(p => p.label === 'work');
+      assert.ok(workPhone);
+      assert.strictEqual(workPhone.value, '+0987654321');
+    });
+
+    it('should parse EMAIL fields with types', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+EMAIL;TYPE=HOME:john@home.com
+EMAIL;TYPE=WORK:john@work.com
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.emails.length, 2);
+
+      const homeEmail = result.emails.find(e => e.label === 'home');
+      assert.ok(homeEmail);
+      assert.strictEqual(homeEmail.value, 'john@home.com');
+    });
+
+    it('should parse ADR fields', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+ADR;TYPE=HOME:;;123 Main St;Springfield;IL;62701;USA
+ADR;TYPE=WORK:;;456 Office Blvd;Metropolis;NY;10001;USA
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.addresses.length, 2);
+
+      const homeAddr = result.addresses.find(a => a.label === 'home');
+      assert.ok(homeAddr);
+      assert.strictEqual(homeAddr.street, '123 Main St');
+      assert.strictEqual(homeAddr.city, 'Springfield');
+      assert.strictEqual(homeAddr.state, 'IL');
+      assert.strictEqual(homeAddr.postalCode, '62701');
+      assert.strictEqual(homeAddr.country, 'USA');
+    });
+
+    it('should parse organization and job title', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+ORG:Acme Corporation
+TITLE:Senior Engineer
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.organization, 'Acme Corporation');
+      assert.strictEqual(result.jobTitle, 'Senior Engineer');
+    });
+
+    it('should parse birthday in various formats', () => {
+      const vCardText1 = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+BDAY:1990-05-15
+END:VCARD`;
+
+      const result1 = parseVCard(vCardText1);
+      assert.strictEqual(result1.birthday, '1990-05-15');
+
+      const vCardText2 = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:Jane Doe
+BDAY:19850312
+END:VCARD`;
+
+      const result2 = parseVCard(vCardText2);
+      assert.strictEqual(result2.birthday, '1985-03-12');
+    });
+
+    it('should parse URL, NICKNAME, NOTE, CATEGORIES', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+URL:https://example.com
+NICKNAME:Johnny
+NOTE:Important contact
+CATEGORIES:Friends
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.website, 'https://example.com');
+      assert.strictEqual(result.nickname, 'Johnny');
+      assert.strictEqual(result.notes, 'Important contact');
+      assert.strictEqual(result.categories, 'Friends');
+    });
+
+    it('should handle line folding', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+NOTE:This is a very long note that spans
+ multiple lines and should be
+ concatenated properly
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.ok(result.notes.includes('very long note'));
+      assert.ok(result.notes.includes('multiple lines'));
+      assert.ok(result.notes.includes('concatenated properly'));
+    });
+
+    it('should handle vCards with minimal data', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:minimal
+FN:Minimal Contact
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.uid, 'urn:uuid:minimal');
+      assert.strictEqual(result.name, 'Minimal Contact');
+      assert.strictEqual(result.phones.length, 0);
+      assert.strictEqual(result.emails.length, 0);
+      assert.strictEqual(result.addresses.length, 0);
+    });
+
+    it('should handle TEL without TYPE parameter', () => {
+      const vCardText = `BEGIN:VCARD
+VERSION:3.0
+UID:urn:uuid:12345
+FN:John Doe
+TEL;CELL:+1234567890
+TEL;VOICE;WORK:+0987654321
+END:VCARD`;
+
+      const result = parseVCard(vCardText);
+      assert.strictEqual(result.phones.length, 2);
+
+      // Should extract CELL and WORK from parameter names
+      const cellPhone = result.phones.find(p => p.label === 'cell');
+      assert.ok(cellPhone);
+
+      const workPhone = result.phones.find(p => p.label === 'work');
+      assert.ok(workPhone);
+    });
+  });
+
+  // ========================================
+  // Database Integration Tests
+  // ========================================
+
+  describe('Account Management (DB)', () => {
+    it('should store and retrieve account correctly', () => {
+      testDb.prepare(`
+        INSERT INTO carddav_accounts (name, carddav_url, username, password)
+        VALUES (?, ?, ?, ?)
+      `).run('Test Account', 'https://carddav.example.com', 'user@example.com', 'password123');
+
+      const account = testDb.prepare('SELECT * FROM carddav_accounts WHERE name = ?').get('Test Account');
+      assert.ok(account);
+      assert.strictEqual(account.name, 'Test Account');
+      assert.strictEqual(account.carddav_url, 'https://carddav.example.com');
+      assert.strictEqual(account.username, 'user@example.com');
+      assert.strictEqual(account.password, 'password123');
+    });
+
+    it('should create addressbook selections for account', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Test Account').id;
+
+      testDb.prepare(`
+        INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
+        VALUES (?, ?, ?, ?), (?, ?, ?, ?)
+      `).run(
+        accountId, 'https://carddav.example.com/addressbooks/personal', 'Personal', 1,
+        accountId, 'https://carddav.example.com/addressbooks/work', 'Work', 0
+      );
+
+      const enabled = testDb.prepare(`
+        SELECT * FROM carddav_addressbook_selection
+        WHERE account_id = ? AND enabled = 1
+      `).all(accountId);
+
+      assert.strictEqual(enabled.length, 1);
+      assert.strictEqual(enabled[0].addressbook_name, 'Personal');
+
+      const all = testDb.prepare(`
+        SELECT * FROM carddav_addressbook_selection
+        WHERE account_id = ?
+      `).all(accountId);
+
+      assert.strictEqual(all.length, 2);
+    });
+  });
+
+  describe('Contact Merge Logic (DB)', () => {
+    it('should create new contact from vCard', () => {
+      const accountId = testDb.prepare('SELECT id FROM carddav_accounts WHERE name = ?').get('Test Account').id;
+
+      // Simulate parsed vCard data
+      testDb.prepare(`
+        INSERT INTO contacts (
+          name, category, organization, job_title, birthday, website,
+          nickname, notes,
+          carddav_account_id, carddav_uid, carddav_addressbook_url
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        'Alice Smith',
+        'Sonstiges',
+        'Tech Corp',
+        'Developer',
+        '1990-01-15',
+        'https://alice.dev',
+        'Ali',
+        'Great developer',
+        accountId,
+        'urn:uuid:alice-123',
+        'https://carddav.example.com/addressbooks/personal'
+      );
+
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
+      assert.ok(contact);
+      assert.strictEqual(contact.organization, 'Tech Corp');
+      assert.strictEqual(contact.job_title, 'Developer');
+      assert.strictEqual(contact.birthday, '1990-01-15');
+      assert.strictEqual(contact.carddav_uid, 'urn:uuid:alice-123');
+    });
+
+    it('should add multiple phones to contact', () => {
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
+
+      testDb.prepare(`
+        INSERT INTO contact_phones (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?), (?, ?, ?, ?)
+      `).run(
+        contact.id, 'mobile', '+1234567890', 1,
+        contact.id, 'work', '+0987654321', 0
+      );
+
+      const phones = testDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(contact.id);
+      assert.strictEqual(phones.length, 2);
+
+      const primary = phones.find(p => p.is_primary === 1);
+      assert.ok(primary);
+      assert.strictEqual(primary.value, '+1234567890');
+    });
+
+    it('should add multiple emails to contact', () => {
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
+
+      testDb.prepare(`
+        INSERT INTO contact_emails (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?), (?, ?, ?, ?)
+      `).run(
+        contact.id, 'home', 'alice@home.com', 1,
+        contact.id, 'work', 'alice@work.com', 0
+      );
+
+      const emails = testDb.prepare('SELECT * FROM contact_emails WHERE contact_id = ?').all(contact.id);
+      assert.strictEqual(emails.length, 2);
+
+      const primary = emails.find(e => e.is_primary === 1);
+      assert.ok(primary);
+      assert.strictEqual(primary.value, 'alice@home.com');
+    });
+
+    it('should add multiple addresses to contact', () => {
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
+
+      testDb.prepare(`
+        INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        contact.id, 'home', '123 Main St', 'Springfield', 'IL', '62701', 'USA', 1
+      );
+
+      const addresses = testDb.prepare('SELECT * FROM contact_addresses WHERE contact_id = ?').all(contact.id);
+      assert.strictEqual(addresses.length, 1);
+      assert.strictEqual(addresses[0].street, '123 Main St');
+      assert.strictEqual(addresses[0].is_primary, 1);
+    });
+
+    it('should preserve primary entries when updating multi-values', () => {
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE name = ?').get('Alice Smith');
+
+      // Mark first phone as primary (manually set)
+      testDb.prepare('UPDATE contact_phones SET is_primary = 1 WHERE contact_id = ? AND label = ?')
+        .run(contact.id, 'mobile');
+
+      // Delete non-primary phones (simulating sync update)
+      testDb.prepare('DELETE FROM contact_phones WHERE contact_id = ? AND is_primary = 0')
+        .run(contact.id);
+
+      // Add new phones from vCard
+      testDb.prepare(`
+        INSERT INTO contact_phones (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contact.id, 'home', '+9999999999', 0);
+
+      const phones = testDb.prepare('SELECT * FROM contact_phones WHERE contact_id = ?').all(contact.id);
+
+      // Should have primary mobile + new home phone
+      assert.strictEqual(phones.length, 2);
+
+      const primaryPhone = phones.find(p => p.is_primary === 1);
+      assert.ok(primaryPhone);
+      assert.strictEqual(primaryPhone.label, 'mobile');
+    });
+
+    it('should find contact by email match', () => {
+      // Create manual contact with email
+      testDb.prepare(`
+        INSERT INTO contacts (name, category, email)
+        VALUES (?, ?, ?)
+      `).run('Bob Jones', 'Sonstiges', 'bob@example.com');
+
+      const contactId = testDb.prepare('SELECT id FROM contacts WHERE name = ?').get('Bob Jones').id;
+
+      // Also add to contact_emails
+      testDb.prepare(`
+        INSERT INTO contact_emails (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contactId, 'work', 'bob@work.com', 0);
+
+      // Search by email (simulating merge logic)
+      const foundByOldEmail = testDb.prepare(`
+        SELECT c.* FROM contacts c
+        WHERE c.email = ?
+      `).get('bob@example.com');
+
+      assert.ok(foundByOldEmail);
+      assert.strictEqual(foundByOldEmail.name, 'Bob Jones');
+
+      const foundByNewEmail = testDb.prepare(`
+        SELECT c.* FROM contacts c
+        LEFT JOIN contact_emails ce ON c.id = ce.contact_id
+        WHERE ce.value = ?
+      `).get('bob@work.com');
+
+      assert.ok(foundByNewEmail);
+      assert.strictEqual(foundByNewEmail.name, 'Bob Jones');
+    });
+
+    it('should find contact by phone match', () => {
+      // Create manual contact with phone
+      testDb.prepare(`
+        INSERT INTO contacts (name, category, phone)
+        VALUES (?, ?, ?)
+      `).run('Carol White', 'Sonstiges', '+5555555555');
+
+      const contactId = testDb.prepare('SELECT id FROM contacts WHERE name = ?').get('Carol White').id;
+
+      // Also add to contact_phones
+      testDb.prepare(`
+        INSERT INTO contact_phones (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contactId, 'mobile', '+6666666666', 0);
+
+      // Search by phone (simulating merge logic)
+      const foundByOldPhone = testDb.prepare(`
+        SELECT c.* FROM contacts c
+        WHERE c.phone = ?
+      `).get('+5555555555');
+
+      assert.ok(foundByOldPhone);
+      assert.strictEqual(foundByOldPhone.name, 'Carol White');
+
+      const foundByNewPhone = testDb.prepare(`
+        SELECT c.* FROM contacts c
+        LEFT JOIN contact_phones cp ON c.id = cp.contact_id
+        WHERE cp.value = ?
+      `).get('+6666666666');
+
+      assert.ok(foundByNewPhone);
+      assert.strictEqual(foundByNewPhone.name, 'Carol White');
+    });
+
+    it('should only update NULL fields when merging', () => {
+      // Create contact with some fields filled
+      testDb.prepare(`
+        INSERT INTO contacts (name, category, organization, job_title)
+        VALUES (?, ?, ?, ?)
+      `).run('Dave Brown', 'Sonstiges', 'Local Company', 'Manager');
+
+      const contactId = testDb.prepare('SELECT id FROM contacts WHERE name = ?').get('Dave Brown').id;
+
+      // Simulate merge: only update NULL fields
+      const updates = [];
+      const values = [];
+
+      const contact = testDb.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+
+      // birthday is NULL, should update
+      if (contact.birthday === null) {
+        updates.push('birthday = ?');
+        values.push('1985-07-20');
+      }
+
+      // organization is NOT NULL, should not update
+      if (contact.organization === null) {
+        updates.push('organization = ?');
+        values.push('New Company');
+      }
+
+      values.push(contactId);
+
+      if (updates.length > 0) {
+        testDb.prepare(`UPDATE contacts SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+      }
+
+      const updated = testDb.prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+
+      // birthday should be updated
+      assert.strictEqual(updated.birthday, '1985-07-20');
+
+      // organization should remain unchanged
+      assert.strictEqual(updated.organization, 'Local Company');
+    });
+  });
+});

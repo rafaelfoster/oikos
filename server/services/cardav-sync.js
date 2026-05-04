@@ -1,0 +1,849 @@
+/**
+ * Modul: CardDAV Contacts Sync
+ * Zweck: Multi-Account CardDAV synchronization with addressbook selection
+ * Abhängigkeiten: tsdav, server/db.js
+ */
+
+import { createLogger } from '../logger.js';
+const log = createLogger('CardDAV');
+
+import * as db from '../db.js';
+
+// --------------------------------------------------------
+// Helper Functions
+// --------------------------------------------------------
+
+/**
+ * Parse vCard text into structured object
+ * @param {string} vCardText - Raw vCard data
+ * @returns {Object} Parsed vCard object
+ */
+function parseVCard(vCardText) {
+  const lines = vCardText.split(/\r?\n/).filter(line => line.trim());
+  const vcard = {
+    uid: null,
+    name: null,
+    phones: [],
+    emails: [],
+    addresses: [],
+    organization: null,
+    jobTitle: null,
+    website: null,
+    birthday: null,
+    photo: null,
+    nickname: null,
+    notes: null,
+    categories: null,
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+
+    // Handle line folding (continuation lines start with space or tab)
+    while (i + 1 < lines.length && /^[ \t]/.test(lines[i + 1])) {
+      line += lines[i + 1].substring(1);
+      i++;
+    }
+
+    const colonIndex = line.indexOf(':');
+    if (colonIndex === -1) continue;
+
+    const fullKey = line.substring(0, colonIndex);
+    const value = line.substring(colonIndex + 1).trim();
+
+    // Parse property and parameters
+    const [prop, ...params] = fullKey.split(';');
+    const property = prop.toUpperCase();
+
+    switch (property) {
+      case 'UID':
+        vcard.uid = value;
+        break;
+
+      case 'FN':
+        if (!vcard.name) vcard.name = value;
+        break;
+
+      case 'N':
+        // N is fallback if FN is not present
+        // Format: Family;Given;Middle;Prefix;Suffix
+        if (!vcard.name) {
+          const parts = value.split(';').filter(p => p);
+          vcard.name = parts.join(' ').trim();
+        }
+        break;
+
+      case 'TEL':
+        const phoneType = extractType(params) || 'other';
+        vcard.phones.push({ label: phoneType, value: value });
+        break;
+
+      case 'EMAIL':
+        const emailType = extractType(params) || 'other';
+        vcard.emails.push({ label: emailType, value: value });
+        break;
+
+      case 'ADR':
+        // Format: POBox;Extended;Street;City;State;Postal;Country
+        const adrParts = value.split(';');
+        const adrType = extractType(params) || 'other';
+        vcard.addresses.push({
+          label: adrType,
+          street: adrParts[2] || null,
+          city: adrParts[3] || null,
+          state: adrParts[4] || null,
+          postalCode: adrParts[5] || null,
+          country: adrParts[6] || null,
+        });
+        break;
+
+      case 'ORG':
+        vcard.organization = value;
+        break;
+
+      case 'TITLE':
+        vcard.jobTitle = value;
+        break;
+
+      case 'URL':
+        // Take first URL if multiple exist
+        if (!vcard.website) vcard.website = value;
+        break;
+
+      case 'BDAY':
+        // Parse birthday to ISO format (YYYY-MM-DD)
+        vcard.birthday = parseBirthday(value);
+        break;
+
+      case 'PHOTO':
+        // Handle base64 encoded photos
+        if (params.some(p => p.toUpperCase().includes('ENCODING=BASE64') || p.toUpperCase().includes('ENCODING=B'))) {
+          // Photo might span multiple lines in old vCard format
+          vcard.photo = value;
+        }
+        break;
+
+      case 'NICKNAME':
+        vcard.nickname = value;
+        break;
+
+      case 'NOTE':
+        vcard.notes = value;
+        break;
+
+      case 'CATEGORIES':
+        vcard.categories = value;
+        break;
+    }
+  }
+
+  return vcard;
+}
+
+/**
+ * Extract TYPE parameter from vCard property parameters
+ * @param {Array<string>} params - Property parameters
+ * @returns {string|null} Type value
+ */
+function extractType(params) {
+  // Priority order: more specific types first
+  const typeHierarchy = ['CELL', 'MOBILE', 'HOME', 'WORK', 'FAX', 'OTHER', 'VOICE'];
+
+  let foundType = null;
+
+  for (const param of params) {
+    const upper = param.toUpperCase();
+    if (upper.startsWith('TYPE=')) {
+      return param.substring(5).toLowerCase();
+    }
+    // Some vCards use TYPE without =
+    if (typeHierarchy.includes(upper)) {
+      // Keep the most specific type (earlier in hierarchy)
+      const currentIndex = typeHierarchy.indexOf(upper);
+      const foundIndex = foundType ? typeHierarchy.indexOf(foundType.toUpperCase()) : -1;
+
+      if (foundIndex === -1 || currentIndex < foundIndex) {
+        foundType = upper.toLowerCase();
+      }
+    }
+  }
+
+  return foundType;
+}
+
+/**
+ * Parse birthday from various vCard formats to ISO date
+ * @param {string} value - Birthday value from vCard
+ * @returns {string|null} ISO date (YYYY-MM-DD) or null
+ */
+function parseBirthday(value) {
+  if (!value) return null;
+
+  // Remove any non-numeric characters except hyphens
+  const cleaned = value.replace(/[^\d-]/g, '');
+
+  // Try ISO format (YYYY-MM-DD)
+  if (/^\d{4}-\d{2}-\d{2}$/.test(cleaned)) {
+    return cleaned;
+  }
+
+  // Try compact format (YYYYMMDD)
+  if (/^\d{8}$/.test(cleaned)) {
+    return `${cleaned.slice(0, 4)}-${cleaned.slice(4, 6)}-${cleaned.slice(6, 8)}`;
+  }
+
+  // Try year only
+  if (/^\d{4}$/.test(cleaned)) {
+    return `${cleaned}-01-01`;
+  }
+
+  return null;
+}
+
+// --------------------------------------------------------
+// Account Management
+// --------------------------------------------------------
+
+/**
+ * Test CardDAV connection
+ * @param {string} cardavUrl - CardDAV server URL
+ * @param {string} username - Username
+ * @param {string} password - Password
+ * @returns {Promise<Object>} { ok: true, addressbooks: [...] }
+ */
+async function testConnection(cardavUrl, username, password) {
+  try {
+    const { createDAVClient } = await import('tsdav');
+    const client = await createDAVClient({
+      serverUrl: cardavUrl,
+      credentials: { username, password },
+      authMethod: 'Basic',
+      defaultAccountType: 'carddav',
+    });
+
+    const addressbooks = await client.fetchAddressBooks();
+    if (!addressbooks.length) {
+      throw new Error('Connected, but no addressbooks found.');
+    }
+
+    return { ok: true, addressbooks };
+  } catch (err) {
+    log.error('Connection test failed:', err.message);
+    throw new Error(`CardDAV connection failed: ${err.message}`);
+  }
+}
+
+/**
+ * Add new CardDAV account
+ * @param {string} name - Account display name
+ * @param {string} cardavUrl - CardDAV server URL
+ * @param {string} username - Username
+ * @param {string} password - Password
+ * @returns {Promise<Object>} { accountId, addressbooks }
+ */
+async function addAccount(name, cardavUrl, username, password) {
+  try {
+    // Validate inputs
+    if (!name || !cardavUrl || !username || !password) {
+      throw new Error('All fields required: name, cardavUrl, username, password');
+    }
+
+    // Test connection first
+    const { addressbooks } = await testConnection(cardavUrl, username, password);
+
+    // Check for duplicate
+    const existing = db.get().prepare(
+      'SELECT id FROM carddav_accounts WHERE carddav_url = ? AND username = ?'
+    ).get(cardavUrl, username);
+
+    if (existing) {
+      throw new Error('Account with this URL and username already exists.');
+    }
+
+    // Warn if DB_ENCRYPTION_KEY not set
+    if (!process.env.DB_ENCRYPTION_KEY) {
+      log.warn('WARNING: DB_ENCRYPTION_KEY is not set - CardDAV credentials will be stored unencrypted.');
+    }
+
+    // Insert account
+    const result = db.get().prepare(`
+      INSERT INTO carddav_accounts (name, carddav_url, username, password)
+      VALUES (?, ?, ?, ?)
+    `).run(name, cardavUrl, username, password);
+
+    const accountId = result.lastInsertRowid;
+
+    // Insert addressbook selections (all enabled by default)
+    const addressbookData = [];
+    for (const abook of addressbooks) {
+      const abookName = abook.displayName || 'Unnamed Addressbook';
+
+      db.get().prepare(`
+        INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
+        VALUES (?, ?, ?, 1)
+      `).run(accountId, abook.url, abookName);
+
+      addressbookData.push({ url: abook.url, name: abookName, enabled: true });
+    }
+
+    log.info(`Added CardDAV account "${name}" with ${addressbooks.length} addressbooks.`);
+
+    return { accountId, addressbooks: addressbookData };
+  } catch (err) {
+    log.error('Failed to add account:', err.message);
+    throw err;
+  }
+}
+
+/**
+ * Get all CardDAV accounts
+ * @returns {Array<Object>} Array of account objects (without passwords)
+ */
+function getAllAccounts() {
+  try {
+    const accounts = db.get().prepare(`
+      SELECT id, name, carddav_url, username, created_at, last_sync
+      FROM carddav_accounts
+      ORDER BY created_at DESC
+    `).all();
+
+    return accounts.map(acc => ({
+      id: acc.id,
+      name: acc.name,
+      cardavUrl: acc.carddav_url,
+      username: acc.username,
+      createdAt: acc.created_at,
+      lastSync: acc.last_sync,
+    }));
+  } catch (err) {
+    log.error('Failed to get accounts:', err.message);
+    throw err;
+  }
+}
+
+/**
+ * Delete CardDAV account
+ * @param {number} accountId - Account ID
+ * @returns {Object} { success: true }
+ */
+function deleteAccount(accountId) {
+  try {
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(accountId);
+    if (!account) {
+      throw new Error(`Account ${accountId} not found.`);
+    }
+
+    // CASCADE will delete carddav_addressbook_selection entries
+    // Contacts will have carddav_account_id SET NULL (see migration)
+    db.get().prepare('DELETE FROM carddav_accounts WHERE id = ?').run(accountId);
+
+    log.info(`Deleted CardDAV account ${accountId} ("${account.name}").`);
+
+    return { success: true };
+  } catch (err) {
+    log.error('Failed to delete account:', err.message);
+    throw err;
+  }
+}
+
+// --------------------------------------------------------
+// Addressbook Discovery & Selection
+// --------------------------------------------------------
+
+/**
+ * Discover addressbooks for an account (refresh from server)
+ * @param {number} accountId - Account ID
+ * @returns {Promise<Array<Object>>} Array of addressbook objects
+ */
+async function discoverAddressbooks(accountId) {
+  try {
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(accountId);
+    if (!account) {
+      throw new Error(`Account ${accountId} not found.`);
+    }
+
+    const { addressbooks } = await testConnection(account.carddav_url, account.username, account.password);
+
+    // UPSERT into carddav_addressbook_selection
+    const result = [];
+    for (const abook of addressbooks) {
+      const abookName = abook.displayName || 'Unnamed Addressbook';
+
+      // Check if exists
+      const existing = db.get().prepare(`
+        SELECT id, enabled FROM carddav_addressbook_selection
+        WHERE account_id = ? AND addressbook_url = ?
+      `).get(accountId, abook.url);
+
+      if (existing) {
+        // Update name only (preserve enabled state)
+        db.get().prepare(`
+          UPDATE carddav_addressbook_selection
+          SET addressbook_name = ?
+          WHERE id = ?
+        `).run(abookName, existing.id);
+
+        result.push({
+          id: existing.id,
+          url: abook.url,
+          name: abookName,
+          enabled: existing.enabled === 1
+        });
+      } else {
+        // Insert new (enabled by default)
+        const insertResult = db.get().prepare(`
+          INSERT INTO carddav_addressbook_selection (account_id, addressbook_url, addressbook_name, enabled)
+          VALUES (?, ?, ?, 1)
+        `).run(accountId, abook.url, abookName);
+
+        result.push({
+          id: insertResult.lastInsertRowid,
+          url: abook.url,
+          name: abookName,
+          enabled: true
+        });
+      }
+    }
+
+    log.info(`Discovered ${addressbooks.length} addressbooks for account ${accountId}.`);
+
+    return result;
+  } catch (err) {
+    log.error('Failed to discover addressbooks:', err.message);
+    throw err;
+  }
+}
+
+/**
+ * Toggle addressbook enabled state
+ * @param {number} addressbookId - Addressbook selection ID
+ * @param {boolean} enabled - Enable or disable
+ * @returns {Object} { success: true }
+ */
+function toggleAddressbook(addressbookId, enabled) {
+  try {
+    const enabledValue = enabled ? 1 : 0;
+
+    const result = db.get().prepare(`
+      UPDATE carddav_addressbook_selection
+      SET enabled = ?
+      WHERE id = ?
+    `).run(enabledValue, addressbookId);
+
+    if (result.changes === 0) {
+      throw new Error(`Addressbook ${addressbookId} not found.`);
+    }
+
+    log.info(`Addressbook ${addressbookId} ${enabled ? 'enabled' : 'disabled'}.`);
+
+    return { success: true };
+  } catch (err) {
+    log.error('Failed to toggle addressbook:', err.message);
+    throw err;
+  }
+}
+
+// --------------------------------------------------------
+// Contact Sync
+// --------------------------------------------------------
+
+/**
+ * Sync all enabled addressbooks for an account
+ * @param {number} accountId - Account ID
+ * @returns {Promise<Object>} { synced, errors }
+ */
+async function syncAccount(accountId) {
+  try {
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(accountId);
+    if (!account) {
+      throw new Error(`Account ${accountId} not found.`);
+    }
+
+    log.info(`Syncing CardDAV account ${accountId} ("${account.name}")...`);
+
+    // Create tsdav client
+    const { createDAVClient } = await import('tsdav');
+    const client = await createDAVClient({
+      serverUrl: account.carddav_url,
+      credentials: { username: account.username, password: account.password },
+      authMethod: 'Basic',
+      defaultAccountType: 'carddav',
+    });
+
+    // Get enabled addressbooks for this account
+    const enabledAddressbooks = db.get().prepare(`
+      SELECT id, addressbook_url, addressbook_name
+      FROM carddav_addressbook_selection
+      WHERE account_id = ? AND enabled = 1
+    `).all(accountId);
+
+    if (enabledAddressbooks.length === 0) {
+      log.info(`Account ${accountId}: no enabled addressbooks, skipping.`);
+      return { synced: 0, errors: 0 };
+    }
+
+    let totalSynced = 0;
+    let totalErrors = 0;
+
+    // Fetch all addressbooks from server
+    const serverAddressbooks = await client.fetchAddressBooks();
+
+    for (const selAbook of enabledAddressbooks) {
+      // Find matching addressbook from server
+      const serverAbook = serverAddressbooks.find(sa => sa.url === selAbook.addressbook_url);
+
+      if (!serverAbook) {
+        log.warn(`Addressbook ${selAbook.addressbook_url} not found on server, disabling.`);
+        db.get().prepare(`
+          UPDATE carddav_addressbook_selection SET enabled = 0
+          WHERE id = ?
+        `).run(selAbook.id);
+        continue;
+      }
+
+      // Sync this addressbook
+      const { synced, errors } = await syncAddressbook(accountId, selAbook.addressbook_url, client, serverAbook);
+      totalSynced += synced;
+      totalErrors += errors;
+    }
+
+    // Update last_sync for account
+    db.get().prepare(`
+      UPDATE carddav_accounts SET last_sync = ? WHERE id = ?
+    `).run(new Date().toISOString(), accountId);
+
+    log.info(`Account ${accountId} sync complete: ${totalSynced} contacts synced, ${totalErrors} errors.`);
+
+    return { synced: totalSynced, errors: totalErrors };
+  } catch (err) {
+    log.error(`Sync failed for account ${accountId}:`, err.message);
+    throw err;
+  }
+}
+
+/**
+ * Sync a specific addressbook
+ * @param {number} accountId - Account ID
+ * @param {string} addressbookUrl - Addressbook URL
+ * @param {Object} client - tsdav client instance (optional, will create if not provided)
+ * @param {Object} serverAddressbook - Server addressbook object (optional)
+ * @returns {Promise<Object>} { synced, errors }
+ */
+async function syncAddressbook(accountId, addressbookUrl, client = null, serverAddressbook = null) {
+  try {
+    const account = db.get().prepare('SELECT * FROM carddav_accounts WHERE id = ?').get(accountId);
+    if (!account) {
+      throw new Error(`Account ${accountId} not found.`);
+    }
+
+    // Create client if not provided
+    if (!client) {
+      const { createDAVClient } = await import('tsdav');
+      client = await createDAVClient({
+        serverUrl: account.carddav_url,
+        credentials: { username: account.username, password: account.password },
+        authMethod: 'Basic',
+        defaultAccountType: 'carddav',
+      });
+    }
+
+    // Find addressbook if not provided
+    if (!serverAddressbook) {
+      const addressbooks = await client.fetchAddressBooks();
+      serverAddressbook = addressbooks.find(ab => ab.url === addressbookUrl);
+
+      if (!serverAddressbook) {
+        throw new Error(`Addressbook ${addressbookUrl} not found on server.`);
+      }
+    }
+
+    // Fetch vCards from addressbook
+    let vcardObjects;
+    try {
+      vcardObjects = await client.fetchVCards({ addressBook: serverAddressbook });
+    } catch (err) {
+      log.error(`Failed to fetch vCards from ${addressbookUrl}:`, err.message);
+      return { synced: 0, errors: 1 };
+    }
+
+    let synced = 0;
+    let errors = 0;
+
+    // Parse and merge each vCard
+    for (const vcardObj of vcardObjects) {
+      try {
+        const vCardText = vcardObj.data || '';
+        if (!vCardText.trim()) continue;
+
+        await parseAndMergeContact(vCardText, accountId, addressbookUrl);
+        synced++;
+      } catch (err) {
+        log.error(`Failed to parse/merge vCard:`, err.message);
+        errors++;
+      }
+    }
+
+    log.info(`Addressbook ${addressbookUrl}: ${synced} contacts synced, ${errors} errors.`);
+
+    return { synced, errors };
+  } catch (err) {
+    log.error(`Failed to sync addressbook ${addressbookUrl}:`, err.message);
+    throw err;
+  }
+}
+
+/**
+ * Parse vCard and merge with existing contact using Smart Merge Logic
+ * @param {string} vCardText - Raw vCard data
+ * @param {number} accountId - Account ID
+ * @param {string} addressbookUrl - Addressbook URL
+ * @returns {Promise<number>} Contact ID
+ */
+async function parseAndMergeContact(vCardText, accountId, addressbookUrl) {
+  try {
+    const vcard = parseVCard(vCardText);
+
+    if (!vcard.uid) {
+      throw new Error('vCard missing UID, skipping.');
+    }
+
+    if (!vcard.name) {
+      throw new Error('vCard missing name (FN/N), skipping.');
+    }
+
+    // Smart Merge Logic (see design doc)
+
+    // Step 1: Check for existing contact by cardav_uid
+    let contact = db.get().prepare(`
+      SELECT * FROM contacts
+      WHERE carddav_account_id = ? AND carddav_addressbook_url = ? AND carddav_uid = ?
+    `).get(accountId, addressbookUrl, vcard.uid);
+
+    if (contact) {
+      // Update existing contact (only fill NULL fields to preserve manual changes)
+      updateContact(contact.id, vcard, false);
+      updateContactMultiValues(contact.id, vcard);
+      return contact.id;
+    }
+
+    // Step 2: Check for existing contact by email or phone match
+    contact = findContactByEmailOrPhone(vcard.emails, vcard.phones);
+
+    if (contact) {
+      // Update existing contact and establish CardDAV link
+      updateContact(contact.id, vcard, true);
+
+      // Set CardDAV link
+      db.get().prepare(`
+        UPDATE contacts
+        SET carddav_account_id = ?, carddav_uid = ?, carddav_addressbook_url = ?
+        WHERE id = ?
+      `).run(accountId, vcard.uid, addressbookUrl, contact.id);
+
+      updateContactMultiValues(contact.id, vcard);
+      return contact.id;
+    }
+
+    // Step 3: No match - insert new contact
+    const result = db.get().prepare(`
+      INSERT INTO contacts (
+        name, category, organization, job_title, birthday, website,
+        photo, nickname, notes,
+        carddav_account_id, carddav_uid, carddav_addressbook_url
+      )
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      vcard.name,
+      vcard.categories || 'Sonstiges',
+      vcard.organization,
+      vcard.jobTitle,
+      vcard.birthday,
+      vcard.website,
+      vcard.photo,
+      vcard.nickname,
+      vcard.notes,
+      accountId,
+      vcard.uid,
+      addressbookUrl
+    );
+
+    const contactId = result.lastInsertRowid;
+
+    // Insert multi-value fields
+    insertContactMultiValues(contactId, vcard);
+
+    return contactId;
+  } catch (err) {
+    log.error('Failed to parse and merge contact:', err.message);
+    throw err;
+  }
+}
+
+/**
+ * Find existing contact by email or phone match
+ * @param {Array<Object>} emails - Array of email objects
+ * @param {Array<Object>} phones - Array of phone objects
+ * @returns {Object|null} Contact object or null
+ */
+function findContactByEmailOrPhone(emails, phones) {
+  // Try email match first
+  for (const email of emails) {
+    const contact = db.get().prepare(`
+      SELECT c.* FROM contacts c
+      LEFT JOIN contact_emails ce ON c.id = ce.contact_id
+      WHERE c.email = ? OR ce.value = ?
+      LIMIT 1
+    `).get(email.value, email.value);
+
+    if (contact) return contact;
+  }
+
+  // Try phone match
+  for (const phone of phones) {
+    const contact = db.get().prepare(`
+      SELECT c.* FROM contacts c
+      LEFT JOIN contact_phones cp ON c.id = cp.contact_id
+      WHERE c.phone = ? OR cp.value = ?
+      LIMIT 1
+    `).get(phone.value, phone.value);
+
+    if (contact) return contact;
+  }
+
+  return null;
+}
+
+/**
+ * Update existing contact with vCard data (only NULL fields)
+ * @param {number} contactId - Contact ID
+ * @param {Object} vcard - Parsed vCard object
+ * @param {boolean} fillAll - If true, update all fields; if false, only update NULL fields
+ */
+function updateContact(contactId, vcard, fillAll = false) {
+  const contact = db.get().prepare('SELECT * FROM contacts WHERE id = ?').get(contactId);
+  if (!contact) return;
+
+  const updates = [];
+  const values = [];
+
+  // Helper to conditionally update field
+  const maybeUpdate = (field, dbColumn, vcardValue) => {
+    if (vcardValue !== null && vcardValue !== undefined) {
+      if (fillAll || contact[dbColumn] === null) {
+        updates.push(`${dbColumn} = ?`);
+        values.push(vcardValue);
+      }
+    }
+  };
+
+  maybeUpdate('name', 'name', vcard.name);
+  maybeUpdate('organization', 'organization', vcard.organization);
+  maybeUpdate('jobTitle', 'job_title', vcard.jobTitle);
+  maybeUpdate('birthday', 'birthday', vcard.birthday);
+  maybeUpdate('website', 'website', vcard.website);
+  maybeUpdate('photo', 'photo', vcard.photo);
+  maybeUpdate('nickname', 'nickname', vcard.nickname);
+  maybeUpdate('notes', 'notes', vcard.notes);
+  maybeUpdate('categories', 'category', vcard.categories);
+
+  if (updates.length === 0) return;
+
+  values.push(contactId);
+
+  db.get().prepare(`
+    UPDATE contacts SET ${updates.join(', ')} WHERE id = ?
+  `).run(...values);
+}
+
+/**
+ * Update contact multi-value fields (phones, emails, addresses)
+ * Preserves primary entries, replaces non-primary entries
+ * @param {number} contactId - Contact ID
+ * @param {Object} vcard - Parsed vCard object
+ */
+function updateContactMultiValues(contactId, vcard) {
+  // Delete non-primary entries
+  db.get().prepare('DELETE FROM contact_phones WHERE contact_id = ? AND is_primary = 0').run(contactId);
+  db.get().prepare('DELETE FROM contact_emails WHERE contact_id = ? AND is_primary = 0').run(contactId);
+  db.get().prepare('DELETE FROM contact_addresses WHERE contact_id = ? AND is_primary = 0').run(contactId);
+
+  // Insert new entries from vCard
+  insertContactMultiValues(contactId, vcard);
+}
+
+/**
+ * Insert contact multi-value fields (phones, emails, addresses)
+ * @param {number} contactId - Contact ID
+ * @param {Object} vcard - Parsed vCard object
+ */
+function insertContactMultiValues(contactId, vcard) {
+  // Check if primary entries exist
+  const hasPrimaryPhone = db.get().prepare(
+    'SELECT COUNT(*) as count FROM contact_phones WHERE contact_id = ? AND is_primary = 1'
+  ).get(contactId).count > 0;
+
+  const hasPrimaryEmail = db.get().prepare(
+    'SELECT COUNT(*) as count FROM contact_emails WHERE contact_id = ? AND is_primary = 1'
+  ).get(contactId).count > 0;
+
+  const hasPrimaryAddress = db.get().prepare(
+    'SELECT COUNT(*) as count FROM contact_addresses WHERE contact_id = ? AND is_primary = 1'
+  ).get(contactId).count > 0;
+
+  // Insert phones
+  for (let i = 0; i < vcard.phones.length; i++) {
+    const phone = vcard.phones[i];
+    const isPrimary = (!hasPrimaryPhone && i === 0) ? 1 : 0;
+
+    db.get().prepare(`
+      INSERT INTO contact_phones (contact_id, label, value, is_primary)
+      VALUES (?, ?, ?, ?)
+    `).run(contactId, phone.label, phone.value, isPrimary);
+  }
+
+  // Insert emails
+  for (let i = 0; i < vcard.emails.length; i++) {
+    const email = vcard.emails[i];
+    const isPrimary = (!hasPrimaryEmail && i === 0) ? 1 : 0;
+
+    db.get().prepare(`
+      INSERT INTO contact_emails (contact_id, label, value, is_primary)
+      VALUES (?, ?, ?, ?)
+    `).run(contactId, email.label, email.value, isPrimary);
+  }
+
+  // Insert addresses
+  for (let i = 0; i < vcard.addresses.length; i++) {
+    const addr = vcard.addresses[i];
+    const isPrimary = (!hasPrimaryAddress && i === 0) ? 1 : 0;
+
+    db.get().prepare(`
+      INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(contactId, addr.label, addr.street, addr.city, addr.state, addr.postalCode, addr.country, isPrimary);
+  }
+}
+
+// --------------------------------------------------------
+// Exports
+// --------------------------------------------------------
+
+export {
+  // Account Management
+  addAccount,
+  getAllAccounts,
+  deleteAccount,
+  testConnection,
+
+  // Addressbook Discovery
+  discoverAddressbooks,
+  toggleAddressbook,
+
+  // Contact Sync
+  syncAccount,
+  syncAddressbook,
+  parseAndMergeContact,
+
+  // Helpers (exported for testing)
+  parseVCard,
+};
