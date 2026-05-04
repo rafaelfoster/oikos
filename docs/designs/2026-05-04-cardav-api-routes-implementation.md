@@ -413,6 +413,7 @@ const contactId = transaction();
 **Validation:**
 - `id`: parseInt, must be > 0
 - Alle Felder optional (nur gesendete werden geupdatet)
+- **Multi-Value-Felder (phones/emails/addresses):** REPLACEMENT-Semantik — wenn gesendet, werden ALLE existierenden Werte gelöscht und durch die gesendeten ersetzt. Client muss vollständiges Array schicken, nicht nur Änderungen.
 
 **Logic (Transaction):**
 ```javascript
