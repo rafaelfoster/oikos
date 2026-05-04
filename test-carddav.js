@@ -2445,4 +2445,201 @@ describe('Contacts API - Multi-Value Fields', () => {
       assert.strictEqual(contact.addresses.length, 0);
     });
   });
+
+  describe('PUT /contacts/:id', () => {
+    it('should update contact with multi-value fields (replacement semantics)', async () => {
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      // First create a contact with multi-value fields
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Original Contact',
+          category: 'Arzt',
+          phones: [{ label: 'Mobil', value: '+49171111111', isPrimary: true }],
+          emails: [{ label: 'Privat', value: 'original@example.com', isPrimary: true }],
+          addresses: [{ label: 'Privat', street: 'Alte Straße 1', city: 'Berlin', postalCode: '10115', country: 'Deutschland', isPrimary: true }]
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(createReq, createRes);
+      const contactId = createRes.data.data.id;
+
+      // Now update it with new multi-value fields (replacement)
+      const updateReq = {
+        params: { id: String(contactId) },
+        query: {},
+        body: {
+          name: 'Updated Contact',
+          phones: [
+            { label: 'Arbeit', value: '+49302222222', isPrimary: true },
+            { label: 'Mobil', value: '+49173333333', isPrimary: false }
+          ],
+          emails: [
+            { label: 'Arbeit', value: 'new.work@example.com', isPrimary: true }
+          ],
+          addresses: [
+            { label: 'Arbeit', street: 'Neue Straße 10', city: 'München', postalCode: '80331', country: 'Deutschland', isPrimary: true }
+          ]
+        }
+      };
+      const updateRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const putHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/:id' && layer.route.methods.put
+      )?.route?.stack[0]?.handle;
+
+      await putHandler(updateReq, updateRes);
+
+      assert.strictEqual(updateRes.statusCode, 200);
+      const updated = updateRes.data.data;
+
+      // Check name was updated
+      assert.strictEqual(updated.name, 'Updated Contact');
+
+      // Check phones were replaced (old deleted, new inserted)
+      assert.strictEqual(updated.phones.length, 2);
+      assert.strictEqual(updated.phones[0].label, 'Arbeit');
+      assert.strictEqual(updated.phones[0].value, '+49302222222');
+      assert.strictEqual(updated.phones[0].isPrimary, true);
+      assert.strictEqual(updated.phones[1].label, 'Mobil');
+      assert.strictEqual(updated.phones[1].value, '+49173333333');
+      assert.strictEqual(updated.phones[1].isPrimary, false);
+
+      // Check emails were replaced
+      assert.strictEqual(updated.emails.length, 1);
+      assert.strictEqual(updated.emails[0].label, 'Arbeit');
+      assert.strictEqual(updated.emails[0].value, 'new.work@example.com');
+      assert.strictEqual(updated.emails[0].isPrimary, true);
+
+      // Check addresses were replaced
+      assert.strictEqual(updated.addresses.length, 1);
+      assert.strictEqual(updated.addresses[0].label, 'Arbeit');
+      assert.strictEqual(updated.addresses[0].street, 'Neue Straße 10');
+      assert.strictEqual(updated.addresses[0].city, 'München');
+      assert.strictEqual(updated.addresses[0].isPrimary, true);
+    });
+
+    it('should return 400 for invalid multi-value data', async () => {
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      // Create a contact first
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Test Contact',
+          category: 'Sonstiges'
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(createReq, createRes);
+      const contactId = createRes.data.data.id;
+
+      // Try to update with invalid phone data
+      const updateReq = {
+        params: { id: String(contactId) },
+        query: {},
+        body: {
+          phones: [{ label: 'Mobil', value: '', isPrimary: 'invalid' }] // empty value + invalid isPrimary
+        }
+      };
+      const updateRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const putHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/:id' && layer.route.methods.put
+      )?.route?.stack[0]?.handle;
+
+      await putHandler(updateReq, updateRes);
+
+      assert.strictEqual(updateRes.statusCode, 400);
+      assert.ok(updateRes.data.error, 'Should have error message');
+    });
+
+    it('should update contact without multi-value fields (backwards compatible)', async () => {
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      // Create contact with multi-value fields
+      const createReq = {
+        params: {},
+        query: {},
+        body: {
+          name: 'Test Contact',
+          category: 'Sonstiges',
+          phones: [{ label: 'Mobil', value: '+49171111111', isPrimary: true }]
+        }
+      };
+      const createRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const postHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/' && layer.route.methods.post
+      )?.route?.stack[0]?.handle;
+
+      await postHandler(createReq, createRes);
+      const contactId = createRes.data.data.id;
+
+      // Update without touching multi-value fields (only scalar fields)
+      const updateReq = {
+        params: { id: String(contactId) },
+        query: {},
+        body: {
+          name: 'Updated Name Only',
+          category: 'Arzt'
+        }
+      };
+      const updateRes = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const putHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/:id' && layer.route.methods.put
+      )?.route?.stack[0]?.handle;
+
+      await putHandler(updateReq, updateRes);
+
+      assert.strictEqual(updateRes.statusCode, 200);
+      const updated = updateRes.data.data;
+
+      // Scalar fields should be updated
+      assert.strictEqual(updated.name, 'Updated Name Only');
+      assert.strictEqual(updated.category, 'Arzt');
+
+      // Multi-value fields should remain unchanged
+      assert.strictEqual(updated.phones.length, 1);
+      assert.strictEqual(updated.phones[0].value, '+49171111111');
+    });
+  });
 });

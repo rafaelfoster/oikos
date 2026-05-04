@@ -299,7 +299,7 @@ router.post('/', (req, res) => {
 /**
  * PUT /api/v1/contacts/:id
  * Kontakt bearbeiten.
- * Body: alle Felder optional
+ * Body: alle Felder optional, phones/emails/addresses mit Replacement-Semantik
  * Response: { data: Contact }
  */
 router.put('/:id', (req, res) => {
@@ -318,27 +318,111 @@ router.put('/:id', (req, res) => {
     const errors = collectErrors(checks);
     if (errors.length) return res.status(400).json({ error: errors.join(' '), code: 400 });
 
-    db.get().prepare(`
-      UPDATE contacts
-      SET name     = COALESCE(?, name),
-          category = COALESCE(?, category),
-          phone    = ?,
-          email    = ?,
-          address  = ?,
-          notes    = ?
-      WHERE id = ?
-    `).run(
-      req.body.name?.trim() ?? null,
-      req.body.category ?? null,
-      req.body.phone   !== undefined ? (req.body.phone?.trim()   || null) : contact.phone,
-      req.body.email   !== undefined ? (req.body.email?.trim()   || null) : contact.email,
-      req.body.address !== undefined ? (req.body.address?.trim() || null) : contact.address,
-      req.body.notes   !== undefined ? (req.body.notes?.trim()   || null) : contact.notes,
-      id
-    );
+    // Validate multi-value fields if provided
+    if (req.body.phones !== undefined) {
+      const phonesValidation = validatePhones(req.body.phones);
+      if (!phonesValidation.valid) {
+        return res.status(400).json({ error: phonesValidation.error, code: 400 });
+      }
+    }
 
+    if (req.body.emails !== undefined) {
+      const emailsValidation = validateEmails(req.body.emails);
+      if (!emailsValidation.valid) {
+        return res.status(400).json({ error: emailsValidation.error, code: 400 });
+      }
+    }
+
+    if (req.body.addresses !== undefined) {
+      const addressesValidation = validateAddresses(req.body.addresses);
+      if (!addressesValidation.valid) {
+        return res.status(400).json({ error: addressesValidation.error, code: 400 });
+      }
+    }
+
+    // Update contact and multi-value fields in a transaction
+    const transaction = db.get().transaction(() => {
+      // Update scalar fields
+      db.get().prepare(`
+        UPDATE contacts
+        SET name     = COALESCE(?, name),
+            category = COALESCE(?, category),
+            phone    = ?,
+            email    = ?,
+            address  = ?,
+            notes    = ?
+        WHERE id = ?
+      `).run(
+        req.body.name?.trim() ?? null,
+        req.body.category ?? null,
+        req.body.phone   !== undefined ? (req.body.phone?.trim()   || null) : contact.phone,
+        req.body.email   !== undefined ? (req.body.email?.trim()   || null) : contact.email,
+        req.body.address !== undefined ? (req.body.address?.trim() || null) : contact.address,
+        req.body.notes   !== undefined ? (req.body.notes?.trim()   || null) : contact.notes,
+        id
+      );
+
+      // Replace phones (delete all, insert new)
+      if (req.body.phones !== undefined && Array.isArray(req.body.phones)) {
+        db.get().prepare('DELETE FROM contact_phones WHERE contact_id = ?').run(id);
+
+        const insertPhone = db.get().prepare(`
+          INSERT INTO contact_phones (contact_id, label, value, is_primary)
+          VALUES (?, ?, ?, ?)
+        `);
+        for (const phone of req.body.phones) {
+          insertPhone.run(id, phone.label, phone.value, phone.isPrimary ? 1 : 0);
+        }
+      }
+
+      // Replace emails (delete all, insert new)
+      if (req.body.emails !== undefined && Array.isArray(req.body.emails)) {
+        db.get().prepare('DELETE FROM contact_emails WHERE contact_id = ?').run(id);
+
+        const insertEmail = db.get().prepare(`
+          INSERT INTO contact_emails (contact_id, label, value, is_primary)
+          VALUES (?, ?, ?, ?)
+        `);
+        for (const email of req.body.emails) {
+          insertEmail.run(id, email.label, email.value, email.isPrimary ? 1 : 0);
+        }
+      }
+
+      // Replace addresses (delete all, insert new)
+      if (req.body.addresses !== undefined && Array.isArray(req.body.addresses)) {
+        db.get().prepare('DELETE FROM contact_addresses WHERE contact_id = ?').run(id);
+
+        const insertAddress = db.get().prepare(`
+          INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        for (const address of req.body.addresses) {
+          insertAddress.run(
+            id,
+            address.label,
+            address.street || null,
+            address.city || null,
+            address.state || null,
+            address.postalCode || null,
+            address.country || null,
+            address.isPrimary ? 1 : 0
+          );
+        }
+      }
+    });
+
+    transaction();
+
+    // Query the updated contact with multi-value fields
     const updated = db.get().prepare('SELECT * FROM contacts WHERE id = ?').get(id);
-    res.json({ data: updated });
+    const multiValueFields = loadMultiValueFields(id);
+
+    res.json({
+      data: {
+        ...updated,
+        ...multiValueFields
+      }
+    });
   } catch (err) {
     log.error('', err);
     res.status(500).json({ error: 'Interner Fehler', code: 500 });

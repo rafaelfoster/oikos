@@ -1,8 +1,8 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 12 von 15 (Session 3)
+**Stand:** 2026-05-04, nach Task 13 von 15 (Session 3)
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
-**Nächster Task:** Task 13 - PUT /contacts/:id mit Multi-Value Fields
+**Nächster Task:** Task 14 - OpenAPI Documentation
 
 ## Abgeschlossene Tasks
 
@@ -152,12 +152,22 @@
 - Refactoring: `loadMultiValueFields(contactId)` Helper extrahiert (DRY)
 - TDD-Workflow eingehalten: RED → GREEN → REFACTOR → Commit
 
-## Offene Tasks (13-15)
+### ✅ Task 13: PUT /contacts/:id - Update With Multi-Value Fields
+**Commit:** (wird erstellt)
 
-### 🔄 Task 13: PUT /contacts/:id
-- Update mit Multi-Value Fields
-- Replacement-Semantik für Arrays (DELETE + INSERT)
-- Atomare Transaktionen
+- Implementiert: PUT /contacts/:id erweitert um phones, emails, addresses Arrays
+- Validierung: `validatePhones()`, `validateEmails()`, `validateAddresses()` vor Update
+- Replacement-Semantik: DELETE alle existierenden Multi-Values, dann INSERT neue
+- Transaktionen: `db.transaction()` für atomare Contact + Multi-Values Updates
+- Backward Compatible: Multi-Value Fields nur ersetzt wenn im Body vorhanden
+- Response: Contact mit allen Multi-Value Fields via `loadMultiValueFields()`
+- Tests: 3 neue Tests
+  - Update mit Multi-Value Fields (Replacement-Semantik verifiziert)
+  - Validierung: Fehler bei invaliden Phone-Daten (400)
+  - Backward Compatibility: Update ohne Multi-Values lässt sie unverändert
+- TDD-Workflow eingehalten: RED → Verify RED → GREEN → Verify GREEN → Commit
+
+## Offene Tasks (14-15)
 
 ### 🔄 Task 14: OpenAPI Documentation
 - Alle neuen Routes in `server/openapi.js` dokumentieren
@@ -249,12 +259,13 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 
 ## Test-Status
 
-- **Gesamt:** 106 Tests, alle bestehen
-- **Suites:** 19 Suites
+- **Gesamt:** 109 Tests, alle bestehen
+- **Suites:** 20 Suites
 - **CardDAV API Routes Suite:** 14 Tests
-- **Contacts API - Multi-Value Fields Suite:** 5 Tests
+- **Contacts API - Multi-Value Fields Suite:** 8 Tests
   - GET /contacts/:id: 2 Tests
   - POST /contacts: 3 Tests
+  - PUT /contacts/:id: 3 Tests
   - Account Management (6 Tests):
     - GET /accounts (empty)
     - GET /accounts (populated with shape)
@@ -296,7 +307,7 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 #10. [completed] Task 10: POST /accounts/:id/sync - Sync Account
 #11. [completed] Task 11: GET /contacts/:id - With Multi-Values
 #12. [completed] Task 12: POST /contacts - Create With Multi-Values
-#13. [pending] Task 13: PUT /contacts/:id - Update With Multi-Values
+#13. [completed] Task 13: PUT /contacts/:id - Update With Multi-Values
 #14. [pending] Task 14: Document All Routes in OpenAPI
 #15. [pending] Task 15: Mount CardDAV Router
 ```
