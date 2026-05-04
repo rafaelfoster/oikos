@@ -113,7 +113,7 @@
 - bool Validator verwendet
 
 ### ✅ Task 10: POST /accounts/:id/sync - Sync Account
-**Commit:** (pending)
+**Commit:** 674fe79
 
 - Implementiert: POST /accounts/:id/sync Route in server/routes/cardav.js
 - Validierung: ID muss positive Ganzzahl sein
@@ -203,6 +203,7 @@ dd5ac88 feat(cardav): implement POST /accounts/:id/test endpoint
 c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 362f711 feat(validate): add bool validator
 9ec7fda feat(cardav): implement PUT /addressbooks/:id endpoint
+674fe79 feat(cardav): implement POST /accounts/:id/sync endpoint
 ```
 
 ## Test-Status
