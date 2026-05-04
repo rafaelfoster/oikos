@@ -1075,6 +1075,107 @@ const MIGRATIONS = [
       db.exec(`CREATE UNIQUE INDEX idx_calendar_sub_extid ON calendar_events (subscription_id, external_calendar_id)`);
     },
   },
+  {
+    version: 30,
+    description: 'CardDAV multi-account contacts sync',
+    up: `
+      -- ========================================
+      -- CardDAV Accounts
+      -- ========================================
+      CREATE TABLE cardav_accounts (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL,
+        cardav_url TEXT NOT NULL,
+        username   TEXT NOT NULL,
+        password   TEXT NOT NULL,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        last_sync  TEXT,
+        UNIQUE(cardav_url, username)
+      );
+
+      -- ========================================
+      -- CardDAV Addressbook Selection
+      -- ========================================
+      CREATE TABLE cardav_addressbook_selection (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        account_id      INTEGER NOT NULL,
+        addressbook_url TEXT NOT NULL,
+        addressbook_name TEXT NOT NULL,
+        enabled         INTEGER NOT NULL DEFAULT 1,
+        created_at      TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        UNIQUE(account_id, addressbook_url),
+        FOREIGN KEY(account_id) REFERENCES cardav_accounts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_cardav_addressbook_account
+        ON cardav_addressbook_selection(account_id, enabled);
+
+      -- ========================================
+      -- Extend Contacts Table for CardDAV
+      -- ========================================
+      ALTER TABLE contacts ADD COLUMN organization TEXT;
+      ALTER TABLE contacts ADD COLUMN job_title TEXT;
+      ALTER TABLE contacts ADD COLUMN birthday TEXT;
+      ALTER TABLE contacts ADD COLUMN website TEXT;
+      ALTER TABLE contacts ADD COLUMN photo TEXT;
+      ALTER TABLE contacts ADD COLUMN nickname TEXT;
+      ALTER TABLE contacts ADD COLUMN cardav_account_id INTEGER
+        REFERENCES cardav_accounts(id) ON DELETE SET NULL;
+      ALTER TABLE contacts ADD COLUMN cardav_uid TEXT;
+      ALTER TABLE contacts ADD COLUMN cardav_addressbook_url TEXT;
+
+      CREATE INDEX idx_contacts_cardav_uid ON contacts(cardav_uid);
+      CREATE INDEX idx_contacts_email ON contacts(email);
+
+      -- ========================================
+      -- Contact Phones (Multiple per Contact)
+      -- ========================================
+      CREATE TABLE contact_phones (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        contact_id INTEGER NOT NULL,
+        label      TEXT,
+        value      TEXT NOT NULL,
+        is_primary INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_contact_phones_contact ON contact_phones(contact_id);
+      CREATE INDEX idx_contact_phones_value ON contact_phones(value);
+
+      -- ========================================
+      -- Contact Emails (Multiple per Contact)
+      -- ========================================
+      CREATE TABLE contact_emails (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        contact_id INTEGER NOT NULL,
+        label      TEXT,
+        value      TEXT NOT NULL,
+        is_primary INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_contact_emails_contact ON contact_emails(contact_id);
+      CREATE INDEX idx_contact_emails_value ON contact_emails(value);
+
+      -- ========================================
+      -- Contact Addresses (Multiple per Contact)
+      -- ========================================
+      CREATE TABLE contact_addresses (
+        id          INTEGER PRIMARY KEY AUTOINCREMENT,
+        contact_id  INTEGER NOT NULL,
+        label       TEXT,
+        street      TEXT,
+        city        TEXT,
+        state       TEXT,
+        postal_code TEXT,
+        country     TEXT,
+        is_primary  INTEGER NOT NULL DEFAULT 0,
+        FOREIGN KEY(contact_id) REFERENCES contacts(id) ON DELETE CASCADE
+      );
+
+      CREATE INDEX idx_contact_addresses_contact ON contact_addresses(contact_id);
+    `,
+  },
 ];
 
 /**

@@ -28,7 +28,8 @@
     "test:ics-sub": "node --experimental-sqlite test-ics-subscription.js",
     "test:backup-scheduler": "node --experimental-sqlite test-backup-scheduler.js",
     "test:caldav": "node --experimental-sqlite test-caldav-sync.js",
-    "test": "node --experimental-sqlite test-db.js && node --experimental-sqlite test-dashboard.js && node --experimental-sqlite test-tasks.js && node --experimental-sqlite test-shopping.js && node --experimental-sqlite test-meals.js && node --experimental-sqlite test-calendar.js && node --experimental-sqlite test-notes-contacts-budget.js && npm run test:ux-utils && npm run test:modal-utils && npm run test:reminders && npm run test:api && npm run test:ics-parser && npm run test:ics-sub && npm run test:setup && npm run test:kitchen-tabs && npm run test:backup-scheduler && npm run test:caldav"
+    "test:cardav": "node --experimental-sqlite test-cardav.js",
+    "test": "node --experimental-sqlite test-db.js && node --experimental-sqlite test-dashboard.js && node --experimental-sqlite test-tasks.js && node --experimental-sqlite test-shopping.js && node --experimental-sqlite test-meals.js && node --experimental-sqlite test-calendar.js && node --experimental-sqlite test-notes-contacts-budget.js && npm run test:ux-utils && npm run test:modal-utils && npm run test:reminders && npm run test:api && npm run test:ics-parser && npm run test:ics-sub && npm run test:setup && npm run test:kitchen-tabs && npm run test:backup-scheduler && npm run test:caldav && npm run test:cardav"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
