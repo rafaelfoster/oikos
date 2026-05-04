@@ -257,6 +257,71 @@ router.get('/meta', (_req, res) => {
 });
 
 /**
+ * GET /api/v1/contacts/:id
+ * Einzelnen Kontakt abrufen mit Multi-Value Fields (phones, emails, addresses).
+ * Response: { data: Contact }
+ */
+router.get('/:id', (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const contact = db.get().prepare('SELECT * FROM contacts WHERE id = ?').get(id);
+    if (!contact) return res.status(404).json({ error: 'Kontakt nicht gefunden', code: 404 });
+
+    // Query multi-value fields
+    const phones = db.get().prepare(`
+      SELECT id, label, value, is_primary FROM contact_phones
+      WHERE contact_id = ?
+      ORDER BY is_primary DESC, id ASC
+    `).all(id).map(p => ({
+      id: p.id,
+      label: p.label,
+      value: p.value,
+      isPrimary: p.is_primary === 1
+    }));
+
+    const emails = db.get().prepare(`
+      SELECT id, label, value, is_primary FROM contact_emails
+      WHERE contact_id = ?
+      ORDER BY is_primary DESC, id ASC
+    `).all(id).map(e => ({
+      id: e.id,
+      label: e.label,
+      value: e.value,
+      isPrimary: e.is_primary === 1
+    }));
+
+    const addresses = db.get().prepare(`
+      SELECT id, label, street, city, state, postal_code, country, is_primary
+      FROM contact_addresses
+      WHERE contact_id = ?
+      ORDER BY is_primary DESC, id ASC
+    `).all(id).map(a => ({
+      id: a.id,
+      label: a.label,
+      street: a.street,
+      city: a.city,
+      state: a.state,
+      postalCode: a.postal_code,
+      country: a.country,
+      isPrimary: a.is_primary === 1
+    }));
+
+    // Combine contact with multi-value fields
+    res.json({
+      data: {
+        ...contact,
+        phones,
+        emails,
+        addresses
+      }
+    });
+  } catch (err) {
+    log.error('', err);
+    res.status(500).json({ error: 'Interner Fehler', code: 500 });
+  }
+});
+
+/**
  * GET /api/v1/contacts/:id/vcard
  * Kontakt als vCard 3.0 (.vcf) exportieren.
  * Response: text/vcard Dateidownload

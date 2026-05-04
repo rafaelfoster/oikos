@@ -2085,3 +2085,216 @@ describe('CardDAV API Routes', () => {
     });
   });
 });
+
+// ========================================
+// Contacts API - Multi-Value Fields
+// ========================================
+
+describe('Contacts API - Multi-Value Fields', () => {
+  let contactsApiDb;
+
+  before(async () => {
+    // Create in-memory test database
+    contactsApiDb = new Database(':memory:');
+    contactsApiDb.pragma('foreign_keys = ON');
+
+    // Create minimal schema
+    contactsApiDb.exec(`
+      CREATE TABLE users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL
+      );
+
+      CREATE TABLE contacts (
+        id         INTEGER PRIMARY KEY AUTOINCREMENT,
+        name       TEXT NOT NULL,
+        category   TEXT NOT NULL DEFAULT 'Sonstiges',
+        phone      TEXT,
+        email      TEXT,
+        address    TEXT,
+        notes      TEXT,
+        family_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
+        updated_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now'))
+      );
+
+      INSERT INTO users (username) VALUES ('testuser');
+    `);
+
+    // Apply Migration 30 to create Multi-Value tables
+    const migration30 = MIGRATIONS.find(m => m.version === 30);
+    if (!migration30) {
+      throw new Error('Migration 30 not found');
+    }
+    contactsApiDb.exec(migration30.up);
+
+    // Override db.get() to use our test database
+    const dbModule = await import('./server/db.js');
+    dbModule._setTestDatabase(contactsApiDb);
+  });
+
+  after(async () => {
+    // Restore original database
+    const dbModule = await import('./server/db.js');
+    dbModule._resetTestDatabase();
+  });
+
+  describe('GET /contacts/:id', () => {
+    it('should return contact with multi-value fields (phones, emails, addresses)', async () => {
+      // Insert test contact
+      const result = contactsApiDb.prepare(`
+        INSERT INTO contacts (name, category, phone, email, notes)
+        VALUES (?, ?, ?, ?, ?)
+      `).run('Max Mustermann', 'Arzt', '+49123456789', 'max@example.com', 'Test notes');
+
+      const contactId = result.lastInsertRowid;
+
+      // Insert phones
+      contactsApiDb.prepare(`
+        INSERT INTO contact_phones (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contactId, 'Mobil', '+49171234567', 1);
+
+      contactsApiDb.prepare(`
+        INSERT INTO contact_phones (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contactId, 'Arbeit', '+49301234567', 0);
+
+      // Insert emails
+      contactsApiDb.prepare(`
+        INSERT INTO contact_emails (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contactId, 'Privat', 'max.privat@example.com', 1);
+
+      contactsApiDb.prepare(`
+        INSERT INTO contact_emails (contact_id, label, value, is_primary)
+        VALUES (?, ?, ?, ?)
+      `).run(contactId, 'Arbeit', 'max.work@example.com', 0);
+
+      // Insert addresses
+      contactsApiDb.prepare(`
+        INSERT INTO contact_addresses (contact_id, label, street, city, state, postal_code, country, is_primary)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(contactId, 'Privat', 'Musterstraße 1', 'Berlin', 'BE', '10115', 'Deutschland', 1);
+
+      contactsApiDb.prepare(`
+        INSERT INTO contact_addresses (contact_id, label, street, city, postal_code, country, is_primary)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `).run(contactId, 'Arbeit', 'Arbeitsweg 10', 'München', '80331', 'Deutschland', 0);
+
+      // Call GET /contacts/:id
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      const req = {
+        params: { id: String(contactId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getByIdHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/:id' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      assert.ok(getByIdHandler, 'GET /contacts/:id handler should exist');
+      await getByIdHandler(req, res);
+
+      // Verify response
+      assert.strictEqual(res.statusCode, 200);
+      assert.ok(res.data.data, 'Response should have data field');
+
+      const contact = res.data.data;
+      assert.strictEqual(contact.id, contactId);
+      assert.strictEqual(contact.name, 'Max Mustermann');
+      assert.strictEqual(contact.category, 'Arzt');
+
+      // Verify phones array
+      assert.ok(Array.isArray(contact.phones), 'phones should be an array');
+      assert.strictEqual(contact.phones.length, 2);
+
+      const mobilePhone = contact.phones.find(p => p.label === 'Mobil');
+      assert.ok(mobilePhone, 'Should have mobile phone');
+      assert.strictEqual(mobilePhone.value, '+49171234567');
+      assert.strictEqual(mobilePhone.isPrimary, true);
+
+      const workPhone = contact.phones.find(p => p.label === 'Arbeit');
+      assert.ok(workPhone, 'Should have work phone');
+      assert.strictEqual(workPhone.value, '+49301234567');
+      assert.strictEqual(workPhone.isPrimary, false);
+
+      // Verify emails array
+      assert.ok(Array.isArray(contact.emails), 'emails should be an array');
+      assert.strictEqual(contact.emails.length, 2);
+
+      const privateEmail = contact.emails.find(e => e.label === 'Privat');
+      assert.ok(privateEmail, 'Should have private email');
+      assert.strictEqual(privateEmail.value, 'max.privat@example.com');
+      assert.strictEqual(privateEmail.isPrimary, true);
+
+      // Verify addresses array
+      assert.ok(Array.isArray(contact.addresses), 'addresses should be an array');
+      assert.strictEqual(contact.addresses.length, 2);
+
+      const homeAddress = contact.addresses.find(a => a.label === 'Privat');
+      assert.ok(homeAddress, 'Should have home address');
+      assert.strictEqual(homeAddress.street, 'Musterstraße 1');
+      assert.strictEqual(homeAddress.city, 'Berlin');
+      assert.strictEqual(homeAddress.state, 'BE');
+      assert.strictEqual(homeAddress.postalCode, '10115');
+      assert.strictEqual(homeAddress.country, 'Deutschland');
+      assert.strictEqual(homeAddress.isPrimary, true);
+
+      const workAddress = contact.addresses.find(a => a.label === 'Arbeit');
+      assert.ok(workAddress, 'Should have work address');
+      assert.strictEqual(workAddress.street, 'Arbeitsweg 10');
+      assert.strictEqual(workAddress.city, 'München');
+      assert.strictEqual(workAddress.postalCode, '80331');
+      assert.strictEqual(workAddress.isPrimary, false);
+    });
+
+    it('should return empty arrays when contact has no multi-value fields', async () => {
+      // Insert contact without multi-value fields
+      const result = contactsApiDb.prepare(`
+        INSERT INTO contacts (name, category)
+        VALUES (?, ?)
+      `).run('Anna Schmidt', 'Sonstiges');
+
+      const contactId = result.lastInsertRowid;
+
+      // Call GET /contacts/:id
+      const contactsRouter = await import('./server/routes/contacts.js');
+
+      const req = {
+        params: { id: String(contactId) },
+        query: {},
+        body: {}
+      };
+      const res = {
+        statusCode: 200,
+        status(code) { this.statusCode = code; return this; },
+        json(data) { this.data = data; return this; },
+      };
+
+      const getByIdHandler = contactsRouter.default.stack.find(
+        layer => layer.route?.path === '/:id' && layer.route.methods.get
+      )?.route?.stack[0]?.handle;
+
+      await getByIdHandler(req, res);
+
+      // Verify response has empty arrays
+      assert.strictEqual(res.statusCode, 200);
+      const contact = res.data.data;
+      assert.strictEqual(contact.name, 'Anna Schmidt');
+      assert.ok(Array.isArray(contact.phones), 'phones should be an array');
+      assert.strictEqual(contact.phones.length, 0, 'phones should be empty');
+      assert.ok(Array.isArray(contact.emails), 'emails should be an array');
+      assert.strictEqual(contact.emails.length, 0, 'emails should be empty');
+      assert.ok(Array.isArray(contact.addresses), 'addresses should be an array');
+      assert.strictEqual(contact.addresses.length, 0, 'addresses should be empty');
+    });
+  });
+});

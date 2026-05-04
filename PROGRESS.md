@@ -1,8 +1,8 @@
 # CardDAV API Routes Implementation - Fortschritt
 
-**Stand:** 2026-05-04, nach Task 10 von 15 (Session 2 pausiert bei ~77k tokens)
+**Stand:** 2026-05-04, nach Task 11 von 15 (Session 3)
 **Plan:** `docs/superpowers/plans/2026-05-04-cardav-api-routes.md`
-**Nächster Task:** Task 11 - GET /contacts/:id mit Multi-Value Fields
+**Nächster Task:** Task 12 - POST /contacts mit Multi-Value Fields
 
 ## Abgeschlossene Tasks
 
@@ -124,13 +124,20 @@
 - Tests: 2 Tests (success case, 404 für non-existent account)
 - Mock: `_mockSyncAccount()` für Tests hinzugefügt (Pattern wie `_mockTestConnection`)
 
-## Offene Tasks (11-15)
+### ✅ Task 11: GET /contacts/:id - With Multi-Value Fields
+**Commit:** [wird gesetzt nach commit]
 
-### 🔄 Task 11: GET /contacts/:id
-- Erweitern um Multi-Value Fields (phones, emails, addresses)
-- Bestehende Route in `server/routes/contacts.js` erweitern
-- Zusätzliche Queries für `contact_phones`, `contact_emails`, `contact_addresses`
+- Implementiert: GET /contacts/:id Route in `server/routes/contacts.js`
+- Queries: Separate Abfragen für `contact_phones`, `contact_emails`, `contact_addresses`
+- Mapping: is_primary (Integer DB) → isPrimary (Boolean Response), snake_case → camelCase
+- Sortierung: ORDER BY is_primary DESC, id ASC (Primary-Einträge zuerst)
 - Response-Format: `{ ...contact, phones: [], emails: [], addresses: [] }`
+- Tests: 2 neue Tests
+  - Contact mit allen Multi-Value Fields (phones, emails, addresses)
+  - Contact ohne Multi-Value Fields (leere Arrays)
+- TDD-Workflow eingehalten: RED → GREEN → Commit
+
+## Offene Tasks (12-15)
 
 ### 🔄 Task 12: POST /contacts
 - Erstellen mit Multi-Value Fields
@@ -232,9 +239,10 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 
 ## Test-Status
 
-- **Gesamt:** 101 Tests, alle bestehen
-- **Suites:** 16 Suites
+- **Gesamt:** 103 Tests, alle bestehen
+- **Suites:** 18 Suites
 - **CardDAV API Routes Suite:** 14 Tests
+- **Contacts API - Multi-Value Fields Suite:** 2 Tests
   - Account Management (6 Tests):
     - GET /accounts (empty)
     - GET /accounts (populated with shape)
@@ -274,7 +282,7 @@ c078a48 feat(cardav): implement POST /accounts/:id/addressbooks/refresh endpoint
 #8. [completed] Task 8: Add bool validator to validate.js
 #9. [completed] Task 9: PUT /addressbooks/:id - Toggle Addressbook
 #10. [completed] Task 10: POST /accounts/:id/sync - Sync Account
-#11. [pending] Task 11: GET /contacts/:id - With Multi-Values
+#11. [completed] Task 11: GET /contacts/:id - With Multi-Values
 #12. [pending] Task 12: POST /contacts - Create With Multi-Values
 #13. [pending] Task 13: PUT /contacts/:id - Update With Multi-Values
 #14. [pending] Task 14: Document All Routes in OpenAPI
