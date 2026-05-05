@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.2] - 2026-05-05
+
+### Changed
+- **Dependencies**: updated express-rate-limit from 8.4.1 to 8.5.0 (async store initialization support) and tsdav from 2.1.8 to 2.2.0 (native fetch, enhanced OAuth token handling, improved CalDAV/CardDAV sync reliability, security improvements).
+
 ## [0.47.1] - 2026-05-04
 
 ### Fixed
