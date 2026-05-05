@@ -42,33 +42,33 @@
     }
 
     [data-theme="dark"] {
-      --bg: #111015;
-      --bg-alt: #1A1920;
-      --surface: #222130;
-      --border: #33323E;
-      --text-1: #F0EFF5;
-      --text-2: #A09FB0;
-      --text-3: #706F80;
-      --accent: #A78BFA;
-      --accent-hover: #8B5CF6;
-      --accent-soft: #2D2250;
-      --accent-glow: rgba(167, 139, 250, 0.15);
-      --code-bg: #0D0C12;
-      --code-text: #C8C7D3;
-      --shadow-card: 0 1px 3px rgba(0,0,0,0.2);
-      --shadow-lg: 0 8px 32px rgba(0,0,0,0.35);
-      --shadow-hero: 0 20px 60px rgba(0,0,0,0.4);
+      --bg: #1A1A18;
+      --bg-alt: #141413;
+      --surface: #222220;
+      --border: #2A2A28;
+      --text-1: #F5F4F1;
+      --text-2: #AEADB0;
+      --text-3: #8E8D89;
+      --accent: #818CF8;
+      --accent-hover: #6366F1;
+      --accent-soft: #2E2D5B;
+      --accent-glow: rgba(129, 140, 248, 0.15);
+      --code-bg: #141413;
+      --code-text: #E2E1DC;
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.25);
+      --shadow-lg: 0 8px 24px rgba(0,0,0,0.45);
+      --shadow-hero: 0 20px 60px rgba(0,0,0,0.55);
     }
 
     @media (prefers-color-scheme: dark) {
       :root:not([data-theme="light"]) {
-        --bg: #111015; --bg-alt: #1A1920; --surface: #222130; --border: #33323E;
-        --text-1: #F0EFF5; --text-2: #A09FB0; --text-3: #706F80;
-        --accent: #A78BFA; --accent-hover: #8B5CF6; --accent-soft: #2D2250;
-        --accent-glow: rgba(167, 139, 250, 0.15);
-        --code-bg: #0D0C12; --code-text: #C8C7D3;
-        --shadow-card: 0 1px 3px rgba(0,0,0,0.2); --shadow-lg: 0 8px 32px rgba(0,0,0,0.35);
-        --shadow-hero: 0 20px 60px rgba(0,0,0,0.4);
+        --bg: #1A1A18; --bg-alt: #141413; --surface: #222220; --border: #2A2A28;
+        --text-1: #F5F4F1; --text-2: #AEADB0; --text-3: #8E8D89;
+        --accent: #818CF8; --accent-hover: #6366F1; --accent-soft: #2E2D5B;
+        --accent-glow: rgba(129, 140, 248, 0.15);
+        --code-bg: #141413; --code-text: #E2E1DC;
+        --shadow-card: 0 1px 3px rgba(0,0,0,0.25); --shadow-lg: 0 8px 24px rgba(0,0,0,0.45);
+        --shadow-hero: 0 20px 60px rgba(0,0,0,0.55);
       }
     }
 
@@ -113,8 +113,7 @@
 
     /* ===== HERO ===== */
     .hero {
-      padding: 140px 0 100px;
-      text-align: center;
+      padding: 140px 0 80px;
       position: relative;
     }
     .hero::before {
@@ -124,21 +123,23 @@
       pointer-events: none;
     }
     .hero > * { position: relative; }
+    .hero .wrap { display: grid; grid-template-columns: 1fr 520px; gap: 64px; align-items: center; }
+    .hero-content { text-align: left; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 6px;
       padding: 6px 16px; border-radius: 999px; font-size: 0.8125rem; font-weight: 500;
       background: var(--accent-soft); color: var(--accent); margin-bottom: 24px;
     }
     .hero h1 {
-      font-family: var(--ff-display); font-size: clamp(2.8rem, 7vw, 4.5rem);
-      font-weight: 400; line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 20px;
+      font-family: var(--ff-display); font-size: clamp(2.5rem, 5vw, 3.8rem);
+      font-weight: 400; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 20px;
     }
     .hero h1 em { font-style: italic; color: var(--accent); }
     .hero-sub {
-      font-size: clamp(1.05rem, 2.2vw, 1.25rem); color: var(--text-2);
-      max-width: 540px; margin: 0 auto 36px; line-height: 1.7;
+      font-size: clamp(1.05rem, 2vw, 1.2rem); color: var(--text-2);
+      max-width: 520px; margin: 0 0 36px; line-height: 1.7;
     }
-    .hero-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
+    .hero-actions { display: flex; justify-content: flex-start; gap: 12px; flex-wrap: wrap; }
     .btn-primary {
       display: inline-flex; align-items: center; gap: 8px;
       background: var(--accent); color: #fff; padding: 14px 28px;
@@ -155,7 +156,7 @@
     .btn-secondary:hover { border-color: var(--text-3); transform: translateY(-1px); }
     .btn-primary svg, .btn-secondary svg { width: 18px; height: 18px; }
     .hero-tags {
-      display: flex; justify-content: center; gap: 8px; margin-top: 20px; flex-wrap: wrap;
+      display: flex; justify-content: flex-start; gap: 8px; margin-top: 20px; flex-wrap: wrap;
     }
     .tag {
       padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 500;
@@ -164,26 +165,16 @@
 
     /* ===== HERO MOCKUP ===== */
     .hero-mockup {
-      margin-top: 72px; position: relative; display: flex; justify-content: center; align-items: flex-end;
-      gap: 32px; perspective: 1200px;
+      position: relative; perspective: 1200px;
     }
-    .mockup-desktop {
-      width: 720px; border-radius: 12px; overflow: hidden;
+    .mockup-tablet {
+      width: 100%; max-width: 520px; border-radius: 16px; overflow: hidden;
       box-shadow: var(--shadow-hero); border: 1px solid var(--border);
-      transform: rotateY(-2deg) rotateX(2deg);
+      transform: rotateY(2deg) rotateX(2deg);
       transition: transform 0.4s ease;
     }
-    .mockup-desktop:hover { transform: rotateY(0) rotateX(0); }
-    .mockup-desktop img { width: 100%; display: block; }
-    .mockup-phone {
-      width: 200px; border-radius: 24px; overflow: hidden;
-      box-shadow: var(--shadow-hero); border: 4px solid var(--text-1);
-      position: relative; z-index: 2;
-      transform: rotateY(3deg) rotateX(1deg) translateY(-20px);
-      transition: transform 0.4s ease;
-    }
-    .mockup-phone:hover { transform: rotateY(0) rotateX(0) translateY(-20px); }
-    .mockup-phone img { width: 100%; display: block; }
+    .mockup-tablet:hover { transform: rotateY(0) rotateX(0); }
+    .mockup-tablet img { width: 100%; display: block; }
 
     /* ===== FEATURES SHOWCASE ===== */
     .showcase { padding: 100px 0; }
@@ -313,19 +304,22 @@
     .reveal-d3 { transition-delay: 0.3s; }
 
     /* ===== RESPONSIVE ===== */
+    @media (max-width: 1024px) {
+      .hero .wrap { grid-template-columns: 1fr; gap: 48px; }
+      .hero-content { text-align: center; }
+      .hero-sub { margin: 0 auto 36px; }
+      .hero-actions { justify-content: center; }
+      .hero-tags { justify-content: center; }
+      .mockup-tablet { max-width: 640px; margin: 0 auto; }
+    }
     @media (max-width: 900px) {
       .feat-row { grid-template-columns: 1fr; gap: 32px; }
       .feat-row.reverse .feat-visual { order: 0; }
       .feat-mobile-img { width: 120px !important; bottom: -16px; right: -8px; }
-      .hero-mockup { flex-direction: column; align-items: center; gap: 24px; }
-      .mockup-desktop { width: 100%; max-width: 560px; transform: none; }
-      .mockup-phone { width: 160px; transform: none; position: absolute; bottom: -30px; right: 10%; }
       .phil-grid { grid-template-columns: 1fr; }
     }
     @media (max-width: 600px) {
       .hero { padding: 110px 0 60px; }
-      .hero-mockup { margin-top: 48px; }
-      .mockup-phone { width: 130px; right: 4%; }
       .carousel-item img { height: 360px; }
       .feat-grid { grid-template-columns: 1fr; }
       .cta-box { padding: 40px 24px; }
@@ -352,36 +346,77 @@
 <!-- HERO -->
 <header class="hero">
   <div class="wrap">
-    <div class="hero-badge" data-t="hero_badge">Open Source · Self-Hosted · Private</div>
-    <h1><span data-t="hero_h1_pre">Your household,</span><br><em data-t="hero_h1_em">organized together.</em></h1>
-    <p class="hero-sub" data-t="hero_sub">Tasks, shopping, meals, calendar, budget — everything your family needs in one place. Self-hosted on your own server. No cloud, no tracking, no subscriptions.</p>
-    <div class="hero-actions">
-      <a href="https://github.com/ulsklyc/oikos" class="btn-primary" target="_blank" rel="noopener">
-        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path></svg>
-        <span data-t="hero_cta">View on GitHub</span>
-      </a>
-      <a href="install.html" class="btn-secondary">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-        <span data-t="hero_install">Installation Guide</span>
-      </a>
-    </div>
-    <div class="hero-tags">
-      <span class="tag">MIT License</span>
-      <span class="tag">Docker</span>
-      <span class="tag">PWA</span>
-      <span class="tag" data-t="tag_nocloud">No Cloud Required</span>
+    <div class="hero-content">
+      <div class="hero-badge" data-t="hero_badge">Open Source · Self-Hosted · Private</div>
+      <h1><span data-t="hero_h1_pre">Your household,</span><br><em data-t="hero_h1_em">organized together.</em></h1>
+      <p class="hero-sub" data-t="hero_sub">Tasks, shopping, meals, calendar, budget — everything your family needs in one place. Self-hosted on your own server. No cloud, no tracking, no subscriptions.</p>
+      <div class="hero-actions">
+        <a href="https://github.com/ulsklyc/oikos" class="btn-primary" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"></path></svg>
+          <span data-t="hero_cta">View on GitHub</span>
+        </a>
+        <a href="install.html" class="btn-secondary">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span data-t="hero_install">Installation Guide</span>
+        </a>
+      </div>
+      <div class="hero-tags">
+        <span class="tag">MIT License</span>
+        <span class="tag">Docker</span>
+        <span class="tag">PWA</span>
+        <span class="tag" data-t="tag_nocloud">No Cloud Required</span>
+      </div>
     </div>
 
     <div class="hero-mockup">
-      <div class="mockup-desktop">
-        <img class="sc" data-light="screenshots/01-web-light.png" data-dark="screenshots/01-web-dark.png" src="screenshots/01-web-light.png" alt="Oikos Dashboard – Desktop">
-      </div>
-      <div class="mockup-phone">
-        <img class="sc" data-light="screenshots/01-mobile-light.png" data-dark="screenshots/01-mobile-dark.png" src="screenshots/01-mobile-light.png" alt="Oikos Dashboard – Mobile">
+      <div class="mockup-tablet">
+        <img class="sc" data-light="screenshots/01-web-light.png" data-dark="screenshots/01-web-dark.png" src="screenshots/01-web-light.png" alt="Oikos Dashboard">
       </div>
     </div>
   </div>
 </header>
+
+<!-- YOUR DATA. YOUR PRIVATE PLACE -->
+<section class="features-alt">
+  <div class="wrap">
+    <div class="showcase-header reveal vis">
+      <p class="section-label" data-t="more_label">Your Data. Your Private Place</p>
+      <h2 class="section-title" data-t="more_title">Built for real family life</h2>
+    </div>
+    <div class="feat-grid">
+      <div class="feat-card reveal vis">
+        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></div>
+        <h3 data-t="f_shop_t">Shopping Lists</h3>
+        <p data-t="f_shop_d">Collaborative lists with aisle categories. Import ingredients directly from your meal plans.</p>
+      </div>
+      <div class="feat-card reveal reveal-d1 vis">
+        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
+        <h3 data-t="f_budget_t">Budget Tracking</h3>
+        <p data-t="f_budget_d">Track income and expenses with 13 currency options, recurring entries, monthly trends, and CSV export.</p>
+      </div>
+      <div class="feat-card reveal reveal-d2 vis">
+        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div>
+        <h3 data-t="f_notes_t">Notes</h3>
+        <p data-t="f_notes_d">Colored sticky notes with Markdown. Perfect for recipes, family memos, and quick reminders.</p>
+      </div>
+      <div class="feat-card reveal reveal-d3 vis">
+        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
+        <h3 data-t="f_contacts_t">Contacts</h3>
+        <p data-t="f_contacts_d">Shared family contact directory with vCard import and export.</p>
+      </div>
+      <div class="feat-card reveal vis">
+        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
+        <h3 data-t="f_pwa_t">Works Everywhere</h3>
+        <p data-t="f_pwa_d">Installable PWA on any device. Offline support, dark mode, fully responsive from phone to desktop.</p>
+      </div>
+      <div class="feat-card reveal reveal-d1 vis">
+        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
+        <h3 data-t="f_board_t">Kanban Board</h3>
+        <p data-t="f_board_d">Visual board view for tasks and projects. Drag cards between columns to track progress.</p>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- FEATURE SHOWCASE -->
 <section class="showcase">
@@ -422,48 +457,6 @@
       <div class="feat-visual">
         <img class="sc" data-light="screenshots/05-web-light.png" data-dark="screenshots/05-web-dark.png" src="screenshots/05-web-light.png" alt="Calendar">
         <img class="sc feat-mobile-img" data-light="screenshots/03-mobile-light.png" data-dark="screenshots/03-mobile-dark.png" src="screenshots/03-mobile-light.png" alt="Calendar Mobile">
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- MORE FEATURES GRID -->
-<section class="features-alt">
-  <div class="wrap">
-    <div class="showcase-header reveal vis">
-      <p class="section-label" data-t="more_label">And more</p>
-      <h2 class="section-title" data-t="more_title">Built for real family life</h2>
-    </div>
-    <div class="feat-grid">
-      <div class="feat-card reveal vis">
-        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg></div>
-        <h3 data-t="f_shop_t">Shopping Lists</h3>
-        <p data-t="f_shop_d">Collaborative lists with aisle categories. Import ingredients directly from your meal plans.</p>
-      </div>
-      <div class="feat-card reveal reveal-d1 vis">
-        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg></div>
-        <h3 data-t="f_budget_t">Budget Tracking</h3>
-        <p data-t="f_budget_d">Track income and expenses with 13 currency options, recurring entries, monthly trends, and CSV export.</p>
-      </div>
-      <div class="feat-card reveal reveal-d2 vis">
-        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg></div>
-        <h3 data-t="f_notes_t">Notes</h3>
-        <p data-t="f_notes_d">Colored sticky notes with Markdown. Perfect for recipes, family memos, and quick reminders.</p>
-      </div>
-      <div class="feat-card reveal reveal-d3 vis">
-        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></div>
-        <h3 data-t="f_contacts_t">Contacts</h3>
-        <p data-t="f_contacts_d">Shared family contact directory with vCard import and export.</p>
-      </div>
-      <div class="feat-card reveal vis">
-        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
-        <h3 data-t="f_pwa_t">Works Everywhere</h3>
-        <p data-t="f_pwa_d">Installable PWA on any device. Offline support, dark mode, fully responsive from phone to desktop.</p>
-      </div>
-      <div class="feat-card reveal reveal-d1 vis">
-        <div class="feat-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></div>
-        <h3 data-t="f_board_t">Kanban Board</h3>
-        <p data-t="f_board_d">Visual board view for tasks and projects. Drag cards between columns to track progress.</p>
       </div>
     </div>
   </div>
@@ -592,7 +585,7 @@ cp .env.example .env
       f_tasks_t:'Task Management', f_tasks_d:'Shared tasks with deadlines, priorities, subtasks, recurring schedules, and a Kanban board. Assign to family members with one-tap status changes.',
       f_meals_t:'Meal Planning', f_meals_d:'Weekly drag-and-drop planner with ingredient lists. Automatically export ingredients to your shopping list with one click.',
       f_cal_t:'Calendar Sync', f_cal_d:'Two-way sync with Google Calendar and Apple iCloud. See all family events in one unified view — month, week, day, or agenda.',
-      more_label:'And more', more_title:'Built for real family life',
+      more_label:'Your Data. Your Private Place', more_title:'Built for real family life',
       f_shop_t:'Shopping Lists', f_shop_d:'Collaborative lists with aisle categories. Import ingredients directly from your meal plans.',
       f_budget_t:'Budget Tracking', f_budget_d:'Track income and expenses with 13 currency options, recurring entries, monthly trends, and CSV export.',
       f_notes_t:'Notes', f_notes_d:'Colored sticky notes with Markdown. Perfect for recipes, family memos, and quick reminders.',
@@ -625,7 +618,7 @@ cp .env.example .env
       f_tasks_t:'Aufgabenverwaltung', f_tasks_d:'Gemeinsame Aufgaben mit Fristen, Prioritäten, Unteraufgaben, wiederkehrenden Terminen und Kanban-Board mit Ein-Tipp-Status.',
       f_meals_t:'Mahlzeitenplanung', f_meals_d:'Wöchentlicher Drag-and-Drop-Planer mit Zutatenlisten. Zutaten per Klick auf die Einkaufsliste exportieren.',
       f_cal_t:'Kalender-Sync', f_cal_d:'Zwei-Wege-Sync mit Google Calendar und Apple iCloud. Alle Familientermine in einer Ansicht — Monat, Woche, Tag oder Agenda.',
-      more_label:'Und mehr', more_title:'Gebaut für echtes Familienleben',
+      more_label:'Deine Daten. Dein privater Raum', more_title:'Gebaut für echtes Familienleben',
       f_shop_t:'Einkaufslisten', f_shop_d:'Gemeinsame Listen mit Gang-Kategorien. Zutaten direkt aus Mahlzeitenplänen importieren.',
       f_budget_t:'Budgetverwaltung', f_budget_d:'Einnahmen und Ausgaben verfolgen mit 13 Währungsoptionen, wiederkehrenden Einträgen, monatlichen Trends und CSV-Export.',
       f_notes_t:'Notizen', f_notes_d:'Farbige Haftnotizen mit Markdown. Perfekt für Rezepte, Familien-Memos und schnelle Erinnerungen.',
