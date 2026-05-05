@@ -14,31 +14,30 @@
 
 <table>
   <tr>
-    <td align="center" width="33%">
+    <td align="center" width="50%">
       <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile-dark/mobile-dark-dashboard-2.png">
-        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/mobile-light/mobile-light-dashboard-2.png">
-        <img src="docs/screenshots/mobile-light/mobile-light-dashboard-2.png" alt="Dashboard" width="240">
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/01-mobile-dark.png">
+        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/01-mobile-light.png">
+        <img src="docs/screenshots/01-mobile-light.png" alt="Mobile Dashboard" width="280">
       </picture>
+      <br>
+      <sub>Mobile Dashboard</sub>
     </td>
-    <td align="center" width="33%">
+    <td align="center" width="50%">
       <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile-dark/mobile-dark-tasks-2.png">
-        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/mobile-light/mobile-light-tasks-2.png">
-        <img src="docs/screenshots/mobile-light/mobile-light-tasks-2.png" alt="Tasks" width="240">
+        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/01-web-dark.png">
+        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/01-web-light.png">
+        <img src="docs/screenshots/01-web-light.png" alt="Desktop Dashboard" width="480">
       </picture>
-    </td>
-    <td align="center" width="33%">
-      <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/mobile-dark/mobile-dark-meal.png">
-        <source media="(prefers-color-scheme: light)" srcset="docs/screenshots/mobile-light/mobile-light-meal.png">
-        <img src="docs/screenshots/mobile-light/mobile-light-meal.png" alt="Meals" width="240">
-      </picture>
+      <br>
+      <sub>Desktop Dashboard</sub>
     </td>
   </tr>
 </table>
 
-<p align="center"><sub>Toggle GitHub light/dark mode to see both themes.</sub></p>
+<p align="center">
+  <sub>Toggle GitHub light/dark mode to see both themes • <a href="https://ulsklyc.github.io/oikos/">View all screenshots</a></sub>
+</p>
 
 Oikos is a self-hosted web app for families who want to organize their everyday life in one place — without cloud accounts, subscriptions, or data leaving the house. It runs as a Docker container on any home server or NAS, is accessible from every device in the household, and can be installed as a PWA on phones and tablets.
 
