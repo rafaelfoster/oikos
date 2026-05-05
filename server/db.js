@@ -1076,13 +1076,15 @@ const MIGRATIONS = [
   },
   {
     version: 30,
-<<<<<<< HEAD
     description: 'Advanced reminder options for birthdays',
     up: `
       ALTER TABLE birthdays ADD COLUMN reminder_offset TEXT;
       ALTER TABLE birthdays ADD COLUMN reminder_custom_amount INTEGER;
       ALTER TABLE birthdays ADD COLUMN reminder_custom_unit TEXT;
-=======
+    `,
+  },
+  {
+    version: 31,
     description: 'CardDAV multi-account contacts sync',
     up: `
       -- ========================================
@@ -1185,7 +1187,6 @@ const MIGRATIONS = [
       );
 
       CREATE INDEX idx_contact_addresses_contact ON contact_addresses(contact_id);
->>>>>>> d371e2b554ea2c81e9bac307289b50f34668297e
     `,
   },
 ];
