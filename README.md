@@ -55,7 +55,7 @@ The goal is a single, private place for everything that keeps a household runnin
 | **Calendar** | Two-way sync with Google Calendar (OAuth) and multiple CalDAV accounts (iCloud, Nextcloud, Radicale, Baikal). Per-account calendar selection with checkboxes. Subscribe to any public ICS/webcal URL with per-subscription color and visibility. Overlapping timed events render side-by-side. Events support file attachments (images, PDFs, Office documents). |
 | **Documents** | Upload and manage family files (PDF, images, Office documents up to 5 MB). Grid/list view, drag-and-drop upload, 14 category tags (medical, school, identity, finance, and more), per-document visibility (family, selected members, private), archive and download. |
 | **Budget** | Track income and expenses with recurring entries, monthly trends, and CSV export. 35 predefined categories plus custom ones. Supports 15 currencies. Loans tab for instalment-based loan tracking with per-payment history and automatic paid-off detection. |
-| **Notes & Contacts** | Colored sticky notes with Markdown support. Contact directory with vCard import/export. |
+| **Notes & Contacts** | Colored sticky notes with Markdown support. Contact directory with multi-account CardDAV sync (Nextcloud, iCloud, Radicale, Baikal), multiple phones/emails/addresses per contact, and vCard import/export. |
 | **Birthdays** | Birthday tracker with automatic annual calendar events, age display, profile photos, and 1-day-before reminders. |
 | **Reminders** | Time-based reminders on tasks and calendar events. In-app notification badge. |
 | **Family** | Assign family roles, profile pictures, phone, email, and birthday per member. Family details are automatically synced to Contacts and Birthdays. |

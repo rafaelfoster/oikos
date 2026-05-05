@@ -7,6 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.47.1] - 2026-05-04
+
+### Fixed
+- **Settings page crash**: fixed ReferenceError "loadCalDAVAccounts is not defined" when opening Settings. Root cause: loadCalDAVAccounts and loadCardDAVAccounts were defined inside the render function but called from bindIcsEvents (outside render scope). Functions are now top-level exports with user parameter.
+
+## [0.47.0] - 2026-05-04
+
+### Added
+- **Settings UX overhaul**: renamed Calendar tab to Synchronization with dedicated sections for Calendar Sync and Contact Sync. Improved information architecture with visual tab grouping using CSS separators between functional areas (module settings, synchronization, personal, administration).
+- **CardDAV UI**: complete user interface for CardDAV contact synchronization in Settings. Add/delete CardDAV accounts (iCloud, Nextcloud, Radicale, Baikal), enable/disable individual addressbooks, manual sync trigger, real-time status indicators. Empty state onboarding for first-time setup.
+- **Status badges**: visual sync status indicators (success, error, syncing) with animated spinner for active syncs across CalDAV and CardDAV integrations.
+
+### Changed
+- **Settings navigation**: Calendar tab replaced by unified Synchronization tab containing both calendar and contact sync options. Existing CalDAV calendar accounts remain accessible in the Calendar Sync section.
+
+## [0.46.0] - 2026-05-04
+
+### Added
+- **Flexible birthday reminders** (#123): customizable reminder offsets for birthdays with preset options (none, at time, 15min, 1h, 1d, 2d, 1w, 2w) and custom intervals (minutes, hours, days, weeks). Users can now configure exactly when to be reminded of upcoming birthdays. Database migration 31 adds `reminder_offset`, `reminder_custom_amount`, `reminder_custom_unit` columns to birthdays table. UI component integrated into birthday modal. Backend service calculates reminder time based on offset and supports disabling reminders when offset is empty.
+
+### Fixed
+- **Service worker protocol guard**: added check to skip non-HTTP protocols (e.g., chrome-extension://) in fetch handler to prevent errors with browser extensions.
+
 ## [0.45.0] - 2026-05-04
 
 ### Added

@@ -1,14 +1,13 @@
 /**
  * Modul: Einstellungen (Settings)
- * Zweck: Benutzerkonto, Passwort, Kalender-Sync, Kontakte-Sync, Familienmitglieder
- * Abhängigkeiten: /api.js, /utils/settings-nav.js
+ * Zweck: Benutzerkonto, Passwort, Kalender-Sync, Familienmitglieder
+ * Abhängigkeiten: /api.js
  */
 
 import { api, auth } from '/api.js';
 import { openModal, closeModal, confirmModal } from '/components/modal.js';
 import { t, formatDate, formatTime, dateInputPlaceholder, formatDateInput, parseDateInput, isDateInputValid, getDateFormat } from '/i18n.js';
 import { esc } from '/utils/html.js';
-import { renderSettingsSidebar, renderBreadcrumb, getLastActivePage, setActivePage, findSectionAndPage } from '/utils/settings-nav.js';
 import '/components/oikos-locale-picker.js';
 
 const SUPPORTED_CURRENCIES = ['AED', 'AUD', 'BRL', 'CAD', 'CHF', 'CNY', 'CZK', 'DKK', 'EUR', 'GBP', 'HUF', 'INR', 'JPY', 'NOK', 'PLN', 'RUB', 'SAR', 'SEK', 'TRY', 'UAH', 'USD'];
@@ -245,14 +244,14 @@ export async function render(container, { user }) {
       : t('settings.notConnected');
 
   const allowedTabs = [
-    'general', 'meals', 'budget', 'shopping', 'sync',
+    'general', 'meals', 'budget', 'shopping', 'calendar',
     ...(user?.role === 'admin' ? ['family', 'api-tokens'] : []),
     'account',
     ...(user?.role === 'admin' ? ['backup'] : []),
   ];
   const storedTab = sessionStorage.getItem(SETTINGS_TAB_KEY) ?? 'general';
   const activeTab = (syncOk || syncErr)
-    ? 'sync'
+    ? 'calendar'
     : (allowedTabs.includes(storedTab) ? storedTab : 'general');
 
   const panelHidden = (id) => id === activeTab ? '' : ' hidden';
@@ -273,11 +272,11 @@ export async function render(container, { user }) {
         <button class="${btnClass('meals')}"    role="tab" data-tab="meals"    aria-selected="${btnAria('meals')}">${t('settings.tabMeals')}</button>
         <button class="${btnClass('budget')}"   role="tab" data-tab="budget"   aria-selected="${btnAria('budget')}">${t('settings.tabBudget')}</button>
         <button class="${btnClass('shopping')}" role="tab" data-tab="shopping" aria-selected="${btnAria('shopping')}">${t('settings.tabShopping')}</button>
-        <button class="${btnClass('sync')}" role="tab" data-tab="sync" aria-selected="${btnAria('sync')}" data-group="sync">${t('settings.tabSync')}</button>
-        <button class="${btnClass('account')}"  role="tab" data-tab="account"  aria-selected="${btnAria('account')}" data-group="personal">${t('settings.tabAccount')}</button>
-        ${user?.role === 'admin' ? `<button class="${btnClass('family')}" role="tab" data-tab="family" aria-selected="${btnAria('family')}" data-group="admin">${t('settings.tabFamily')}</button>` : ''}
-        ${user?.role === 'admin' ? `<button class="${btnClass('api-tokens')}" role="tab" data-tab="api-tokens" aria-selected="${btnAria('api-tokens')}" data-group="admin">${t('settings.tabApiTokens')}</button>` : ''}
-        ${user?.role === 'admin' ? `<button class="${btnClass('backup')}" role="tab" data-tab="backup" aria-selected="${btnAria('backup')}" data-group="admin">${t('settings.tabBackup')}</button>` : ''}
+        <button class="${btnClass('calendar')}" role="tab" data-tab="calendar" aria-selected="${btnAria('calendar')}">${t('settings.tabCalendar')}</button>
+        ${user?.role === 'admin' ? `<button class="${btnClass('family')}" role="tab" data-tab="family" aria-selected="${btnAria('family')}">${t('settings.tabFamily')}</button>` : ''}
+        ${user?.role === 'admin' ? `<button class="${btnClass('api-tokens')}" role="tab" data-tab="api-tokens" aria-selected="${btnAria('api-tokens')}">${t('settings.tabApiTokens')}</button>` : ''}
+        <button class="${btnClass('account')}"  role="tab" data-tab="account"  aria-selected="${btnAria('account')}">${t('settings.tabAccount')}</button>
+        ${user?.role === 'admin' ? `<button class="${btnClass('backup')}" role="tab" data-tab="backup" aria-selected="${btnAria('backup')}">${t('settings.tabBackup')}</button>` : ''}
       </nav>
 
       <!-- Panel: Allgemein (Design + Sprache) -->
@@ -454,9 +453,8 @@ export async function render(container, { user }) {
         </section>
       </div>
 
-      <!-- Panel: Synchronisation -->
-      <div class="settings-tab-panel" data-panel="sync" role="tabpanel"${panelHidden('sync')}>
-        <!-- Sektion: Kalender-Synchronisation -->
+      <!-- Panel: Kalender -->
+      <div class="settings-tab-panel" data-panel="calendar" role="tabpanel"${panelHidden('calendar')}>
         <section class="settings-section">
           <h2 class="settings-section__title">${t('settings.sectionCalendarSync')}</h2>
 
@@ -586,27 +584,6 @@ export async function render(container, { user }) {
             <div class="settings-sync-actions">
               <button class="btn btn--secondary" id="ics-add-btn">${t('settings.ics.add')}</button>
             </div>
-          </div>
-        </section>
-
-        <!-- Sektion: Kontakt-Synchronisation (CardDAV) -->
-        <section class="settings-section">
-          <h2 class="settings-section__title">${t('settings.sectionContactSync')}</h2>
-
-          <div class="settings-card">
-            <h3 class="settings-card__title">${t('settings.cardavTitle')}</h3>
-            <p class="settings-card-description">${t('settings.cardavDescription')}</p>
-
-            <div id="cardav-accounts-list"></div>
-            <div id="cardav-empty-state" class="caldav-empty-state" style="display: none;">
-              <p>${t('settings.cardavEmptyState')}</p>
-            </div>
-
-            ${user?.role === 'admin' ? `
-              <button class="btn btn--primary" id="cardav-add-account-btn">
-                ${t('settings.cardavAddAccount')}
-              </button>
-            ` : ''}
           </div>
         </section>
       </div>
@@ -872,285 +849,8 @@ docker cp oikos:/data/oikos-backup.db ./oikos-backup.db</code></pre>
     });
   }
 
-  // Initial Load: CalDAV & CardDAV Accounts
-  if (container.querySelector('#caldav-accounts-list')) {
-    loadCalDAVAccounts(container, user);
-  }
-  if (container.querySelector('#cardav-accounts-list')) {
-    loadCardDAVAccounts(container, user);
-  }
-
   bindEvents(container, user, users, categories, icsSubscriptions, apiTokens);
   if (window.lucide) window.lucide.createIcons();
-}
-// CalDAV-Konten laden
-async function loadCalDAVAccounts(container, user) {
-  const listEl = container.querySelector('#caldav-accounts-list');
-  const emptyEl = container.querySelector('#caldav-empty-state');
-  if (!listEl || !emptyEl) return;
-
-  try {
-    const accountsRes = await api.get('/calendar/caldav/accounts');
-    const accounts = accountsRes.data || [];
-
-    if (accounts.length === 0) {
-      listEl.replaceChildren();
-      emptyEl.style.display = '';
-      return;
-    }
-
-    emptyEl.style.display = 'none';
-    listEl.replaceChildren();
-
-    for (const account of accounts) {
-      const calendarsRes = await api.get(`/calendar/caldav/accounts/${account.id}/calendars`);
-      const calendars = calendarsRes.data || [];
-
-      const accountCard = document.createElement('div');
-      accountCard.className = 'caldav-account-item';
-      accountCard.insertAdjacentHTML('beforeend', `
-        <div class="caldav-account-header">
-          <h4>${esc(account.name)}</h4>
-          <div class="caldav-account-meta">
-            <span>${esc(account.caldav_url)}</span>
-            ${account.last_sync ? `<span>${t('settings.lastSync')}: ${formatDateTime(account.last_sync)}</span>` : ''}
-          </div>
-        </div>
-        <details class="caldav-calendars-details">
-          <summary class="caldav-calendars-summary">
-            ${t('settings.caldavCalendarsToggle')} (${calendars.length})
-          </summary>
-          <div class="caldav-calendars-list">
-            ${calendars.map((cal) => `
-              <label class="caldav-calendar-item">
-                <input type="checkbox" class="caldav-calendar-checkbox"
-                       data-account-id="${account.id}"
-                       data-calendar-url="${esc(cal.url)}"
-                       ${cal.enabled ? 'checked' : ''}>
-                <span class="caldav-calendar-color" style="background-color: ${esc(cal.color || '#007AFF')}"></span>
-                <span class="caldav-calendar-name">${esc(cal.display_name || cal.url)}</span>
-              </label>
-            `).join('')}
-          </div>
-        </details>
-        <div class="caldav-account-actions">
-          <button class="btn btn--secondary btn--sm" data-caldav-sync="${account.id}">${t('settings.syncNow')}</button>
-          <button class="btn btn--secondary btn--sm" data-caldav-refresh="${account.id}">${t('settings.caldavRefreshCalendars')}</button>
-          ${user?.role === 'admin' ? `<button class="btn btn--danger-outline btn--sm" data-caldav-delete="${account.id}">${t('common.delete')}</button>` : ''}
-        </div>
-      `);
-      listEl.appendChild(accountCard);
-    }
-
-    if (window.lucide) lucide.createIcons({ el: listEl });
-
-    // Bind calendar checkbox events
-    listEl.querySelectorAll('.caldav-calendar-checkbox').forEach((checkbox) => {
-      checkbox.addEventListener('change', async () => {
-        const accountId = parseInt(checkbox.dataset.accountId, 10);
-        const calendarUrl = checkbox.dataset.calendarUrl;
-        const enabled = checkbox.checked;
-
-        try {
-          await api.patch(`/calendar/caldav/accounts/${accountId}/calendars`, {
-            calendarUrl,
-            enabled,
-          });
-          window.oikos?.showToast(
-            enabled ? t('settings.calendarEnabled') : t('settings.calendarDisabled'),
-            'success'
-          );
-        } catch (err) {
-          window.oikos?.showToast(err.message, 'danger');
-          checkbox.checked = !enabled; // Revert on error
-        }
-      });
-    });
-
-    // Bind sync buttons
-    listEl.querySelectorAll('[data-caldav-sync]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        btn.disabled = true;
-        const originalText = btn.textContent;
-        btn.textContent = t('settings.synchronizing');
-        try {
-          await api.post('/calendar/caldav/sync');
-          window.oikos?.showToast(t('settings.caldavSyncSuccess'), 'success');
-          await loadCalDAVAccounts(container, user);
-        } catch (err) {
-          window.oikos?.showToast(err.message || t('settings.caldavSyncFailed'), 'danger');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-      });
-    });
-
-    // Bind refresh buttons
-    listEl.querySelectorAll('[data-caldav-refresh]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const accountId = parseInt(btn.dataset.caldavRefresh, 10);
-        btn.disabled = true;
-        const originalText = btn.textContent;
-        btn.textContent = t('settings.loading');
-        try {
-          await api.get(`/calendar/caldav/accounts/${accountId}/calendars?refresh=true`);
-          await loadCalDAVAccounts(container, user);
-          window.oikos?.showToast(t('settings.calendarsRefreshed'), 'success');
-        } catch (err) {
-          window.oikos?.showToast(err.message, 'danger');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = originalText;
-        }
-      });
-    });
-
-    // Bind delete buttons
-    listEl.querySelectorAll('[data-caldav-delete]').forEach((btn) => {
-      btn.addEventListener('click', async () => {
-        const accountId = parseInt(btn.dataset.caldavDelete, 10);
-        if (!await confirmModal(t('settings.deleteAccountConfirm'), { danger: true })) return;
-        try {
-          await api.delete(`/calendar/caldav/accounts/${accountId}`);
-          window.oikos?.showToast(t('settings.caldavAccountDeleted'), 'success');
-          await loadCalDAVAccounts(container, user);
-        } catch (err) {
-          window.oikos?.showToast(err.message, 'danger');
-        }
-      });
-    });
-
-  } catch (err) {
-    console.error('Failed to load CalDAV accounts:', err);
-    window.oikos?.showToast(t('settings.caldavConnectionFailed'), 'danger');
-  }
-}
-
-// CardDAV-Konten laden
-async function loadCardDAVAccounts(container, user) {
-  const listEl = container.querySelector('#cardav-accounts-list');
-  const emptyEl = container.querySelector('#cardav-empty-state');
-  if (!listEl || !emptyEl) return;
-
-  try {
-    const accountsRes = await api.get('/contacts/cardav/accounts');
-    const accounts = accountsRes.data || [];
-
-    if (accounts.length === 0) {
-      listEl.replaceChildren();
-      emptyEl.style.display = '';
-      return;
-    }
-
-    emptyEl.style.display = 'none';
-    listEl.replaceChildren();
-
-    for (const account of accounts) {
-      const addressbooksRes = await api.get(`/contacts/cardav/accounts/${account.id}/addressbooks`);
-      const addressbooks = addressbooksRes.data || [];
-
-      const accountCard = document.createElement('div');
-      accountCard.className = 'caldav-account-item';
-      accountCard.insertAdjacentHTML('beforeend', `
-        <div class="caldav-account-header">
-          <h4>${esc(account.name)}</h4>
-          <div class="caldav-account-meta">
-            <span>${esc(account.cardav_url)}</span>
-            ${account.last_sync ? `<span>${t('settings.lastSync')}: ${formatDateTime(account.last_sync)}</span>` : ''}
-          </div>
-        </div>
-        <details class="caldav-calendars-details">
-          <summary class="caldav-calendars-summary">
-            ${t('settings.cardavAddressbooksToggle')} (${addressbooks.length})
-          </summary>
-          <div class="caldav-calendars-list">
-            ${addressbooks.map((ab) => `
-              <label class="caldav-calendar-item">
-                <input type="checkbox" class="caldav-calendar-checkbox cardav-addressbook-checkbox"
-                       data-account-id="${account.id}"
-                       data-addressbook-url="${esc(ab.url)}"
-                       ${ab.enabled ? 'checked' : ''}>
-                <span class="caldav-calendar-name">${esc(ab.display_name || ab.url)}</span>
-              </label>
-            `).join('')}
-          </div>
-        </details>
-        <div class="caldav-account-actions">
-          <button class="btn btn--secondary btn--sm" data-cardav-sync="${account.id}">${t('settings.syncNow')}</button>
-          <button class="btn btn--secondary btn--sm" data-cardav-refresh="${account.id}">${t('settings.cardavRefreshAddressbooks')}</button>
-          <button class="btn btn--danger-outline btn--sm" data-cardav-delete="${account.id}">${t('settings.disconnect')}</button>
-        </div>
-      `);
-
-      // Addressbook toggle
-      accountCard.querySelectorAll('.cardav-addressbook-checkbox').forEach((checkbox) => {
-        checkbox.addEventListener('change', async () => {
-          const accountId = parseInt(checkbox.dataset.accountId, 10);
-          const addressbookUrl = checkbox.dataset.addressbookUrl;
-          const enabled = checkbox.checked;
-          try {
-            await api.post(`/contacts/cardav/accounts/${accountId}/addressbooks/toggle`, {
-              addressbookUrl,
-              enabled,
-            });
-            window.oikos?.showToast(enabled ? t('settings.addressbookEnabled') : t('settings.addressbookDisabled'), 'success');
-          } catch (err) {
-            window.oikos?.showToast(err.message, 'error');
-            checkbox.checked = !enabled;
-          }
-        });
-      });
-
-      // Sync button
-      const syncBtn = accountCard.querySelector(`[data-cardav-sync="${account.id}"]`);
-      if (syncBtn) {
-        syncBtn.addEventListener('click', async () => {
-          try {
-            await api.post(`/contacts/cardav/accounts/${account.id}/sync`);
-            window.oikos?.showToast(t('settings.cardavSyncSuccess'), 'success');
-            await loadCardDAVAccounts(container, user);
-          } catch (err) {
-            window.oikos?.showToast(t('settings.cardavSyncFailed'), 'error');
-          }
-        });
-      }
-
-      // Refresh button
-      const refreshBtn = accountCard.querySelector(`[data-cardav-refresh="${account.id}"]`);
-      if (refreshBtn) {
-        refreshBtn.addEventListener('click', async () => {
-          try {
-            await api.post(`/contacts/cardav/accounts/${account.id}/addressbooks/refresh`);
-            window.oikos?.showToast(t('settings.addressbooksRefreshed'), 'success');
-            await loadCardDAVAccounts(container, user);
-          } catch (err) {
-            window.oikos?.showToast(err.message, 'error');
-          }
-        });
-      }
-
-      // Delete button
-      const deleteBtn = accountCard.querySelector(`[data-cardav-delete="${account.id}"]`);
-      if (deleteBtn) {
-        deleteBtn.addEventListener('click', async () => {
-          const confirmed = await confirmModal(t('settings.deleteCardDAVAccountConfirm'));
-          if (!confirmed) return;
-          try {
-            await api.delete(`/contacts/cardav/accounts/${account.id}`);
-            window.oikos?.showToast(t('settings.cardavAccountDeleted'), 'success');
-            await loadCardDAVAccounts(container, user);
-          } catch (err) {
-            window.oikos?.showToast(err.message, 'error');
-          }
-        });
-      }
-
-      listEl.appendChild(accountCard);
-    }
-  } catch (err) {
-    console.error('Failed to load CardDAV accounts:', err);
-  }
 }
 
 // --------------------------------------------------------
@@ -1484,6 +1184,154 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
     });
   }
 
+  // CalDAV-Konten laden
+  async function loadCalDAVAccounts(container) {
+    const listEl = container.querySelector('#caldav-accounts-list');
+    const emptyEl = container.querySelector('#caldav-empty-state');
+    if (!listEl || !emptyEl) return;
+
+    try {
+      const accountsRes = await api.get('/calendar/caldav/accounts');
+      const accounts = accountsRes.data || [];
+
+      if (accounts.length === 0) {
+        listEl.replaceChildren();
+        emptyEl.style.display = '';
+        return;
+      }
+
+      emptyEl.style.display = 'none';
+      listEl.replaceChildren();
+
+      for (const account of accounts) {
+        const calendarsRes = await api.get(`/calendar/caldav/accounts/${account.id}/calendars`);
+        const calendars = calendarsRes.data || [];
+
+        const accountCard = document.createElement('div');
+        accountCard.className = 'caldav-account-item';
+        accountCard.insertAdjacentHTML('beforeend', `
+          <div class="caldav-account-header">
+            <h4>${esc(account.name)}</h4>
+            <div class="caldav-account-meta">
+              <span>${esc(account.caldav_url)}</span>
+              ${account.last_sync ? `<span>${t('settings.lastSync')}: ${formatDateTime(account.last_sync)}</span>` : ''}
+            </div>
+          </div>
+          <details class="caldav-calendars-details">
+            <summary class="caldav-calendars-summary">
+              ${t('settings.caldavCalendarsToggle')} (${calendars.length})
+            </summary>
+            <div class="caldav-calendars-list">
+              ${calendars.map((cal) => `
+                <label class="caldav-calendar-item">
+                  <input type="checkbox" class="caldav-calendar-checkbox"
+                         data-account-id="${account.id}"
+                         data-calendar-url="${esc(cal.url)}"
+                         ${cal.enabled ? 'checked' : ''}>
+                  <span class="caldav-calendar-color" style="background-color: ${esc(cal.color || '#007AFF')}"></span>
+                  <span class="caldav-calendar-name">${esc(cal.display_name || cal.url)}</span>
+                </label>
+              `).join('')}
+            </div>
+          </details>
+          <div class="caldav-account-actions">
+            <button class="btn btn--secondary btn--sm" data-caldav-sync="${account.id}">${t('settings.syncNow')}</button>
+            <button class="btn btn--secondary btn--sm" data-caldav-refresh="${account.id}">${t('settings.caldavRefreshCalendars')}</button>
+            ${user?.role === 'admin' ? `<button class="btn btn--danger-outline btn--sm" data-caldav-delete="${account.id}">${t('common.delete')}</button>` : ''}
+          </div>
+        `);
+        listEl.appendChild(accountCard);
+      }
+
+      if (window.lucide) lucide.createIcons({ el: listEl });
+
+      // Bind calendar checkbox events
+      listEl.querySelectorAll('.caldav-calendar-checkbox').forEach((checkbox) => {
+        checkbox.addEventListener('change', async () => {
+          const accountId = parseInt(checkbox.dataset.accountId, 10);
+          const calendarUrl = checkbox.dataset.calendarUrl;
+          const enabled = checkbox.checked;
+
+          try {
+            await api.patch(`/calendar/caldav/accounts/${accountId}/calendars`, {
+              calendarUrl,
+              enabled,
+            });
+            window.oikos?.showToast(
+              enabled ? t('settings.calendarEnabled') : t('settings.calendarDisabled'),
+              'success'
+            );
+          } catch (err) {
+            window.oikos?.showToast(err.message, 'danger');
+            checkbox.checked = !enabled; // Revert on error
+          }
+        });
+      });
+
+      // Bind sync buttons
+      listEl.querySelectorAll('[data-caldav-sync]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = t('settings.synchronizing');
+          try {
+            await api.post('/calendar/caldav/sync');
+            window.oikos?.showToast(t('settings.caldavSyncSuccess'), 'success');
+            await loadCalDAVAccounts(container);
+          } catch (err) {
+            window.oikos?.showToast(err.message || t('settings.caldavSyncFailed'), 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+          }
+        });
+      });
+
+      // Bind refresh buttons
+      listEl.querySelectorAll('[data-caldav-refresh]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const accountId = parseInt(btn.dataset.caldavRefresh, 10);
+          btn.disabled = true;
+          const originalText = btn.textContent;
+          btn.textContent = t('settings.loading');
+          try {
+            await api.get(`/calendar/caldav/accounts/${accountId}/calendars?refresh=true`);
+            await loadCalDAVAccounts(container);
+            window.oikos?.showToast(t('settings.calendarsRefreshed'), 'success');
+          } catch (err) {
+            window.oikos?.showToast(err.message, 'danger');
+          } finally {
+            btn.disabled = false;
+            btn.textContent = originalText;
+          }
+        });
+      });
+
+      // Bind delete buttons
+      listEl.querySelectorAll('[data-caldav-delete]').forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const accountId = parseInt(btn.dataset.caldavDelete, 10);
+          if (!await confirmModal(t('settings.deleteAccountConfirm'), { danger: true })) return;
+          try {
+            await api.delete(`/calendar/caldav/accounts/${accountId}`);
+            window.oikos?.showToast(t('settings.caldavAccountDeleted'), 'success');
+            await loadCalDAVAccounts(container);
+          } catch (err) {
+            window.oikos?.showToast(err.message, 'danger');
+          }
+        });
+      });
+
+    } catch (err) {
+      console.error('Failed to load CalDAV accounts:', err);
+      window.oikos?.showToast(t('settings.caldavConnectionFailed'), 'danger');
+    }
+  }
+
+  // Load CalDAV accounts on page load
+  if (user?.role === 'admin') {
+    loadCalDAVAccounts(container);
+  }
 
   // CalDAV add account button
   const caldavAddBtn = container.querySelector('#caldav-add-account-btn');
@@ -1541,71 +1389,7 @@ function bindEvents(container, user, users, categories, icsSubscriptions, apiTok
             });
             closeModal({ force: true });
             window.oikos?.showToast(t('settings.caldavAccountAdded'), 'success');
-            await loadCalDAVAccounts(container, user);
-          } catch (err) {
-            showError(errorEl, err.message);
-          }
-        },
-      });
-    });
-  }
-
-  // CardDAV add account button
-  const cardavAddBtn = container.querySelector('#cardav-add-account-btn');
-  if (cardavAddBtn) {
-    cardavAddBtn.addEventListener('click', () => {
-      openModal({
-        title: t('settings.cardavAddAccount'),
-        size: 'sm',
-        content: `
-          <form id="cardav-add-form" novalidate autocomplete="off">
-            <div class="form-group">
-              <label class="form-label" for="cardav-name">${t('settings.cardavNameLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
-              <input class="form-input" type="text" id="cardav-name" required
-                     placeholder="${t('settings.cardavNamePlaceholder')}" maxlength="100" />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="cardav-url">${t('settings.cardavUrlLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
-              <input class="form-input" type="url" id="cardav-url" required
-                     placeholder="${t('settings.cardavUrlPlaceholder')}" />
-              <small class="form-hint">${t('settings.cardavUrlHint')}</small>
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="cardav-username">${t('settings.cardavUsernameLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
-              <input class="form-input" type="text" id="cardav-username" required autocomplete="username" />
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="cardav-password">${t('settings.cardavPasswordLabel')}<span class="required-marker" aria-hidden="true"> *</span></label>
-              <input class="form-input" type="password" id="cardav-password" required autocomplete="current-password" />
-              <small class="form-hint">${t('settings.cardavPasswordHint')}</small>
-            </div>
-            <div id="cardav-add-error" class="form-error" hidden></div>
-          </form>
-        `,
-        onSave: async (panel) => {
-          const errorEl = panel.querySelector('#cardav-add-error');
-          errorEl.hidden = true;
-
-          const name = panel.querySelector('#cardav-name').value.trim();
-          const cardavUrl = panel.querySelector('#cardav-url').value.trim();
-          const username = panel.querySelector('#cardav-username').value.trim();
-          const password = panel.querySelector('#cardav-password').value;
-
-          if (!name || !cardavUrl || !username || !password) {
-            showError(errorEl, t('common.allFieldsRequired'));
-            return;
-          }
-
-          try {
-            await api.post('/contacts/cardav/accounts', {
-              name,
-              cardavUrl,
-              username,
-              password,
-            });
-            closeModal({ force: true });
-            window.oikos?.showToast(t('settings.cardavAccountAdded'), 'success');
-            await loadCardDAVAccounts(container, user);
+            await loadCalDAVAccounts(container);
           } catch (err) {
             showError(errorEl, err.message);
           }
