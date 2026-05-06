@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.48.3] - 2026-05-06
+
+### Changed
+
+- **Brand color**: reverted the primary accent color from Amber back to Violet. The accent is now `#6c3aed` in light mode and `#a78bfa` in dark mode, applied consistently across all design tokens, the logo, all PWA icons (favicon, app icons, maskable icons, Apple touch icon), and the GitHub Pages documentation site. Semantic colors (warnings, notes module, meal-breakfast) remain unchanged.
+
 ## [0.48.2] - 2026-05-06
 
 ### Changed
