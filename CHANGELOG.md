@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.51.0] - 2026-05-11
+
+### Added
+- **Split Expenses module**: new tab inside Budget for managing shared expenses. Supports expense groups (household, couple, travel, event, shopping, general) with multiple split methods: equal, percentage, exact amounts, and shares. Balances are derived from an immutable ledger — amounts are stored as integer minor currency units (cents) to avoid floating-point errors.
+- **Settlements**: record payments between group members with a debt-simplification algorithm that produces the minimal set of transfers to clear all balances.
+- **Recurring expenses**: define expenses that repeat on a daily, weekly, monthly, or yearly schedule with automatic generation via an hourly scheduler.
+- **Guest accounts**: invite people outside the family as restricted guests who can only access the Split module and see their own invited groups. Guests can be created from scratch or converted from existing contacts.
+- **Multi-currency support**: each group has a default currency; individual expenses can use any currency with historical exchange rate snapshots for consistent balance reporting.
+- **Activity feed**: per-group log of all expense, member, and settlement events.
+- **Polish locale**: split-expenses strings added to the Polish (`pl`) translation.
+
 ## [0.50.0] - 2026-05-08
 
 ### Added
